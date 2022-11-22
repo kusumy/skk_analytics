@@ -1,28 +1,31 @@
 # %%
-from tokenize import Ignore
-from tracemalloc import start
-import pandas as pd
-import numpy as np
-import plotly.express as px
-import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import psycopg2
-import sys
+import logging
 import os
+import sys
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import mlflow
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import pmdarima as pm
+import psycopg2
+import seaborn as sns
 
 plt.style.use('fivethirtyeight')
-from connection import config, retrieve_data
-
 from datetime import datetime
+from tokenize import Ignore
+from tracemalloc import start
+
+from connection import config, retrieve_data
+from pmdarima import model_selection
+from sklearn.metrics import (mean_absolute_error,
+                             mean_absolute_percentage_error,
+                             mean_squared_error, r2_score)
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-import pmdarima as pm
-from pmdarima import model_selection 
-from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_absolute_error, r2_score
-import mlflow
 
 def create_db_connection():
     try:
@@ -54,7 +57,7 @@ def stationarity_check(ts):
     std = plt.plot(roll_std, color='green', label = 'Rolling Std')
     plt.legend(loc='best')
     plt.title('Rolling Mean & Standard Deviation')
-    plt.show(block=False)
+    #plt.show(block=False)
     
     # Print Dickey-Fuller test results
     print('\nResults of Dickey-Fuller Test: \n')
@@ -87,8 +90,8 @@ def decomposition_plot(ts):
     plt.legend(loc='best')
     plt.subplot(414)
     plt.plot(residual, label='Residuals', color='blue')
-    plt.legend(loc='best')
-    plt.tight_layout()
+    #plt.legend(loc='best')
+    #plt.tight_layout()
 
 def plot_acf_pacf(ts, figsize=(10,8),lags=24):
     
@@ -100,7 +103,7 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
     # Plot acf, pavf
     plot_acf(ts, ax=ax[1], lags=lags)
     plot_pacf(ts, ax=ax[2], lags=lags) 
-    fig.tight_layout()
+    #fig.tight_layout()
     
     for a in ax[1:]:
         a.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=lags, integer=True))
@@ -141,7 +144,7 @@ def main():
     plot_acf_pacf(df)
 
     #%%
-    from chart_studio.plotly import plot_mpl
+    #from chart_studio.plotly import plot_mpl
     from statsmodels.tsa.seasonal import seasonal_decompose
     result = seasonal_decompose(df.feed_gas.values, model="additive", period=365)
     fig = result.plot()
@@ -162,8 +165,8 @@ def main():
     ad_test(df['feed_gas'])
 
     #%%
-    from sktime.forecasting.model_selection import temporal_train_test_split
     from sktime.forecasting.base import ForecastingHorizon
+    from sktime.forecasting.model_selection import temporal_train_test_split
 
     # Test size
     test_size = 0.2
@@ -201,12 +204,11 @@ def main():
     ax.legend(loc='best')
     plt.close()
 
-
     ##### ARIMAX MODEL (forecast_a) #####
     # %%
+    import statsmodels.api as sm
     from pmdarima.arima.utils import ndiffs, nsdiffs
     from sklearn.metrics import mean_squared_error
-    import statsmodels.api as sm
     from sktime.forecasting.arima import AutoARIMA
     from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 
@@ -229,8 +231,8 @@ def main():
     arimax_mape_100 = 100*arimax_mape
     arimax_mape_str = str('MAPE: %.4f' % arimax_mape_100) + '%'
 
-    # Save ARIMAX forecast result to database
-    insert_forecast(conn, y_pred_arimax)
+    # Rename column to forecast_a
+    y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
 
     ##### SARIMAX MODEL (forecast_b) #####
     #%%
@@ -253,12 +255,14 @@ def main():
     sarimax_mape_100 = 100*sarimax_mape
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape_100) + '%'
 
-
+    # Rename column to forecast_b
+    y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
+    
     ##### PROPHET MODEL (forecast_c) #####
     #%%
     # Create model
-    from sktime.forecasting.fbprophet import Prophet
     from sktime.forecasting.compose import make_reduction
+    from sktime.forecasting.fbprophet import Prophet
 
     #Set Parameters
     seasonality_mode = 'multiplicative'
@@ -296,7 +300,9 @@ def main():
     prophet_mape_100 = 100*prophet_mape
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape_100) + '%'
 
-
+    # Rename column to forecast_c
+    y_pred_prophet.rename(columns={'feed_gas':'forecast_c'}, inplace=True)
+    
     ##### RANDOM FOREST MODEL (forecast_d) #####
     #%%
     from sklearn.ensemble import RandomForestRegressor
@@ -326,6 +332,8 @@ def main():
     ranfor_mape_100 = 100*ranfor_mape
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape_100) + '%'
 
+    # Rename column to forecast_e
+    y_pred_ranfor.rename(columns={'feed_gas':'forecast_d'}, inplace=True)
 
     ##### XGBOOST MODEL (forecast_e) #####
     #%%
@@ -354,6 +362,8 @@ def main():
     xgb_mape_100 = 100*xgb_mape
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape_100) + '%'
 
+    # Rename column to forecast_e
+    y_pred_xgb.rename(columns={'feed_gas':'forecast_e'}, inplace=True)
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
     #%%
@@ -381,11 +391,13 @@ def main():
     linreg_mape_100 = 100*linreg_mape
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape_100) + '%'
 
+    # Rename column to forecast_f
+    y_pred_linreg.rename(columns={'feed_gas':'forecast_f'}, inplace=True)
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
     #%%
     #Create model
-    from polyfit import PolynomRegressor, Constraints
+    from polyfit import Constraints, PolynomRegressor
 
     #Set Parameters
     poly2_lags = 9
@@ -410,11 +422,13 @@ def main():
     poly2_mape_100 = 100*poly2_mape
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape_100) + '%'
 
-
+    # Rename column to forecast_g
+    y_pred_poly2.rename(columns={'feed_gas':'forecast_g'}, inplace=True)
+    
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
     #%%
     #Create model
-    from polyfit import PolynomRegressor, Constraints
+    from polyfit import Constraints, PolynomRegressor
 
     #Set Parameters
     poly3_lags = 0.6
@@ -439,6 +453,20 @@ def main():
     poly3_mape_100 = 100*poly3_mape
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape_100) + '%'
 
+    # Rename column to forecast_h
+    y_pred_poly3.rename(columns={'feed_gas':'forecast_h'}, inplace=True)
+    
+    # %%
+    # Join prediction data frame
+    y_all_pred = pd.concat([y_pred_arimax[['forecast_a']], 
+                            y_pred_sarimax[['forecast_b']], 
+                            y_pred_prophet[['forecast_c']], 
+                            y_pred_ranfor[['forecast_d']], 
+                            y_pred_xgb[['forecast_e']], 
+                            y_pred_linreg[['forecast_f']], 
+                            y_pred_poly2[['forecast_g']], 
+                            y_pred_poly3[['forecast_h']]
+                           ], axis=1)
 
     #%%
     ##### PLOT PREDICTION #####
@@ -473,24 +501,36 @@ def main():
 
     all_mape_fg = pd.DataFrame(mape_data_fg)
     
+    # Save forecast result to database
+    insert_forecast(conn, y_all_pred)
+    
 # %%
 def insert_forecast(conn, y_pred):
     for index, row in y_pred.iterrows():
-        prod_date = row['date']
-        forecast = row[0]
-
+        prod_date = index #row['date']
+        forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+        
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        update_value(conn, forecast, prod_date)
+        update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date)
 
 
-def update_value(conn, forecast, prod_date):
+def update_value(conn, forecast_a, forecast_b, forecast_c, 
+                        forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     created_by = 'python'
     
     """ insert forecasting result after last row in table """
     sql = """ UPDATE lng_feed_gas_daily
-                SET forecast_a = %s, updated_at = %s, created_by = %s
+                SET forecast_a = %s, 
+                    forecast_b = %s, 
+                    forecast_c = %s, 
+                    forecast_d = %s, 
+                    forecast_e = %s, 
+                    forecast_f = %s, 
+                    forecast_g = %s, 
+                    forecast_h = %s 
+                updated_at = %s, created_by = %s
                 WHERE prod_date = %s
                 AND lng_plant = 'BP Tangguh'"""
     #conn = None
@@ -499,7 +539,8 @@ def update_value(conn, forecast, prod_date):
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (forecast, date_now, created_by, prod_date))
+        cur.execute(sql, (forecast_a, forecast_b, forecast_c, 
+                          forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, date_now, created_by, prod_date))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
