@@ -1,5 +1,6 @@
 # %%
 import logging
+import configparser
 import os
 import sys
 import matplotlib as mpl
@@ -26,19 +27,31 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 
-
 def create_db_connection():
+    # Read database configuration INI
+    config = configparser.ConfigParser()
+    config.read('database.ini')
+    postgresql = config['postgresql']
+    host = postgresql['host']
+    dbname = postgresql['database']
+    user = postgresql['user']
+    password = postgresql['password']
+    port = int(postgresql['port'])
+    
     try:
         # connect to the PostgreSQL database
         conn = psycopg2.connect(
-            host = '188.166.239.112',
-            dbname = 'skk_da_lng_analytics',
-            user = 'postgres',
-            password = 'rahasia',
-            port = 5432)
+            host = host, 
+            dbname = dbname, 
+            user = user, 
+            password = password, 
+            port = port)
+        
+        logging.info("Database connected ...")
         return conn
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
+        #print(error)
+        logging.error(error)
         return None
 
 def stationarity_check(ts):
@@ -112,10 +125,14 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 
 # %%
 def main():
+    # Configure logging
+    logging.basicConfig(filename="feed_gas_tangguh.log", level=logging.INFO, format="%(asctime)s %(message)s", filemode="w")
+    
     # Connect to database
+    # Exit program if not connected to database
     conn = create_db_connection()
     if conn == None:
-        exit
+        exit()
         
     # Prepare data
     file = os.path.join('gas_prod','feed_gas_unplanned-planned_shutdown_cleaned_with.csv')
@@ -215,7 +232,8 @@ def main():
     # Create SARIMAX (forecast_b) Model
     arimax_model = AutoARIMA(d=0, suppress_warnings=True, error_action='ignore')
     arimax_model.fit(y_train.feed_gas, X=X_train[exogenous_features])
-    arimax_model.summary()
+    logging.info("ARIMAX Model Summary")
+    logging.info(arimax_model.summary())
 
     arimax_forecast = arimax_model.predict(fh, X=X_test[exogenous_features])
     y_test["Forecast_ARIMAX"] = arimax_forecast
@@ -236,10 +254,13 @@ def main():
 
     ##### SARIMAX MODEL (forecast_b) #####
     #%%
-    from pmdarima.arima import auto_arima
-    sarimax_model = auto_arima(y=y_train.feed_gas, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
+    from pmdarima.arima import auto_arima, ARIMA
+    
+    #sarimax_model = auto_arima(y=y_train.feed_gas, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
+    sarimax_model = ARIMA(order=(4,0,2), seasonal_order=(2,1,0,12), suppress_warnings=True)
     sarimax_model.fit(y_train.feed_gas, X=X_train[exogenous_features])
-    sarimax_model.summary()
+    logging.info("SARIMAX Model Summary")
+    logging.info(sarimax_model.summary())
 
     sarimax_forecast = sarimax_model.predict(len(fh), X=X_test[exogenous_features])
     y_test["Forecast_SARIMAX"] = sarimax_forecast
@@ -502,17 +523,21 @@ def main():
     all_mape_fg = pd.DataFrame(mape_data_fg)
     
     # Save forecast result to database
-    insert_forecast(conn, y_all_pred)
+    total_updated_rows = insert_forecast(conn, y_all_pred)
+    logging.info("Updated rows: {}".format(total_updated_rows))
     
 # %%
 def insert_forecast(conn, y_pred):
+    total_updated_rows = 0
     for index, row in y_pred.iterrows():
-        prod_date = index #row['date']
+        prod_date = str(index) #row['date']
         forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date)
-
+        updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date)
+        total_updated_rows = total_updated_rows + updated_rows 
+        
+    return total_updated_rows
 
 def update_value(conn, forecast_a, forecast_b, forecast_c, 
                         forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date):
@@ -529,8 +554,9 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
                     forecast_e = %s, 
                     forecast_f = %s, 
                     forecast_g = %s, 
-                    forecast_h = %s 
-                updated_at = %s, created_by = %s
+                    forecast_h = %s, 
+                    updated_at = %s, 
+                    created_by = %s
                 WHERE prod_date = %s
                 AND lng_plant = 'BP Tangguh'"""
     #conn = None
@@ -539,8 +565,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (forecast_a, forecast_b, forecast_c, 
-                          forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, date_now, created_by, prod_date))
+        cur.execute(sql, (forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, date_now, created_by, prod_date))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
@@ -548,11 +573,10 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
+        logging.error(error)
 
     return updated_rows
 
-
-if __name__ == "__main__":
-    #main(sys.argv[1], sys.argv[2], sys.argv[3])
-    main()
+# if __name__ == "__main__":
+#     #main(sys.argv[1], sys.argv[2], sys.argv[3])
+#     main()

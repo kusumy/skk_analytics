@@ -1,0 +1,79 @@
+2022-11-23 15:42:17,599 Database connected ...
+2022-11-23 15:42:33,112 ARIMAX Model Summary
+2022-11-23 15:42:33,120                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                  789
+Model:               SARIMAX(2, 0, 1)   Log Likelihood               -4166.594
+Date:                Wed, 23 Nov 2022   AIC                           8351.189
+Time:                        15:42:33   BIC                           8393.225
+Sample:                    01-01-2020   HQIC                          8367.348
+                         - 02-27-2022                                         
+Covariance Type:                  opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+intercept            4.8806      4.795      1.018      0.309      -4.518      14.279
+month                2.7684      2.572      1.076      0.282      -2.273       7.809
+day                 -0.2256      0.352     -0.641      0.522      -0.916       0.465
+planned_shutdown   756.0437      7.091    106.615      0.000     742.145     769.943
+wpnb_gas            -0.0069      0.013     -0.516      0.606      -0.033       0.019
+ar.L1                1.3765      0.038     36.647      0.000       1.303       1.450
+ar.L2               -0.3838      0.033    -11.522      0.000      -0.449      -0.319
+ma.L1               -0.9103      0.027    -33.290      0.000      -0.964      -0.857
+sigma2            2191.4196     53.724     40.791      0.000    2086.123    2296.716
+===================================================================================
+Ljung-Box (L1) (Q):                   0.23   Jarque-Bera (JB):             43454.51
+Prob(Q):                              0.64   Prob(JB):                         0.00
+Heteroskedasticity (H):               2.86   Skew:                             0.77
+Prob(H) (two-sided):                  0.00   Kurtosis:                        39.32
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-11-23 15:42:49,115 SARIMAX Model Summary
+2022-11-23 15:42:49,118                                       SARIMAX Results                                      
+===========================================================================================
+Dep. Variable:                                   y   No. Observations:                  789
+Model:             SARIMAX(4, 0, 2)x(2, 1, [], 12)   Log Likelihood               -4157.030
+Date:                             Wed, 23 Nov 2022   AIC                           8342.060
+Time:                                     15:42:49   BIC                           8407.236
+Sample:                                 01-01-2020   HQIC                          8367.132
+                                      - 02-27-2022                                         
+Covariance Type:                               opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+intercept            0.0566      1.019      0.056      0.956      -1.940       2.054
+month                0.5310      1.862      0.285      0.775      -3.118       4.180
+day                 -0.4779      0.367     -1.302      0.193      -1.197       0.242
+planned_shutdown   645.0707      7.827     82.419      0.000     629.731     660.411
+wpnb_gas            -0.0062      0.010     -0.647      0.517      -0.025       0.013
+ar.L1                0.4019      0.830      0.484      0.628      -1.225       2.029
+ar.L2                0.9985      0.457      2.184      0.029       0.103       1.894
+ar.L3               -0.3215      0.391     -0.822      0.411      -1.088       0.445
+ar.L4               -0.1200      0.119     -1.010      0.313      -0.353       0.113
+ma.L1                0.0310      0.826      0.038      0.970      -1.587       1.649
+ma.L2               -0.9423      0.812     -1.160      0.246      -2.534       0.650
+ar.S.L12            -0.6420      0.023    -27.857      0.000      -0.687      -0.597
+ar.S.L24            -0.3108      0.024    -12.768      0.000      -0.359      -0.263
+sigma2            2519.5798     70.131     35.927      0.000    2382.125    2657.035
+===================================================================================
+Ljung-Box (L1) (Q):                   0.01   Jarque-Bera (JB):              7897.69
+Prob(Q):                              0.92   Prob(JB):                         0.00
+Heteroskedasticity (H):               2.76   Skew:                            -0.32
+Prob(H) (two-sided):                  0.00   Kurtosis:                        18.61
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-11-23 15:42:50,252 cmd: where.exe tbb.dll
+cwd: None
+2022-11-23 15:42:50,286 Adding TBB (C:\ProgramData\Miniconda3\envs\py38_ts\lib\site-packages\prophet\stan_model\cmdstan-2.26.1\stan\lib\stan_math\lib\tbb) to PATH
+2022-11-23 15:42:50,338 input tempfile: C:\Users\kusumy\AppData\Local\Temp\tmp4b8sdjgc\7rx4uzn8.json
+2022-11-23 15:42:50,555 input tempfile: C:\Users\kusumy\AppData\Local\Temp\tmp4b8sdjgc\ebxe2noq.json
+2022-11-23 15:42:50,557 idx 0
+2022-11-23 15:42:50,558 running CmdStan, num_threads: None
+2022-11-23 15:42:50,558 CmdStan args: ['C:\\ProgramData\\Miniconda3\\envs\\py38_ts\\Lib\\site-packages\\prophet\\stan_model\\prophet_model.bin', 'random', 'seed=55223', 'data', 'file=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmp4b8sdjgc\\7rx4uzn8.json', 'init=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmp4b8sdjgc\\ebxe2noq.json', 'output', 'file=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmp4b8sdjgc\\prophet_modela97772ct\\prophet_model-20221123154250.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
+2022-11-23 15:42:50,558 Chain [1] start processing
+2022-11-23 15:42:50,857 Chain [1] done processing
+2022-11-23 15:44:46,703 Updated rows: 198

@@ -9,11 +9,11 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
+import gas_prod.feed_gas_tangguh_with_planned_shutdown_exog_all_method as feed_gas_tangguh
+
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
 sys.path.insert(0, './hse')
-
-import gas_prod.feed_gas_tangguh_with_planned_shutdown_exog_all_method as feed_gas_tangguh
 
 # Add the arguments to the parser
 ap = argparse.ArgumentParser()
