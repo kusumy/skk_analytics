@@ -28,8 +28,8 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #endDate = str(args['enddate'])
 # do whatever the script does
 
-#feed_gas_tangguh.main()
-#condensate_tangguh.main()
+feed_gas_tangguh.main()
+condensate_tangguh.main()
 incident_tangguh.main()
 exit()
 
