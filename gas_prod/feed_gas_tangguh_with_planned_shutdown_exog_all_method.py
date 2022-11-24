@@ -126,7 +126,15 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 # %%
 def main():
     # Configure logging
-    logging.basicConfig(filename="feed_gas_tangguh.log", level=logging.INFO, format="%(asctime)s %(message)s", filemode="w")
+    logging.basicConfig(
+        level=logging.INFO, 
+        format="%(asctime)s %(message)s", 
+        filename="feed_gas_tangguh.log",
+        filemode="w" #, 
+        #handlers=[
+        #    logging.FileHandler("feed_gas_tangguh.log"),
+        #    logging.StreamHandler(sys.stdout) ]
+    ) #filename="feed_gas_tangguh.log",
     
     # Connect to database
     # Exit program if not connected to database
@@ -248,6 +256,7 @@ def main():
     arimax_mape = mean_absolute_percentage_error(y_test.feed_gas, y_test.Forecast_ARIMAX)
     arimax_mape_100 = 100*arimax_mape
     arimax_mape_str = str('MAPE: %.4f' % arimax_mape_100) + '%'
+    logging.info("ARIMAX Model "+arimax_mape_str)
 
     # Rename column to forecast_a
     y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
@@ -275,6 +284,7 @@ def main():
     sarimax_mape = mean_absolute_percentage_error(y_test.feed_gas, y_test.Forecast_SARIMAX)
     sarimax_mape_100 = 100*sarimax_mape
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape_100) + '%'
+    logging.info("SARIMAX Model "+sarimax_mape_str)
 
     # Rename column to forecast_b
     y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
@@ -307,7 +317,11 @@ def main():
         weekly_seasonality=weekly_seasonality,
         yearly_seasonality=yearly_seasonality)
 
+    logging.info("Creating Prophet Model ....")
     prophet_forecaster.fit(y_train, X_train) #, X_train
+    logging.info(prophet_forecaster._get_fitted_params)
+    
+    logging.info("Prophet Model Prediction")
     prophet_forecast = prophet_forecaster.predict(fh, X=X_test) #, X=X_test
     y_pred_prophet = pd.DataFrame(prophet_forecast).applymap('{:.2f}'.format)
     y_pred_prophet['day_num'] = [i.day for i in prophet_forecast.index]
@@ -320,6 +334,7 @@ def main():
     prophet_mape = mean_absolute_percentage_error(y_test['feed_gas'], prophet_forecast)
     prophet_mape_100 = 100*prophet_mape
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape_100) + '%'
+    logging.info("Prophet Model "+prophet_mape_str)
 
     # Rename column to forecast_c
     y_pred_prophet.rename(columns={'feed_gas':'forecast_c'}, inplace=True)
@@ -339,7 +354,10 @@ def main():
     ranfor_regressor = RandomForestRegressor(n_estimators = ranfor_n_estimators, random_state = ranfor_random_state, criterion = ranfor_criterion)
     ranfor_forecaster = make_reduction(ranfor_regressor, window_length = ranfor_lags, strategy = ranfor_strategy)
 
+    logging.info("Creating Prophet Model ....")
     ranfor_forecaster.fit(y_train, X_train) #, X_train
+    
+    logging.info("Random Forest Model Prediction")
     ranfor_forecast = ranfor_forecaster.predict(fh, X=X_test) #, X=X_test
     y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:.2f}'.format)
     y_pred_ranfor['day_num'] = [i.day for i in ranfor_forecast.index]
@@ -352,6 +370,7 @@ def main():
     ranfor_mape = mean_absolute_percentage_error(y_test['feed_gas'], ranfor_forecast)
     ranfor_mape_100 = 100*ranfor_mape
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape_100) + '%'
+    logging.info("Random Forest Model "+ranfor_mape_str)
 
     # Rename column to forecast_e
     y_pred_ranfor.rename(columns={'feed_gas':'forecast_d'}, inplace=True)
@@ -369,7 +388,10 @@ def main():
     xgb_regressor = XGBRegressor(objective=xgb_objective)
     xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
 
+    logging.info("Creating XGBoost Model ....")
     xgb_forecaster.fit(y_train, X=X_train) #, X_train
+    
+    logging.info("XGBoost Model Prediction")
     xgb_forecast = xgb_forecaster.predict(fh, X=X_test) #, X=X_test
     y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:.2f}'.format)
     y_pred_xgb['day_num'] = [i.day for i in xgb_forecast.index]
@@ -382,7 +404,8 @@ def main():
     xgb_mape = mean_absolute_percentage_error(y_test['feed_gas'], xgb_forecast)
     xgb_mape_100 = 100*xgb_mape
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape_100) + '%'
-
+    logging.info("XGBoost Model "+xgb_mape_str)
+    
     # Rename column to forecast_e
     y_pred_xgb.rename(columns={'feed_gas':'forecast_e'}, inplace=True)
 
@@ -398,7 +421,10 @@ def main():
     linreg_regressor = LinearRegression(normalize=True)
     linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
 
+    logging.info("Creating Linear Regression Model ....")
     linreg_forecaster.fit(y_train, X=X_train) #, X=X_train
+    
+    logging.info("Linear Regression Model Prediction")
     linreg_forecast = linreg_forecaster.predict(fh, X=X_test) #, X=X_test
     y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:.2f}'.format)
     y_pred_linreg['day_num'] = [i.day for i in linreg_forecast.index]
@@ -411,6 +437,7 @@ def main():
     linreg_mape = mean_absolute_percentage_error(y_test['feed_gas'], linreg_forecast)
     linreg_mape_100 = 100*linreg_mape
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape_100) + '%'
+    logging.info("Linear Regression Model "+linreg_mape_str)
 
     # Rename column to forecast_f
     y_pred_linreg.rename(columns={'feed_gas':'forecast_f'}, inplace=True)
@@ -429,7 +456,10 @@ def main():
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
     poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy)
 
+    logging.info("Creating Polynomial Regression Orde 2 Model ....")
     poly2_forecaster.fit(y_train, X=X_train) #, X=X_train
+    
+    logging.info("Polynomial Regression Orde 2 Model Prediction")
     poly2_forecast = poly2_forecaster.predict(fh, X=X_test) #, X=X_test
     y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:.2f}'.format)
     y_pred_poly2['day_num'] = [i.day for i in poly2_forecast.index]
@@ -442,6 +472,7 @@ def main():
     poly2_mape = mean_absolute_percentage_error(y_test['feed_gas'], poly2_forecast)
     poly2_mape_100 = 100*poly2_mape
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape_100) + '%'
+    logging.info("Polynomial Regression Orde 2 Model "+poly2_mape_str)
 
     # Rename column to forecast_g
     y_pred_poly2.rename(columns={'feed_gas':'forecast_g'}, inplace=True)
@@ -460,7 +491,10 @@ def main():
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
     poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy)
 
+    logging.info("Creating Polynomial Regression Orde 3 Model ....")
     poly3_forecaster.fit(y_train, X=X_train) #, X=X_train
+    
+    logging.info("Polynomial Regression Orde 3 Model Prediction")
     poly3_forecast = poly3_forecaster.predict(fh, X=X_test) #, X=X_test
     y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:.2f}'.format)
     y_pred_poly3['day_num'] = [i.day for i in poly3_forecast.index]
@@ -473,12 +507,14 @@ def main():
     poly3_mape = mean_absolute_percentage_error(y_test['feed_gas'], poly3_forecast)
     poly3_mape_100 = 100*poly3_mape
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape_100) + '%'
+    logging.info("Polynomial Regression Orde 3 Model "+poly3_mape_str)
 
     # Rename column to forecast_h
     y_pred_poly3.rename(columns={'feed_gas':'forecast_h'}, inplace=True)
     
     # %%
     # Join prediction data frame
+    logging.info("Creating all model prediction result data frame ..")
     y_all_pred = pd.concat([y_pred_arimax[['forecast_a']], 
                             y_pred_sarimax[['forecast_b']], 
                             y_pred_prophet[['forecast_c']], 
@@ -511,18 +547,19 @@ def main():
 
     #%%
     #CREATE DATAFRAME MAPE
-    mape_data_fg =  {'arimax': [arimax_mape_100],
-                'sarimax': [sarimax_mape_100],
-                'prophet': [prophet_mape_100],
-                'random_forest': [ranfor_mape_100],
-                'xgboost': [xgb_mape_100],
-                'linear_regression': [linreg_mape_100],
-                'polynomial_degree_2': [poly2_mape_100],
-                'polynomial_degree_3': [poly3_mape_100]}
+    mape_data_fg =  {'arimax': [arimax_mape_100/100],
+                'sarimax': [sarimax_mape_100/100],
+                'prophet': [prophet_mape_100/100],
+                'random_forest': [ranfor_mape_100/100],
+                'xgboost': [xgb_mape_100/100],
+                'linear_regression': [linreg_mape_100/100],
+                'polynomial_degree_2': [poly2_mape_100/100],
+                'polynomial_degree_3': [poly3_mape_100/100]}
 
     all_mape_fg = pd.DataFrame(mape_data_fg)
     
     # Save forecast result to database
+    logging.info("Updating forecast result to database ...")
     total_updated_rows = insert_forecast(conn, y_all_pred)
     logging.info("Updated rows: {}".format(total_updated_rows))
     

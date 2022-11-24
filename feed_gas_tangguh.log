@@ -1,11 +1,11 @@
-2022-11-23 15:42:17,599 Database connected ...
-2022-11-23 15:42:33,112 ARIMAX Model Summary
-2022-11-23 15:42:33,120                                SARIMAX Results                                
+2022-11-23 18:12:36,890 Database connected ...
+2022-11-23 18:12:44,604 ARIMAX Model Summary
+2022-11-23 18:12:44,607                                SARIMAX Results                                
 ==============================================================================
 Dep. Variable:                      y   No. Observations:                  789
 Model:               SARIMAX(2, 0, 1)   Log Likelihood               -4166.594
 Date:                Wed, 23 Nov 2022   AIC                           8351.189
-Time:                        15:42:33   BIC                           8393.225
+Time:                        18:12:44   BIC                           8393.225
 Sample:                    01-01-2020   HQIC                          8367.348
                          - 02-27-2022                                         
 Covariance Type:                  opg                                         
@@ -30,13 +30,14 @@ Prob(H) (two-sided):                  0.00   Kurtosis:                        39
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2022-11-23 15:42:49,115 SARIMAX Model Summary
-2022-11-23 15:42:49,118                                       SARIMAX Results                                      
+2022-11-23 18:12:44,633 ARIMAX Model MAPE: 3.4474%
+2022-11-23 18:13:01,398 SARIMAX Model Summary
+2022-11-23 18:13:01,400                                       SARIMAX Results                                      
 ===========================================================================================
 Dep. Variable:                                   y   No. Observations:                  789
 Model:             SARIMAX(4, 0, 2)x(2, 1, [], 12)   Log Likelihood               -4157.030
 Date:                             Wed, 23 Nov 2022   AIC                           8342.060
-Time:                                     15:42:49   BIC                           8407.236
+Time:                                     18:13:01   BIC                           8407.236
 Sample:                                 01-01-2020   HQIC                          8367.132
                                       - 02-27-2022                                         
 Covariance Type:                               opg                                         
@@ -66,14 +67,39 @@ Prob(H) (two-sided):                  0.00   Kurtosis:                        18
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2022-11-23 15:42:50,252 cmd: where.exe tbb.dll
+2022-11-23 18:13:01,423 SARIMAX Model MAPE: 4.3199%
+2022-11-23 18:13:02,027 Creating Prophet Model ....
+2022-11-23 18:13:02,069 cmd: where.exe tbb.dll
 cwd: None
-2022-11-23 15:42:50,286 Adding TBB (C:\ProgramData\Miniconda3\envs\py38_ts\lib\site-packages\prophet\stan_model\cmdstan-2.26.1\stan\lib\stan_math\lib\tbb) to PATH
-2022-11-23 15:42:50,338 input tempfile: C:\Users\kusumy\AppData\Local\Temp\tmp4b8sdjgc\7rx4uzn8.json
-2022-11-23 15:42:50,555 input tempfile: C:\Users\kusumy\AppData\Local\Temp\tmp4b8sdjgc\ebxe2noq.json
-2022-11-23 15:42:50,557 idx 0
-2022-11-23 15:42:50,558 running CmdStan, num_threads: None
-2022-11-23 15:42:50,558 CmdStan args: ['C:\\ProgramData\\Miniconda3\\envs\\py38_ts\\Lib\\site-packages\\prophet\\stan_model\\prophet_model.bin', 'random', 'seed=55223', 'data', 'file=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmp4b8sdjgc\\7rx4uzn8.json', 'init=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmp4b8sdjgc\\ebxe2noq.json', 'output', 'file=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmp4b8sdjgc\\prophet_modela97772ct\\prophet_model-20221123154250.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
-2022-11-23 15:42:50,558 Chain [1] start processing
-2022-11-23 15:42:50,857 Chain [1] done processing
-2022-11-23 15:44:46,703 Updated rows: 198
+2022-11-23 18:13:02,109 Adding TBB (C:\ProgramData\Miniconda3\envs\py38_ts\lib\site-packages\prophet\stan_model\cmdstan-2.26.1\stan\lib\stan_math\lib\tbb) to PATH
+2022-11-23 18:13:02,135 input tempfile: C:\Users\kusumy\AppData\Local\Temp\tmpyxeee45o\xfcwqe1z.json
+2022-11-23 18:13:02,189 input tempfile: C:\Users\kusumy\AppData\Local\Temp\tmpyxeee45o\nqb_dqvu.json
+2022-11-23 18:13:02,191 idx 0
+2022-11-23 18:13:02,191 running CmdStan, num_threads: None
+2022-11-23 18:13:02,191 CmdStan args: ['C:\\ProgramData\\Miniconda3\\envs\\py38_ts\\Lib\\site-packages\\prophet\\stan_model\\prophet_model.bin', 'random', 'seed=48383', 'data', 'file=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmpyxeee45o\\xfcwqe1z.json', 'init=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmpyxeee45o\\nqb_dqvu.json', 'output', 'file=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmpyxeee45o\\prophet_model5mimx1wj\\prophet_model-20221123181302.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
+2022-11-23 18:13:02,192 Chain [1] start processing
+2022-11-23 18:13:02,522 Chain [1] done processing
+2022-11-23 18:13:02,546 <bound method _ProphetAdapter._get_fitted_params of Prophet(changepoint_prior_scale=0.1, daily_seasonality=8,
+        holidays_prior_scale=8, n_changepoints=40,
+        seasonality_mode='multiplicative', seasonality_prior_scale=0.1,
+        weekly_seasonality=1, yearly_seasonality=10)>
+2022-11-23 18:13:02,548 Prophet Model Prediction
+2022-11-23 18:13:02,726 Prophet Model MAPE: 2.9164%
+2022-11-23 18:13:02,726 Creating Prophet Model ....
+2022-11-23 18:13:06,630 Random Forest Model Prediction
+2022-11-23 18:13:07,685 Random Forest Model MAPE: 2.7414%
+2022-11-23 18:13:07,706 Creating XGBoost Model ....
+2022-11-23 18:13:07,869 XGBoost Model Prediction
+2022-11-23 18:13:08,050 XGBoost Model MAPE: 3.4388%
+2022-11-23 18:13:08,051 Creating Linear Regression Model ....
+2022-11-23 18:13:08,107 Linear Regression Model Prediction
+2022-11-23 18:13:08,128 Linear Regression Model MAPE: 3.6156%
+2022-11-23 18:13:08,365 Creating Polynomial Regression Orde 2 Model ....
+2022-11-23 18:13:08,427 Polynomial Regression Orde 2 Model Prediction
+2022-11-23 18:13:08,507 Polynomial Regression Orde 2 Model MAPE: 4.0006%
+2022-11-23 18:13:08,508 Creating Polynomial Regression Orde 3 Model ....
+2022-11-23 18:13:16,485 Polynomial Regression Orde 3 Model Prediction
+2022-11-23 18:13:20,197 Polynomial Regression Orde 3 Model MAPE: 6.1504%
+2022-11-23 18:13:20,197 Creating all model prediction result data frame ..
+2022-11-23 18:13:20,282 Updating forecast result to database ...
+2022-11-23 18:15:19,726 Updated rows: 198
