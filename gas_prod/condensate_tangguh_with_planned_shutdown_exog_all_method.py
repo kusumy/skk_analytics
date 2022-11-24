@@ -112,7 +112,7 @@ def main():
     
     # Connect to database
     # Exit program if not connected to database
-    conn = create_db_connection()
+    conn = create_db_connection(section='postgresql_ml_lng')
     if conn == None:
         exit()
         
