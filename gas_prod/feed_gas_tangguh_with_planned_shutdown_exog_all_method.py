@@ -18,7 +18,7 @@ from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
 
-from connection import config, retrieve_data
+from connection import config, retrieve_data, create_db_connection
 from pmdarima import model_selection
 from sklearn.metrics import (mean_absolute_error,
                              mean_absolute_percentage_error,
@@ -26,33 +26,6 @@ from sklearn.metrics import (mean_absolute_error,
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
-
-def create_db_connection():
-    # Read database configuration INI
-    config = configparser.ConfigParser()
-    config.read('database.ini')
-    postgresql = config['postgresql']
-    host = postgresql['host']
-    dbname = postgresql['database']
-    user = postgresql['user']
-    password = postgresql['password']
-    port = int(postgresql['port'])
-    
-    try:
-        # connect to the PostgreSQL database
-        conn = psycopg2.connect(
-            host = host, 
-            dbname = dbname, 
-            user = user, 
-            password = password, 
-            port = port)
-        
-        logging.info("Database connected ...")
-        return conn
-    except (Exception, psycopg2.DatabaseError) as error:
-        #print(error)
-        logging.error(error)
-        return None
 
 def stationarity_check(ts):
             

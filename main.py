@@ -11,6 +11,7 @@ warnings.filterwarnings('ignore')
 
 import gas_prod.feed_gas_tangguh_with_planned_shutdown_exog_all_method as feed_gas_tangguh
 import gas_prod.condensate_tangguh_with_planned_shutdown_exog_all_method as condensate_tangguh
+import hse.incident_rate_monthly_cum_forecasting as incident_tangguh
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -28,7 +29,8 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 # do whatever the script does
 
 #feed_gas_tangguh.main()
-condensate_tangguh.main()
+#condensate_tangguh.main()
+incident_tangguh.main()
 exit()
 
 # def main():

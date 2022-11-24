@@ -48,6 +48,29 @@ def retrieve_data(sql=None, db_connection='database.ini', section='postgresql'):
 #query = open("query_fg_tangguh.sql", mode="rt").read()
 #df = retrieve_data(query)
 
-# %%
-#df
-# %%
+def create_db_connection(filename='database.ini', section='postgresql'):
+    # Read database configuration INI
+    config = ConfigParser()
+    config.read(filename)
+    postgresql = config[section]
+    host = postgresql['host']
+    dbname = postgresql['database']
+    user = postgresql['user']
+    password = postgresql['password']
+    port = int(postgresql['port'])
+    
+    try:
+        # connect to the PostgreSQL database
+        conn = psycopg2.connect(
+            host = host, 
+            dbname = dbname, 
+            user = user, 
+            password = password, 
+            port = port)
+        
+        #logging.info("Database connected ...")
+        return conn
+    except (Exception, psycopg2.DatabaseError) as error:
+        #print(error)
+        #logging.error(error)
+        return None
