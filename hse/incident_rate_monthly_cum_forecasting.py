@@ -22,6 +22,7 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 
 from connection import config, retrieve_data, create_db_connection
+from utils import configLogging, logMessage, ad_test
 
 plt.style.use('fivethirtyeight')
     
@@ -77,7 +78,7 @@ def decomposition_plot(ts):
     plt.subplot(414)
     plt.plot(residual, label='Residuals', color='blue')
     plt.legend(loc='best')
-    #plt.tight_layout()
+    plt.tight_layout()
 
 def plot_acf_pacf(ts, figsize=(10,8),lags=24):
     
@@ -97,9 +98,13 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
     return fig,ax
 
 def main():
+    # Configure logging
+    configLogging("incident_rate_trir.log")
+    
     # %%
     # Connect to database
     # Exit program if not connected to database
+    logMessage("Connecting to database ...")
     conn = create_db_connection(section='postgresql_ml_hse')
     if conn == None:
         exit()
@@ -152,18 +157,6 @@ def main():
     #plt.show()
 
     #%%
-    from statsmodels.tsa.stattools import adfuller
-
-
-    def ad_test(dataset):
-        dftest = adfuller(df, autolag = 'AIC')
-        print("1. ADF : ",dftest[0])
-        print("2. P-Value : ", dftest[1])
-        print("3. Num Of Lags : ", dftest[2])
-        print("4. Num Of Observations Used For ADF Regression:", dftest[3])
-        print("5. Critical Values :")
-        for key, val in dftest[4].items():
-            print("\t",key, ": ", val)
     ad_test(df['trir_cum'])
 
 
@@ -210,9 +203,12 @@ def main():
                         max_p=10, max_d=0, max_q=10,
                         m=0, seasonal=False, error_action='warn',trace=True,
                         supress_warnings=True,stepwise=True, stationary=False)
-    arimax_model.summary()
-
+    logMessage("Creating ARIMAX Model ...")
     arimax_model.fit(df['trir_cum'], X=train_exog)
+    logMessage("ARIMAX Model Summary")
+    logMessage(arimax_model.summary())
+    
+    logMessage("ARIMAX Model Prediction ..")
     arimax_forecast = arimax_model.predict(n_periods=len(fh), X=test_exog)
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:,.2f}'.format)
     y_pred_arimax['month_num'] = [i.month for i in arimax_forecast.index]
@@ -235,9 +231,11 @@ def main():
     # Create regressor object
     xgb_regressor = XGBRegressor(objective=xgb_objective)
     xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
+    logMessage("Creating XGBoost Model ....")
     xgb_forecaster.fit(train_df, X=train_exog)
 
     # Create forecasting
+    logMessage("XGBoost Model Prediction ...")
     xgb_forecast = xgb_forecaster.predict(fh, X=test_exog)
     y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:,.2f}'.format)
     y_pred_xgb['month_num'] = [i.month for i in xgb_forecast.index]
@@ -261,9 +259,11 @@ def main():
     # create regressor object
     ranfor_regressor = RandomForestRegressor(n_estimators = ranfor_n_estimators, random_state=random_state, criterion=ranfor_criterion)
     ranfor_forecaster = make_reduction(ranfor_regressor, window_length= ranfor_lags, strategy=ranfor_strategy)
+    logMessage("Creating Random Forest Model ...")
     ranfor_forecaster.fit(train_df, X=train_exog)
 
     # Create forecasting
+    logMessage("Random Forest Model Prediction")
     ranfor_forecast = ranfor_forecaster.predict(fh, X=test_exog)
     y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:,.2f}'.format)
     y_pred_ranfor['month_num'] = [i.month for i in ranfor_forecast.index]
@@ -286,7 +286,10 @@ def main():
     # create regressor object
     linreg_regressor = LinearRegression(normalize=linreg_normalize)
     linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
+    logMessage("Creating Linear Regression Model ...")
     linreg_forecaster.fit(train_df, X=train_exog)
+    
+    logMessage("Linear Regression Model Prediction ...")
     linreg_forecast = linreg_forecaster.predict(fh, X=test_exog)
     y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:,.2f}'.format)
     y_pred_linreg['month_num'] = [i.month for i in linreg_forecast.index]
@@ -311,7 +314,10 @@ def main():
     # Create regressor object
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
     poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy) #WL=0.9 (degree 2), WL=0.7 (degree 3)
+    logMessage("Creating Polynomial Regression Orde 2 Model ...")
     poly2_forecaster.fit(train_df, X=train_exog)
+    
+    logMessage("Polynomial Regression Orde 2 Model Prediction ...")
     poly2_forecast = poly2_forecaster.predict(fh, X=test_exog)
     y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:,.2f}'.format)
     y_pred_poly2['month_num'] = [i.month for i in poly2_forecast.index]
@@ -334,7 +340,10 @@ def main():
     # Create regressor object
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
     poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy) #WL=0.9 (degree 2), WL=0.7 (degree 3)
+    logMessage("Creating Polynomial Regression Orde 3 Model ...")
     poly3_forecaster.fit(train_df, X=train_exog)
+    
+    logMessage("Polynomial Regression Orde 3 Model Prediction ...")
     poly3_forecast = poly3_forecaster.predict(fh, X=test_exog)
     y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:,.2f}'.format)
     y_pred_poly3['month_num'] = [i.month for i in poly3_forecast.index]
@@ -343,7 +352,7 @@ def main():
     # Rename column to forecast_f
     y_pred_poly3.rename(columns={0:'forecast_f'}, inplace=True)
     
-    logging.info("Creating all model prediction result data frame ..")
+    logMessage("Creating all model prediction result data frame ...")
     y_all_pred = pd.concat([y_pred_arimax[['forecast_a']], 
                             y_pred_xgb[['forecast_b']], 
                             y_pred_ranfor[['forecast_c']], 
@@ -368,13 +377,15 @@ def main():
     plt.title(' Incident Rate Monthly Cumulative (Arimax Model) with Exogenous Variables')
     #plt.savefig("Incident Rate Monthly Cumulative (Arimax Model) with Exogenous" + ".jpg")
     #plt.show()
+    plt.close()
 
 #%%
     # Save forecast result to database
-    logging.info("Updating forecast result to database ...")
+    logMessage("Updating forecast result to database ...")
     total_updated_rows = insert_forecast(conn, y_all_pred)
-    logging.info("Updated rows: {}".format(total_updated_rows))
+    logMessage("Updated rows: {}".format(total_updated_rows))
 
+    logMessage("Done")
 
 # %%
 def insert_forecast(conn, y_pred):

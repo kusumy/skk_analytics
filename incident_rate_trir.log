@@ -1,0 +1,55 @@
+2022-11-25 08:34:49,794 Connecting to database ...
+2022-11-25 08:34:56,030 1. ADF : -1.475746596108019
+2022-11-25 08:34:56,030 2. P-Value : 0.5454732248865217
+2022-11-25 08:34:56,030 3. Num Of Lags 0: 
+2022-11-25 08:34:56,030 4. Num Of Observations Used For ADF Regression: 116
+2022-11-25 08:34:56,031 5. Critical Values : 
+2022-11-25 08:34:56,031 	 1%: -3.4880216384691867
+2022-11-25 08:34:56,031 	 5%: -2.8867966864160075
+2022-11-25 08:34:56,031 	 10%: -2.5802408234244947
+2022-11-25 08:35:02,300 Creating ARIMAX Model ...
+2022-11-25 08:35:02,350 ARIMAX Model Summary
+2022-11-25 08:35:02,352                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                  117
+Model:               SARIMAX(0, 1, 0)   Log Likelihood                 150.857
+Date:                Fri, 25 Nov 2022   AIC                           -285.714
+Time:                        08:35:02   BIC                           -263.686
+Sample:                    01-31-2013   HQIC                          -276.772
+                         - 09-30-2022                                         
+Covariance Type:                  opg                                         
+=======================================================================================
+                          coef    std err          z      P>|z|      [0.025      0.975]
+---------------------------------------------------------------------------------------
+intercept              -0.0066      0.010     -0.643      0.520      -0.027       0.013
+drilling_explor_cum     0.0004      0.001      0.569      0.569      -0.001       0.002
+drilling_explot_cum     0.0003      0.000      2.322      0.020     4.1e-05       0.000
+workover_cum           -0.0001   9.04e-05     -1.285      0.199      -0.000     6.1e-05
+wellservice_cum      4.875e-06   2.07e-06      2.360      0.018    8.26e-07    8.92e-06
+survei_seismic_cum     -0.0033      0.002     -1.472      0.141      -0.008       0.001
+bulan                  -0.0079      0.010     -0.766      0.444      -0.028       0.012
+sigma2                  0.0043      0.000     16.342      0.000       0.004       0.005
+===================================================================================
+Ljung-Box (L1) (Q):                   0.14   Jarque-Bera (JB):              1072.58
+Prob(Q):                              0.71   Prob(JB):                         0.00
+Heteroskedasticity (H):               2.88   Skew:                             0.94
+Prob(H) (two-sided):                  0.00   Kurtosis:                        17.78
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-11-25 08:35:02,357 ARIMAX Model Prediction ..
+2022-11-25 08:35:03,032 Creating XGBoost Model ....
+2022-11-25 08:35:03,110 XGBoost Model Prediction ...
+2022-11-25 08:35:03,122 Creating Random Forest Model ...
+2022-11-25 08:35:03,356 Random Forest Model Prediction
+2022-11-25 08:35:03,373 Creating Linear Regression Model ...
+2022-11-25 08:35:03,381 Linear Regression Model Prediction ...
+2022-11-25 08:35:03,573 Creating Polynomial Regression Orde 2 Model ...
+2022-11-25 08:35:03,598 Polynomial Regression Orde 2 Model Prediction ...
+2022-11-25 08:35:03,625 Creating Polynomial Regression Orde 3 Model ...
+2022-11-25 08:35:03,653 Polynomial Regression Orde 3 Model Prediction ...
+2022-11-25 08:35:03,683 Creating all model prediction result data frame ...
+2022-11-25 08:35:03,851 Updating forecast result to database ...
+2022-11-25 08:35:04,637 Updated rows: 3
+2022-11-25 08:35:04,637 Done
