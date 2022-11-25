@@ -14,7 +14,7 @@ def create_db_connection():
     # Read database configuration INI
     config = configparser.ConfigParser()
     config.read('database.ini')
-    postgresql = config['postgresql_ml_hse']
+    postgresql = config['postgresql_ml_lng']
     host = postgresql['host']
     dbname = postgresql['database']
     user = postgresql['user']
@@ -54,33 +54,73 @@ def execute_sql(conn, sql):
         return None
 
 sql1 = """
-        UPDATE public.hse_analytics_trir_monthly
+        UPDATE lng_feed_gas_daily
         SET forecast_a = null, 
             forecast_b = null, 
             forecast_c = null, 
             forecast_d = null, 
             forecast_e = null, 
-            forecast_f = null;
+            forecast_f = null, 
+            forecast_g = null, 
+            forecast_h = null, 
+            updated_at = null, 
+            updated_by = null
        """
 
 sql2 = """
-        UPDATE public.hse_analytics_trir_monthly_cum
+        UPDATE lng_production_daily
         SET forecast_a = null, 
             forecast_b = null, 
             forecast_c = null, 
             forecast_d = null, 
             forecast_e = null, 
-            forecast_f = null;
+            forecast_f = null, 
+            forecast_g = null, 
+            forecast_h = null, 
+            updated_at = null, 
+            updated_by = null
        """
 
 sql3 = """
-        UPDATE public.hse_analytics_trir_yearly
+        UPDATE lng_condensate_daily
         SET forecast_a = null, 
             forecast_b = null, 
             forecast_c = null, 
             forecast_d = null, 
             forecast_e = null, 
-            forecast_f = null;
+            forecast_f = null, 
+            forecast_g = null, 
+            forecast_h = null, 
+            updated_at = null, 
+            updated_by = null
+       """
+
+sql4 = """
+        UPDATE lng_lpg_c3_daily
+        SET forecast_a = null, 
+            forecast_b = null, 
+            forecast_c = null, 
+            forecast_d = null, 
+            forecast_e = null, 
+            forecast_f = null, 
+            forecast_g = null, 
+            forecast_h = null, 
+            updated_at = null, 
+            updated_by = null
+       """
+
+sql5 = """
+        UPDATE lng_lpg_c4_daily
+        SET forecast_a = null, 
+            forecast_b = null, 
+            forecast_c = null, 
+            forecast_d = null, 
+            forecast_e = null, 
+            forecast_f = null, 
+            forecast_g = null, 
+            forecast_h = null, 
+            updated_at = null, 
+            updated_by = null
        """
 
 # Add the arguments to the parser
@@ -95,10 +135,16 @@ if conn == None:
 else:
     updated_rows = execute_sql(conn, sql1)
     if updated_rows != None:
-        print("hse_analytics_trir_monthly table has been emptied")
+        print("lng_feed_gas_daily table has been emptied")
     updated_rows = execute_sql(conn, sql2)
     if updated_rows != None:
-        print("hse_analytics_trir_monthly_cum table has been emptied")
+        print("lng_production_daily table has been emptied")
     updated_rows = execute_sql(conn, sql3)
     if updated_rows != None:
-        print("hse_analytics_trir_yearly table has been emptied")
+        print("lng_condensate_daily table has been emptied")
+    updated_rows = execute_sql(conn, sql4)
+    if updated_rows != None:
+        print("lng_lpg_c3_daily table has been emptied")
+    updated_rows = execute_sql(conn, sql5)
+    if updated_rows != None:
+        print("lng_lpg_c4_daily table has been emptied")

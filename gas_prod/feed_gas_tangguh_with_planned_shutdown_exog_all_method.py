@@ -557,7 +557,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
                     forecast_g = %s, 
                     forecast_h = %s, 
                     updated_at = %s, 
-                    created_by = %s
+                    updated_by = %s
                 WHERE prod_date = %s
                 AND lng_plant = 'BP Tangguh'"""
     #conn = None
