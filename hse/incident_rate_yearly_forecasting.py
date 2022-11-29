@@ -20,7 +20,7 @@ from tracemalloc import start
 from pmdarima.arima import auto_arima
 from pmdarima.arima.auto import auto_arima
 from pmdarima import model_selection
-from connection_yearly import config, retrieve_data, create_db_connection
+from connection import config, retrieve_data, create_db_connection
 from utils import configLogging, logMessage, ad_test
 
 from statsmodels.tsa.seasonal import seasonal_decompose
@@ -106,7 +106,7 @@ def main()
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng')
+    conn = create_db_connection(section='postgresql_ml_hse')
     if conn == None:
         exit()
        
@@ -348,6 +348,7 @@ def main()
     
     print("Done")
 
+#%%
 def insert_forecast(conn, y_all_pred):
     total_updated_rows = 0
     for index, row in y_all_pred.iterrows():

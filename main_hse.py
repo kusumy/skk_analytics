@@ -10,6 +10,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import hse.incident_rate_monthly_cum_forecasting as ir_monthly_cum
+import hse.incident_rate_yearly_forecasting as ir_yearly
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -26,7 +27,8 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #endDate = str(args['enddate'])
 # do whatever the script does
 
-ir_monthly_cum.main()
+#ir_monthly_cum.main()
+ir_yearly.main()
 exit()
 
 # def main():
