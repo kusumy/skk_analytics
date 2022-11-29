@@ -353,8 +353,9 @@ def main():
 
     #%%
     #Load Data from Database
-    query_2 = open("condensate_tangguh_exog_query.sql", mode="rt").read()
-    data_exog = retrieve_data(query_2)
+    query_exog = os.path.join('gas_prod','condensate_tangguh_exog_query.sql')
+    query_2 = open(query_exog, mode="rt").read()
+    data_exog = get_sql_data(query_2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')
     data_exog.sort_index(inplace=True)
     data_exog = data_exog.reset_index()
@@ -437,7 +438,7 @@ def main():
     #                  seasonal=sarimax_seasonal, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     sarimax_model = ARIMA(order=(2,0,2), seasonal_order=(2,1,0,12),  suppress_warnings=sarimax_suppress_warnings)
     sarimax_model.fit(train_df, X=train_exog)
-    sarimax_forecast = sarimax_model.predict(fh, X=future_exog)
+    sarimax_forecast = sarimax_model.predict(len(future_exog), X=future_exog)
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
     y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]

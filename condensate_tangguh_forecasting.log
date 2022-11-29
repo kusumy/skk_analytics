@@ -1,0 +1,53 @@
+2022-11-29 16:31:11,037 Connecting to database ...
+2022-11-29 16:31:11,125 Cleaning data ...
+2022-11-29 16:31:11,827 1. ADF : -5.278411942323324
+2022-11-29 16:31:11,827 2. P-Value : 6.068549771481649e-06
+2022-11-29 16:31:11,827 3. Num Of Lags 3: 
+2022-11-29 16:31:11,827 4. Num Of Observations Used For ADF Regression: 983
+2022-11-29 16:31:11,827 5. Critical Values : 
+2022-11-29 16:31:11,827 	 1%: -3.4370198458812156
+2022-11-29 16:31:11,827 	 5%: -2.864484708707697
+2022-11-29 16:31:11,827 	 10%: -2.568337912084273
+2022-11-29 16:31:11,906 Creating ARIMAX Model ...
+2022-11-29 16:31:24,361 ARIMAX Model Summary
+2022-11-29 16:31:24,363                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                  987
+Model:               SARIMAX(1, 0, 2)   Log Likelihood               -7279.653
+Date:                Tue, 29 Nov 2022   AIC                          14577.306
+Time:                        16:31:24   BIC                          14621.358
+Sample:                    01-01-2020   HQIC                         14594.060
+                         - 09-13-2022                                         
+Covariance Type:                  opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+intercept           11.1907     30.009      0.373      0.709     -47.625      70.007
+planned_shutdown -1665.6745     64.961    -25.641      0.000   -1792.997   -1538.352
+wpnb_minyak         -0.0574      0.097     -0.590      0.555      -0.248       0.133
+month               26.4792     22.381      1.183      0.237     -17.387      70.345
+day                 -3.5533      2.814     -1.263      0.207      -9.069       1.963
+ar.L1                0.9980      0.006    177.009      0.000       0.987       1.009
+ma.L1               -0.5993      0.010    -60.843      0.000      -0.619      -0.580
+ma.L2               -0.1263      0.017     -7.470      0.000      -0.159      -0.093
+sigma2            1.483e+05   1972.999     75.146      0.000    1.44e+05    1.52e+05
+===================================================================================
+Ljung-Box (L1) (Q):                   0.01   Jarque-Bera (JB):            208903.14
+Prob(Q):                              0.94   Prob(JB):                         0.00
+Heteroskedasticity (H):               1.15   Skew:                            -4.34
+Prob(H) (two-sided):                  0.19   Kurtosis:                        73.74
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-11-29 16:31:24,367 ARIMAX Model Prediction ..
+2022-11-29 16:31:39,683 input tempfile: /tmp/tmpjectgfy8/0_8sxu71.json
+2022-11-29 16:31:39,693 input tempfile: /tmp/tmpjectgfy8/s9otgcuw.json
+2022-11-29 16:31:39,694 idx 0
+2022-11-29 16:31:39,694 running CmdStan, num_threads: None
+2022-11-29 16:31:39,694 CmdStan args: ['/home/spcuser/miniconda3/envs/py38_ts/lib/python3.8/site-packages/prophet/stan_model/prophet_model.bin', 'random', 'seed=66398', 'data', 'file=/tmp/tmpjectgfy8/0_8sxu71.json', 'init=/tmp/tmpjectgfy8/s9otgcuw.json', 'output', 'file=/tmp/tmpjectgfy8/prophet_modelncwqwv3l/prophet_model-20221129163139.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
+2022-11-29 16:31:39,694 Chain [1] start processing
+2022-11-29 16:31:39,756 Chain [1] done processing
+2022-11-29 16:31:58,881 Creating all model prediction result data frame ...
+2022-11-29 16:31:58,884 Updating forecast result to database ...
+2022-11-29 16:32:05,949 Updated rows: 109

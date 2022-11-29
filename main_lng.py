@@ -37,7 +37,7 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #feed_gas_tangguh.main()
 #condensate_tangguh.main()
 #feed_gas_tangguh_forecasting.main()
-condensate_tangguh_forecasting
+condensate_tangguh_forecasting.main()
 exit()
 
 # def main():
