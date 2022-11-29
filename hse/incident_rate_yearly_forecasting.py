@@ -99,19 +99,20 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
     return fig,ax
 
 # %%
-def main()
+def main():
     #Configure logging
     configLogging("yearly_incident_rate.log")
     
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_hse')
+    conn = create_db_connection(section='postgresql_ml_hse_skk')
     if conn == None:
         exit()
        
     #Load Data from Database
-    query_1 = open("query_yearly.sql", mode="rt").read()
+    query_1 = open(os.path.join('hse', 'query_yearly.sql'), mode="rt").read()
+    #query_1 = open("query_yearly.sql", mode="rt").read()
     data = retrieve_data(query_1)
     data['year_num'] = data['year_num'].astype(int)
     data['year_num'] = pd.to_datetime(data['year_num'], format='%Y')
@@ -151,7 +152,8 @@ def main()
     train_exog.sort_index(inplace=True)
 
     #Load Data from Database (create future exogenous)
-    query_2 = open("query_yearly_future.sql", mode="rt").read()
+    query_2 = open(os.path.join('hse', 'query_yearly_future.sql'), mode="rt").read()
+    #query_2 = open("query_yearly_future.sql", mode="rt").read()
     future_exog = retrieve_data(query_2)
     future_exog['year_num'] = future_exog['year_num'].astype(int)
 
@@ -356,7 +358,7 @@ def insert_forecast(conn, y_all_pred):
         forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f = row[0], row[1], row[2], row[3], row[4], row[5]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f year_num)
+        updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, year_num)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
