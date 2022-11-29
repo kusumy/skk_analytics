@@ -116,14 +116,15 @@ def main():
     logMessage("Cleaning data ...")
     ##### CLEANING FEED GAS DATA #####
     #Load Data from Database
-    query_1 = open("fg_tangguh_data_query.sql", mode="rt").read()
+    query = os.path.join('gas_prod','fg_tangguh_data_query.sql')
+    query_1 = open(query, mode="rt").read()
     real_data = retrieve_data(query_1)
     real_data['date'] = pd.DatetimeIndex(real_data['date'], freq='D')
     ds = 'date'
     real_data = real_data.set_index(ds)
     real_data['unplanned_shutdown'] = real_data['unplanned_shutdown'].astype('int')
     s = validate_series(real_data)
-    real_data.head(60)
+    #real_data.head(60)
 
     # Calculate standar deviation
     fg_std = real_data['feed_gas'].std()
