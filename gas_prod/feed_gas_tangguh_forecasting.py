@@ -649,9 +649,9 @@ def main():
     ax.plot(linreg_forecast, label='linreg_pred')
     ax.plot(poly2_forecast, label='poly2_pred')
     ax.plot(poly3_forecast, label='poly3_pred')
-    title = 'Condensate BP Tangguh Forecasting with Exogenous Variable WPNB Gas, Planned Shuwdown, Day & Month)'
+    title = 'Feed Gas BP Tangguh Forecasting with Exogenous Variable WPNB Gas, Planned Shuwdown, Day & Month)'
     ax.set_title(title)
-    ax.set_ylabel("LNG Production")
+    ax.set_ylabel("Feed Gas")
     ax.set_xlabel("Datestamp")
     ax.legend(loc='best')
     #plt.savefig("Feed Gas BP Tangguh Forecasting" + ".jpg")
