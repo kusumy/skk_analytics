@@ -11,7 +11,7 @@ warnings.filterwarnings('ignore')
 
 import gas_prod.feed_gas_tangguh_with_planned_shutdown_exog_all_method as feed_gas_tangguh
 import gas_prod.condensate_tangguh_with_planned_shutdown_exog_all_method as condensate_tangguh
-import gas_prod_backup.feed_gas_tangguh_forecasting as feed_gas_tangguh_forecasting
+import gas_prod.feed_gas_tangguh_forecasting as feed_gas_tangguh_forecasting
 #import gas_prod.lng_tangguh as lng_tangguh
 
 # adding gas prod to the system path
