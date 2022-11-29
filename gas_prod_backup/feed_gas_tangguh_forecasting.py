@@ -654,7 +654,7 @@ def main():
     #plt.show()
     plt.close()
     
-# %%
+    # %%
     # Save forecast result to database
     logMessage("Updating forecast result to database ...")
     total_updated_rows = insert_forecast(conn, y_all_pred)
