@@ -16,6 +16,8 @@ import gas_prod.condensate_tangguh_with_planned_shutdown_exog_all_method as cond
 #Out sampel
 import gas_prod.feed_gas_tangguh_forecasting as feed_gas_tangguh_forecasting
 #import gas_prod.lng_tangguh as lng_tangguh
+#Out sampel
+import gas_prod.condensate_tangguh_forecasting as condensate_tangguh_forecasting
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -32,9 +34,10 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #endDate = str(args['enddate'])
 # do whatever the script does
 
-feed_gas_tangguh_forecasting.main()
 #feed_gas_tangguh.main()
 #condensate_tangguh.main()
+#feed_gas_tangguh_forecasting.main()
+condensate_tangguh_forecasting.main()
 exit()
 
 # def main():
