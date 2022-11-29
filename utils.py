@@ -14,8 +14,11 @@ def configLogging(filename="log.log"):
     ) 
 
 def logMessage(messages):
+    import sys
+    
     logging.info(messages)
-    print(messages, flush=True)
+    print(messages, file=sys.stdout)
+    #sys.stdout.write(messages)
     
 def ad_test(dataset):
     from statsmodels.tsa.stattools import adfuller

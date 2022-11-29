@@ -1,21 +1,21 @@
-2022-11-29 16:31:11,037 Connecting to database ...
-2022-11-29 16:31:11,125 Cleaning data ...
-2022-11-29 16:31:11,827 1. ADF : -5.278411942323324
-2022-11-29 16:31:11,827 2. P-Value : 6.068549771481649e-06
-2022-11-29 16:31:11,827 3. Num Of Lags 3: 
-2022-11-29 16:31:11,827 4. Num Of Observations Used For ADF Regression: 983
-2022-11-29 16:31:11,827 5. Critical Values : 
-2022-11-29 16:31:11,827 	 1%: -3.4370198458812156
-2022-11-29 16:31:11,827 	 5%: -2.864484708707697
-2022-11-29 16:31:11,827 	 10%: -2.568337912084273
-2022-11-29 16:31:11,906 Creating ARIMAX Model ...
-2022-11-29 16:31:24,361 ARIMAX Model Summary
-2022-11-29 16:31:24,363                                SARIMAX Results                                
+2022-11-29 18:13:29,109 Connecting to database ...
+2022-11-29 18:13:29,425 Cleaning data ...
+2022-11-29 18:13:30,119 1. ADF : -5.278411942323324
+2022-11-29 18:13:30,119 2. P-Value : 6.068549771481649e-06
+2022-11-29 18:13:30,119 3. Num Of Lags 3: 
+2022-11-29 18:13:30,119 4. Num Of Observations Used For ADF Regression: 983
+2022-11-29 18:13:30,119 5. Critical Values : 
+2022-11-29 18:13:30,119 	 1%: -3.4370198458812156
+2022-11-29 18:13:30,119 	 5%: -2.864484708707697
+2022-11-29 18:13:30,119 	 10%: -2.568337912084273
+2022-11-29 18:13:30,196 Creating ARIMAX Model ...
+2022-11-29 18:13:42,514 ARIMAX Model Summary
+2022-11-29 18:13:42,516                                SARIMAX Results                                
 ==============================================================================
 Dep. Variable:                      y   No. Observations:                  987
 Model:               SARIMAX(1, 0, 2)   Log Likelihood               -7279.653
 Date:                Tue, 29 Nov 2022   AIC                          14577.306
-Time:                        16:31:24   BIC                          14621.358
+Time:                        18:13:42   BIC                          14621.358
 Sample:                    01-01-2020   HQIC                         14594.060
                          - 09-13-2022                                         
 Covariance Type:                  opg                                         
@@ -40,14 +40,14 @@ Prob(H) (two-sided):                  0.19   Kurtosis:                        73
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2022-11-29 16:31:24,367 ARIMAX Model Prediction ..
-2022-11-29 16:31:39,683 input tempfile: /tmp/tmpjectgfy8/0_8sxu71.json
-2022-11-29 16:31:39,693 input tempfile: /tmp/tmpjectgfy8/s9otgcuw.json
-2022-11-29 16:31:39,694 idx 0
-2022-11-29 16:31:39,694 running CmdStan, num_threads: None
-2022-11-29 16:31:39,694 CmdStan args: ['/home/spcuser/miniconda3/envs/py38_ts/lib/python3.8/site-packages/prophet/stan_model/prophet_model.bin', 'random', 'seed=66398', 'data', 'file=/tmp/tmpjectgfy8/0_8sxu71.json', 'init=/tmp/tmpjectgfy8/s9otgcuw.json', 'output', 'file=/tmp/tmpjectgfy8/prophet_modelncwqwv3l/prophet_model-20221129163139.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
-2022-11-29 16:31:39,694 Chain [1] start processing
-2022-11-29 16:31:39,756 Chain [1] done processing
-2022-11-29 16:31:58,881 Creating all model prediction result data frame ...
-2022-11-29 16:31:58,884 Updating forecast result to database ...
-2022-11-29 16:32:05,949 Updated rows: 109
+2022-11-29 18:13:42,518 ARIMAX Model Prediction ..
+2022-11-29 18:13:57,801 input tempfile: /tmp/tmpnc2_9h9i/6p1figoo.json
+2022-11-29 18:13:57,811 input tempfile: /tmp/tmpnc2_9h9i/v_xew5zj.json
+2022-11-29 18:13:57,811 idx 0
+2022-11-29 18:13:57,812 running CmdStan, num_threads: None
+2022-11-29 18:13:57,812 CmdStan args: ['/home/spcuser/miniconda3/envs/py38_ts/lib/python3.8/site-packages/prophet/stan_model/prophet_model.bin', 'random', 'seed=22016', 'data', 'file=/tmp/tmpnc2_9h9i/6p1figoo.json', 'init=/tmp/tmpnc2_9h9i/v_xew5zj.json', 'output', 'file=/tmp/tmpnc2_9h9i/prophet_modelwv00pjta/prophet_model-20221129181357.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
+2022-11-29 18:13:57,812 Chain [1] start processing
+2022-11-29 18:13:57,872 Chain [1] done processing
+2022-11-29 18:14:16,736 Creating all model prediction result data frame ...
+2022-11-29 18:14:16,739 Updating forecast result to database ...
+2022-11-29 18:14:23,757 Updated rows: 109
