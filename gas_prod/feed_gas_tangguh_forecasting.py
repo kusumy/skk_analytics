@@ -303,7 +303,7 @@ def main():
     #fig.show()
     plt.close()
 
-    # Prepare data
+    # Prepare data to forecast
     data = new_s[['feed_gas', 'wpnb_gas', 'planned_shutdown']].copy()
     data = data.reset_index()
 
