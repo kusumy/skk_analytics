@@ -351,8 +351,9 @@ def main():
     time_predict = pd.period_range('2022-11-21', periods=109, freq='D')
 
     #Load Data from Database
-    query_2 = open("fg_tangguh_exog_query.sql", mode="rt").read()
-    data_exog = retrieve_data(query_2)
+    query_exog = os.path.join('gas_prod','fg_tangguh_exog_query.sql')
+    query_2 = open(query_exog, mode="rt").read()
+    data_exog = get_sql_data(query_2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')
     data_exog.sort_index(inplace=True)
     data_exog = data_exog.reset_index()
