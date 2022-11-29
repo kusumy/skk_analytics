@@ -15,7 +15,7 @@ def configLogging(filename="log.log"):
 
 def logMessage(messages):
     logging.info(messages)
-    print(messages)
+    print(messages, flush=True)
     
 def ad_test(dataset):
     from statsmodels.tsa.stattools import adfuller
