@@ -45,6 +45,14 @@ def retrieve_data(sql=None, db_connection='database.ini', section='postgresql'):
         data = pd.read_sql_query(sql, conn)
     return data
 
+def get_sql_data(sql, conn):
+    if conn != None:
+        data = pd.read_sql_query(sql, conn)
+    else:
+        data = None
+    
+    return data
+
 #query = open("query_fg_tangguh.sql", mode="rt").read()
 #df = retrieve_data(query)
 

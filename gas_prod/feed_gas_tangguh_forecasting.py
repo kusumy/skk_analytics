@@ -16,7 +16,7 @@ from tracemalloc import start
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 plt.style.use('fivethirtyeight')
-from connection import config, retrieve_data, create_db_connection
+from connection import config, retrieve_data, create_db_connection, get_sql_data
 from utils import configLogging, logMessage, ad_test
 
 from statsmodels.tsa.seasonal import seasonal_decompose
@@ -118,7 +118,8 @@ def main():
     #Load Data from Database
     query = os.path.join('gas_prod','fg_tangguh_data_query.sql')
     query_1 = open(query, mode="rt").read()
-    real_data = retrieve_data(query_1)
+    #real_data = retrieve_data(query_1)
+    real_data = get_sql_data(query_1, conn)
     real_data['date'] = pd.DatetimeIndex(real_data['date'], freq='D')
     ds = 'date'
     real_data = real_data.set_index(ds)
