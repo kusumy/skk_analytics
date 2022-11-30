@@ -106,7 +106,7 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 #%%
 def main():
     # Configure logging
-    configLogging("ir_monthly_cum_insampel.log")
+    configLogging("ir_monthly_cum_insample.log")
     
     # Connect to database
     # Exit program if not connected to database
