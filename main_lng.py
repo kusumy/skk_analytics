@@ -5,19 +5,21 @@ import logging
 import ast
 import arrow
 import sys
+import time
+from humanfriendly import format_timespan
 
 import warnings
 warnings.filterwarnings('ignore')
 
 #In sampel
-import gas_prod.feed_gas_tangguh_with_planned_shutdown_exog_all_method as feed_gas_tangguh
+import gas_prod.insample.feed_gas_tangguh_with_planned_shutdown_exog_all_method as feed_gas_tangguh
 #In sampel
-import gas_prod.condensate_tangguh_with_planned_shutdown_exog_all_method as condensate_tangguh
+import gas_prod.insample.condensate_tangguh_with_planned_shutdown_exog_all_method as condensate_tangguh
 #Out sampel
-import gas_prod.feed_gas_tangguh_forecasting as feed_gas_tangguh_forecasting
+import gas_prod.forecasting.feed_gas_tangguh_forecasting as feed_gas_tangguh_forecasting
 #import gas_prod.lng_tangguh as lng_tangguh
 #Out sampel
-import gas_prod.condensate_tangguh_forecasting as condensate_tangguh_forecasting
+import gas_prod.forecasting.condensate_tangguh_forecasting as condensate_tangguh_forecasting
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -34,10 +36,23 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #endDate = str(args['enddate'])
 # do whatever the script does
 
+t0 = time.process_time()
 #feed_gas_tangguh.main()
 #condensate_tangguh.main()
-#feed_gas_tangguh_forecasting.main()
+feed_gas_tangguh_forecasting.main()
+t1 = time.process_time()
+exec_time = format_timespan(t1-t0, max_units=3)
+print("Forecasting Feed gas Tangguh : " + exec_time)
+
+t2 = time.process_time()
 condensate_tangguh_forecasting.main()
+t3 = time.process_time()
+exec_time = format_timespan(t1-t0, max_units=3)
+print("Forecasting Condensate Tangguh : " + exec_time)
+
+total_exec_time = format_timespan(t3-t0, max_units=3)
+print("Total execution time : " + total_exec_time)
+
 exit()
 
 # def main():
