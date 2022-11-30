@@ -230,7 +230,7 @@ def main():
     ranfor_n_estimators = 100
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
-    ranfor_lags = 1
+    ranfor_lags = 0.8
     ranfor_strategy = "recursive"
 
     # create regressor object
@@ -253,7 +253,7 @@ def main():
 
     #Set parameters
     linreg_normalize = True
-    linreg_lags = 0.6
+    linreg_lags = 0.8
     linreg_strategy = "recursive"
 
     # Create regressor object
@@ -277,7 +277,7 @@ def main():
     #Set parameters
     poly2_regularization = None
     poly2_interactions = False
-    poly2_lags = 1
+    poly2_lags = 0.7
     poly2_strategy = "recursive"
 
     # Create regressor object
@@ -299,7 +299,7 @@ def main():
     #Set parameters
     poly3_regularization = None
     poly3_interactions = False
-    poly3_lags = 1
+    poly3_lags = 0.6
     poly3_strategy = "recursive"
 
     # Create regressor object
