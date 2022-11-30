@@ -13,12 +13,12 @@ warnings.filterwarnings('ignore')
 
 import hse.incident_rate_monthly_cum_forecasting as ir_monthly_cum
 import hse.incident_rate_yearly_forecasting as ir_yearly
-import hse.insampel.incident_rate_monthly_cumulative_insampel as ir_monthly_cum_insampel
+import hse.insample.incident_rate_monthly_cumulative_insampel as ir_monthly_cum_insample
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
 sys.path.insert(0, './hse')
-sys.path.insert(0, './hse/insampel')
+sys.path.insert(0, './hse/insample')
 
 # Add the arguments to the parser
 ap = argparse.ArgumentParser()
@@ -48,7 +48,7 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #total_exec_time = format_timespan(t3-t0, max_units=3)
 #print("Total execution time : " + total_exec_time)
 
-ir_monthly_cum_insampel.main()
+ir_monthly_cum_insample.main()
 
 exit()
 
