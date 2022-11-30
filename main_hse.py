@@ -13,10 +13,12 @@ warnings.filterwarnings('ignore')
 
 import hse.incident_rate_monthly_cum_forecasting as ir_monthly_cum
 import hse.incident_rate_yearly_forecasting as ir_yearly
+import hse.insampel.incident_rate_monthly_cumulative_insampel as ir_monthly_cum_insampel
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
 sys.path.insert(0, './hse')
+sys.path.insert(0, './hse/insampel')
 
 # Add the arguments to the parser
 ap = argparse.ArgumentParser()
@@ -29,22 +31,24 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #endDate = str(args['enddate'])
 # do whatever the script does
 
-t0 = time.process_time()
-ir_monthly_cum.main()
-t1 = time.process_time()
-exec_time = format_timespan(t1-t0, max_units=3)
-print("Forecasting incident rate monthly cumulative : " + exec_time)
+#t0 = time.process_time()
+#ir_monthly_cum.main()
+#t1 = time.process_time()
+#exec_time = format_timespan(t1-t0, max_units=3)
+#print("Forecasting incident rate monthly cumulative : " + exec_time)
 
-print('\n')
+#print('\n')
 
-t2 = time.process_time()
-ir_yearly.main()
-t3 = time.process_time()
-exec_time = format_timespan(t3-t2, max_units=3)
-print("Forecasting incident rate yearly : " + exec_time)
+#t2 = time.process_time()
+#ir_yearly.main()
+#t3 = time.process_time()
+#exec_time = format_timespan(t3-t2, max_units=3)
+#print("Forecasting incident rate yearly : " + exec_time)
 
-total_exec_time = format_timespan(t3-t0, max_units=3)
-print("Total execution time : " + total_exec_time)
+#total_exec_time = format_timespan(t3-t0, max_units=3)
+#print("Total execution time : " + total_exec_time)
+
+ir_monthly_cum_insampel.main()
 
 exit()
 

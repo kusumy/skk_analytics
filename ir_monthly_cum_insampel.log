@@ -1,0 +1,59 @@
+2022-11-30 14:36:48,715 Connecting to database ...
+2022-11-30 14:36:49,119 1. ADF : -1.4757465961080187
+2022-11-30 14:36:49,119 2. P-Value : 0.5454732248865221
+2022-11-30 14:36:49,119 3. Num Of Lags 0: 
+2022-11-30 14:36:49,119 4. Num Of Observations Used For ADF Regression: 116
+2022-11-30 14:36:49,119 5. Critical Values : 
+2022-11-30 14:36:49,119 	 1%: -3.4880216384691867
+2022-11-30 14:36:49,119 	 5%: -2.8867966864160075
+2022-11-30 14:36:49,119 	 10%: -2.5802408234244947
+2022-11-30 14:36:49,768 Creating ARIMAX Model ...
+2022-11-30 14:36:49,768 ARIMAX Model Summary
+2022-11-30 14:36:49,769                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                  108
+Model:               SARIMAX(0, 1, 0)   Log Likelihood                 135.268
+Date:                Wed, 30 Nov 2022   AIC                           -254.536
+Time:                        14:36:49   BIC                           -233.153
+Sample:                    01-31-2013   HQIC                          -245.868
+                         - 12-31-2021                                         
+Covariance Type:                  opg                                         
+=======================================================================================
+                          coef    std err          z      P>|z|      [0.025      0.975]
+---------------------------------------------------------------------------------------
+intercept              -0.0070      0.011     -0.628      0.530      -0.029       0.015
+bor_eksplorasi_cum      0.0003      0.001      0.415      0.678      -0.001       0.002
+bor_eksploitasi_cum     0.0003      0.000      2.333      0.020    4.36e-05       0.001
+workover_cum           -0.0001   9.74e-05     -1.280      0.200      -0.000    6.62e-05
+wellservice_cum      4.714e-06    2.2e-06      2.139      0.032    3.95e-07    9.03e-06
+survey_seismic_cum     -0.0032      0.003     -1.268      0.205      -0.008       0.002
+bulan                  -0.0063      0.011     -0.575      0.565      -0.028       0.015
+sigma2                  0.0047      0.000     15.141      0.000       0.004       0.005
+===================================================================================
+Ljung-Box (L1) (Q):                   0.13   Jarque-Bera (JB):               878.75
+Prob(Q):                              0.71   Prob(JB):                         0.00
+Heteroskedasticity (H):               3.44   Skew:                             1.06
+Prob(H) (two-sided):                  0.00   Kurtosis:                        16.88
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-11-30 14:36:49,773 ARIMAX Model Prediction ..
+2022-11-30 14:36:49,842 ARIMAX Model MAPE: 0.2755
+2022-11-30 14:36:49,851 Creating XGBoost Model ....
+2022-11-30 14:36:49,907 XGBoost Model Prediction ...
+2022-11-30 14:36:49,921 XGBOOST Model MAPE: 0.1539
+2022-11-30 14:36:49,921 Creating Random Forest Model ...
+2022-11-30 14:36:50,178 Random Forest Model Prediction ...
+2022-11-30 14:36:50,227 Random Forest Model MAPE: 0.0996
+2022-11-30 14:36:50,227 Creating Linear Regression Model ...
+2022-11-30 14:36:50,233 Linear Regression Model Prediction ...
+2022-11-30 14:36:50,239 Linear Regression Model MAPE: 0.1614
+2022-11-30 14:36:50,281 Creating Polynomial Regression Orde 2 Model ...
+2022-11-30 14:36:50,300 Polynomial Regression Orde 2 Model Prediction ...
+2022-11-30 14:36:50,364 Polynomial Regression Orde 2 Model MAPE: 0.1250
+2022-11-30 14:36:50,364 Creating Polynomial Regression Orde 3 Model ...
+2022-11-30 14:36:50,385 Polynomial Regression Orde 3 Model Prediction ...
+2022-11-30 14:36:50,448 Polynomial Regression Orde 3 Model MAPE: 0.1243
+2022-11-30 14:36:50,451 Updating forecast result to database ...
+2022-11-30 14:36:50,668 Updated rows: 0
