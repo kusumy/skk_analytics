@@ -10,7 +10,7 @@ from pandas.io.sql import execute
 
 from configparser import ConfigParser
 
-def config(filename='database.ini', section='postgresql'):
+def config(filename='database.ini', section='postgresql_ml_hse'):
     """
         database configuration parser from file that contains database connection
         Input:
@@ -37,7 +37,7 @@ def config(filename='database.ini', section='postgresql'):
 
     return db
 
-def retrieve_data(sql=None, db_connection='database.ini', section='postgresql'):
+def retrieve_data(sql=None, db_connection='database.ini', section='postgresql_ml_hse'):
     params = config(filename=db_connection, section=section)
     with psycopg2.connect(**params) as conn:
         if sql == None:
@@ -56,7 +56,7 @@ def get_sql_data(sql, conn):
 #query = open("query_fg_tangguh.sql", mode="rt").read()
 #df = retrieve_data(query)
 
-def create_db_connection(filename='database.ini', section='postgresql'):
+def create_db_connection(filename='database.ini', section='postgresql_ml_hse'):
     # Read database configuration INI
     config = ConfigParser()
     config.read(filename)

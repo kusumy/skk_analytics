@@ -1,1 +1,51 @@
-2022-11-30 06:57:14,717 Connecting to database ...
+2022-11-30 08:15:49,476 Connecting to database ...
+2022-11-30 08:15:49,635 1. ADF : -0.33429507259296826
+2022-11-30 08:15:49,635 2. P-Value : 0.9205047225576606
+2022-11-30 08:15:49,635 3. Num Of Lags 2: 
+2022-11-30 08:15:49,635 4. Num Of Observations Used For ADF Regression: 7
+2022-11-30 08:15:49,635 5. Critical Values : 
+2022-11-30 08:15:49,635 	 1%: -4.9386902332361515
+2022-11-30 08:15:49,635 	 5%: -3.477582857142857
+2022-11-30 08:15:49,636 	 10%: -2.8438679591836733
+2022-11-30 08:15:50,345 Creating ARIMAX Model ...
+2022-11-30 08:15:50,410 ARIMAX Model Summary
+2022-11-30 08:15:50,412                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                   10
+Model:               SARIMAX(0, 1, 2)   Log Likelihood                   9.660
+Date:                Wed, 30 Nov 2022   AIC                            -11.320
+Time:                        08:15:50   BIC                            -10.531
+Sample:                    12-31-2013   HQIC                           -13.023
+                         - 12-31-2022                                         
+Covariance Type:                  opg                                         
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+intercept     -0.0781      0.007    -10.466      0.000      -0.093      -0.063
+ma.L1         -1.7766      2.895     -0.614      0.539      -7.450       3.897
+ma.L2          0.8902      2.545      0.350      0.727      -4.098       5.878
+sigma2         0.0043      0.014      0.304      0.761      -0.024       0.032
+===================================================================================
+Ljung-Box (L1) (Q):                   1.70   Jarque-Bera (JB):                 0.86
+Prob(Q):                              0.19   Prob(JB):                         0.65
+Heteroskedasticity (H):               1.72   Skew:                             0.50
+Prob(H) (two-sided):                  0.67   Kurtosis:                         1.86
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-11-30 08:15:50,415 ARIMAX Model Prediction ..
+2022-11-30 08:15:50,694 Creating XGBoost Model ....
+2022-11-30 08:15:50,749 XGBoost Model Prediction ...
+2022-11-30 08:15:50,756 Creating Random Forest Model ...
+2022-11-30 08:15:50,833 Random Forest Model Prediction ...
+2022-11-30 08:15:50,849 Creating Linear Regression Model ...
+2022-11-30 08:15:50,853 Linear Regression Model Prediction ...
+2022-11-30 08:15:50,904 Creating Polynomial Regression Orde 2 Model ...
+2022-11-30 08:15:50,914 Polynomial Regression Orde 2 Model Prediction ...
+2022-11-30 08:15:50,921 Creating Polynomial Regression Orde 3 Model ...
+2022-11-30 08:15:50,930 Polynomial Regression Orde 3 Model Prediction ...
+2022-11-30 08:15:50,935 Creating all model prediction result data frame ...
+2022-11-30 08:15:50,958 Updating forecast result to database ...
+2022-11-30 08:15:50,960 Updated rows: 2
+2022-11-30 08:15:50,960 Done

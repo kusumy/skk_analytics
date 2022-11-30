@@ -106,7 +106,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_hse_skk')
+    conn = create_db_connection(section='postgresql_ml_hse')
     if conn == None:
         exit()
        
@@ -343,53 +343,60 @@ def main():
     ax.legend(loc='best')
     plt.close()
     
+    #%%
     # Save forecast result to database
     logMessage("Updating forecast result to database ...")
     total_updated_rows = insert_forecast(conn, y_all_pred)
     logMessage("Updated rows: {}".format(total_updated_rows))
-    
-    print("Done")
 
-#%%
-def insert_forecast(conn, y_all_pred):
+    logMessage("Done")
+
+# %%
+def insert_forecast(conn, y_pred):
     total_updated_rows = 0
-    for index, row in y_all_pred.iterrows():
-        year_num = str(index) #row['year_num']
+    for index, row in y_pred.iterrows():
+        year_num = index.year #row['date']
         forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f = row[0], row[1], row[2], row[3], row[4], row[5]
         
-        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
+        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num)
         updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, year_num)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
 
-def update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, year_num):
-    """ update table name based on the table id """
-    sql = """ UPDATE hse_analytics_trir_yearly
-                SET forecast_a = %s,
-                SET forecast_b = %s,
-                SET forecast_c = %s,
-                SET forecast_d = %s,
-                SET forecast_e = %s,
-                SET forecast_f = %s,
+def update_value(conn, forecast_a, forecast_b, forecast_c, 
+                        forecast_d, forecast_e, forecast_f, year_num):
+    
+    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    updated_by = 'python'
+    
+    """ insert forecasting result after last row in table """
+    sql =  """ UPDATE hse_analytics_trir_yearly
+                SET forecast_a = %s, 
+                    forecast_b = %s, 
+                    forecast_c = %s, 
+                    forecast_d = %s, 
+                    forecast_e = %s, 
+                    forecast_f = %s,
+                    updated_at = %s, 
+                    updated_by = %s
                 WHERE year_num = %s"""
-    conn = None
+    #conn = None
     updated_rows = 0
     try:
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, year_num))
+        cur.execute(sql, (forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, 
+                          date_now, updated_by, year_num))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
         conn.commit()
-        # Close communication with the PostgreSQL database
+        # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-    finally:
-        if conn is not None:
-            conn.close()
+        #logging.error(error)
 
     return updated_rows
