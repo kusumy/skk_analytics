@@ -410,7 +410,7 @@ def main():
     total_updated_rows = insert_forecast(conn, y_all_pred)
     logMessage("Updated rows: {}".format(total_updated_rows))
     
-    print("Done")
+    logMessage("Done")
     
 # %%
 def insert_forecast(conn, y_pred):
