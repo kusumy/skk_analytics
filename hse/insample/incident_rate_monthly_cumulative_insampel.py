@@ -117,7 +117,7 @@ def main():
         
     #Load Data from Database
     #query_1 = open("query_month_cum.sql", mode="rt").read()
-    query_1 = open(os.path.join('hse/insampel', 'query_month_cum.sql'), mode="rt").read()
+    query_1 = open(os.path.join('hse/insample', 'query_month_cum.sql'), mode="rt").read()
     data = get_sql_data(query_1, conn)
     #data = retrieve_data(query_1)
     data['year_num'] = data['year_num'].astype(int)
