@@ -20,7 +20,7 @@ from tracemalloc import start
 from pmdarima.arima import auto_arima
 from pmdarima.arima.auto import auto_arima
 from pmdarima import model_selection
-from connection import config, retrieve_data, create_db_connection
+from connection import config, retrieve_data, create_db_connection, get_sql_data
 from utils import configLogging, logMessage, ad_test
 
 from statsmodels.tsa.seasonal import seasonal_decompose
@@ -112,8 +112,8 @@ def main():
        
     #Load Data from Database
     query_1 = open(os.path.join('hse', 'query_yearly.sql'), mode="rt").read()
-    #query_1 = open("query_yearly.sql", mode="rt").read()
-    data = retrieve_data(query_1)
+    data = get_sql_data(query_1, conn)
+    #data = retrieve_data(query_1)
     data['year_num'] = data['year_num'].astype(int)
     data['year_num'] = pd.to_datetime(data['year_num'], format='%Y')
     data = data.rename(columns=str.lower)
@@ -152,9 +152,10 @@ def main():
     train_exog.sort_index(inplace=True)
 
     #Load Data from Database (create future exogenous)
-    query_2 = open(os.path.join('hse', 'query_yearly_future.sql'), mode="rt").read()
+    query_exog = open(os.path.join('hse', 'query_yearly_future.sql'), mode="rt").read()
     #query_2 = open("query_yearly_future.sql", mode="rt").read()
-    future_exog = retrieve_data(query_2)
+    future_exog = get_sql_data(query_exog, conn)
+    #future_exog = retrieve_data(query_2)
     future_exog['year_num'] = future_exog['year_num'].astype(int)
 
     # Prepare data (future exogenous)
@@ -368,7 +369,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
                         forecast_d, forecast_e, forecast_f, year_num):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    updated_by = 'python'
+    updated_by = 'PYTHON'
     
     """ insert forecasting result after last row in table """
     sql =  """ UPDATE hse_analytics_trir_yearly

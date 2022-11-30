@@ -21,7 +21,7 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 
-from connection import config, retrieve_data, create_db_connection
+from connection import config, retrieve_data, create_db_connection, get_sql_data
 from utils import configLogging, logMessage, ad_test
 
 plt.style.use('fivethirtyeight')
@@ -111,8 +111,8 @@ def main():
         
     # Load Data from Database
     query_1 = open(os.path.join('hse', 'query_month_cum.sql'), mode="rt").read()
-
-    data = retrieve_data(query_1, section='postgresql_ml_hse')
+    data = get_sql_data(query_1, conn)
+    #data = retrieve_data(query_1, section='postgresql_ml_hse')
     data['year_num'] = data['year_num'].astype(int)
     data['month_num'] = data['month_num'].astype(int)
     data['date'] = data['year_num'].astype(str) + '-' + data['month_num'].astype(str)
@@ -178,8 +178,9 @@ def main():
 
     #%%
     #import exogenous for predict
-    query_2 = open(os.path.join('hse', 'query_month_cum3.sql'), mode="rt").read()
-    data2 = retrieve_data(query_2, section='postgresql_ml_hse')
+    query_exog = open(os.path.join('hse', 'query_month_cum3.sql'), mode="rt").read()
+    data2 = get_sql_data(query_exog, conn)
+    #data2 = retrieve_data(query_2, section='postgresql_ml_hse')
     data2['year_num'] = data2['year_num'].astype(int)
     data2['month_num'] = data2['month_num'].astype(int)
     data2['date'] = data2['year_num'].astype(str) + '-' + data2['month_num'].astype(str)
@@ -253,7 +254,7 @@ def main():
     ranfor_n_estimators = 100
     random_state = 0
     ranfor_criterion = "squared_error"
-    ranfor_lags = 18
+    ranfor_lags = 19
     ranfor_strategy = "recursive"
 
     # create regressor object
@@ -405,7 +406,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
                         forecast_d, forecast_e, forecast_f, year_num, month_num):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    updated_by = 'python'
+    updated_by = 'PYTHON'
     
     """ insert forecasting result after last row in table """
     sql =  """ UPDATE hse_analytics_trir_monthly_cum

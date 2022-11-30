@@ -5,6 +5,8 @@ import logging
 import ast
 import arrow
 import sys
+import time
+from humanfriendly import format_timespan
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -27,8 +29,23 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #endDate = str(args['enddate'])
 # do whatever the script does
 
-#ir_monthly_cum.main()
+t0 = time.process_time()
+ir_monthly_cum.main()
+t1 = time.process_time()
+exec_time = format_timespan(t1-t0, max_units=3)
+print("Forecasting incident rate monthly cumulative : " + exec_time)
+
+print('\n')
+
+t2 = time.process_time()
 ir_yearly.main()
+t3 = time.process_time()
+exec_time = format_timespan(t3-t2, max_units=3)
+print("Forecasting incident rate yearly : " + exec_time)
+
+total_exec_time = format_timespan(t3-t0, max_units=3)
+print("Total execution time : " + total_exec_time)
+
 exit()
 
 # def main():
