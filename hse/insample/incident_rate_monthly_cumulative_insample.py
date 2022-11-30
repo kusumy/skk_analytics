@@ -111,7 +111,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(section='postgresql_ml_hse')
     if conn == None:
         exit()
         
@@ -150,7 +150,8 @@ def main():
     #plot_acf_pacf(df.to_timestamp())
 
     #%%
-    from chart_studio.plotly import plot_mpl
+    #from chart_studio.plotly import plot_mpl
+    
     from statsmodels.tsa.seasonal import seasonal_decompose
     result = seasonal_decompose(df.trir_cum.values, model="additive", period=24)
     fig = result.plot()
@@ -493,6 +494,6 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logging.error(error)
+        logMessage(error)
 
     return updated_rows

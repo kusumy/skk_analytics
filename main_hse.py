@@ -13,7 +13,7 @@ warnings.filterwarnings('ignore')
 
 import hse.incident_rate_monthly_cum_forecasting as ir_monthly_cum
 import hse.incident_rate_yearly_forecasting as ir_yearly
-import hse.insample.incident_rate_monthly_cumulative_insampel as ir_monthly_cum_insample
+import hse.insample.incident_rate_monthly_cumulative_insample as ir_monthly_cum_insample
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
