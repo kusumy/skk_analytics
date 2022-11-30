@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import hse.incident_rate_monthly_cum_forecasting as ir_monthly_cum
-import hse.incident_rate_yearly_forecasting as ir_yearly
+import hse.incident_rate_yearly_forecasting as ir_yearly_forecasting
 import hse.insample.incident_rate_monthly_cumulative_insampel as ir_monthly_cum_insample
 
 # adding gas prod to the system path
@@ -48,7 +48,8 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #total_exec_time = format_timespan(t3-t0, max_units=3)
 #print("Total execution time : " + total_exec_time)
 
-ir_monthly_cum_insample.main()
+#ir_monthly_cum_insample.main()
+ir_yearly_forecasting.main()
 
 exit()
 
