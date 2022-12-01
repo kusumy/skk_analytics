@@ -401,7 +401,8 @@ def main():
                     'mape_forecast_c' : [mape_ranfor],
                     'mape_forecast_d' : [mape_linreg],
                     'mape_forecast_e' : [mape_poly2],
-                    'mape_forecast_f' : [mape_poly3]}
+                    'mape_forecast_f' : [mape_poly3],
+                    'type' : 'monthly_cum'}
     all_mape_pred = pd.DataFrame(all_mape_pred)
     #all_mape_pred
     
@@ -413,15 +414,25 @@ def main():
     logMessage("Done")
     
 # %%
-def insert_forecast(conn, y_pred):
+def insert_forecast(conn, y_all_pred):
     total_updated_rows = 0
-    for index, row in y_pred.iterrows():
+    for index, row in y_all_pred.iterrows():
         year_num = index.year #row['date']
         month_num = index.month
         forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f = row[0], row[1], row[2], row[3], row[4], row[5]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
         updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, year_num, month_num)
+        total_updated_rows = total_updated_rows + updated_rows 
+
+def insert_mape(conn, all_mape_pred):
+    total_updated_rows = 0
+    for row in all_mape_pred.iterrows():
+        type = row['type']
+        mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, type = row[0], row[1], row[2], row[3], row[4], row[5]
+        
+        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
+        updated_rows = update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, type)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
@@ -465,7 +476,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
     return updated_rows
 
 def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, 
-                        mape_forecast_d, mape_forecast_e, mape_forecast_f):
+                        mape_forecast_d, mape_forecast_e, mape_forecast_f, type):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     created_by = 'PYTHON'
@@ -477,16 +488,18 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
                     mape_forecast_c = %s, 
                     mape_forecast_d = %s, 
                     mape_forecast_e = %s, 
-                    mape_forecast_f = %s, 
+                    mape_forecast_f = %s,
                     updated_at = %s, 
-                    updated_by = %s"""
+                    updated_by = %s
+                WHERE type = %s"""
     #conn = None
     updated_rows = 0
     try:
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, date_now, created_by))
+        cur.execute(sql, (mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f,
+                          date_now, created_by, type))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
@@ -497,3 +510,4 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         logMessage(error)
 
     return updated_rows
+# %%
