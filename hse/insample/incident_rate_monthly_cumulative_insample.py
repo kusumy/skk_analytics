@@ -401,7 +401,7 @@ def main():
                     'mape_forecast_d' : [mape_linreg],
                     'mape_forecast_e' : [mape_poly2],
                     'mape_forecast_f' : [mape_poly3],
-                    'type' : 'monthly_cum'}
+                    'type' : 1}
     all_mape_pred = pd.DataFrame(all_mape_pred)
     #all_mape_pred
     
