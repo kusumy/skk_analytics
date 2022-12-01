@@ -11,15 +11,10 @@ from humanfriendly import format_timespan
 import warnings
 warnings.filterwarnings('ignore')
 
-#In sampel
-import gas_prod.insample.feed_gas_tangguh_with_planned_shutdown_exog_all_method as feed_gas_tangguh
-#In sampel
-import gas_prod.insample.condensate_tangguh_with_planned_shutdown_exog_all_method as condensate_tangguh
-#Out sampel
-import gas_prod.forecasting.feed_gas_tangguh_forecasting as feed_gas_tangguh_forecasting
-#import gas_prod.lng_tangguh as lng_tangguh
-#Out sampel
-import gas_prod.forecasting.condensate_tangguh_forecasting as condensate_tangguh_forecasting
+
+#import gas_prod.forecasting.feed_gas_tangguh_forecasting as feed_gas_tangguh_forecasting
+import gas_prod.forecasting.lng_production_tangguh_forecasting as lng_tangguh_forecasting
+#import gas_prod.forecasting.condensate_tangguh_forecasting as condensate_tangguh_forecasting
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -36,22 +31,32 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #endDate = str(args['enddate'])
 # do whatever the script does
 
-t0 = time.process_time()
-#feed_gas_tangguh.main()
-#condensate_tangguh.main()
-feed_gas_tangguh_forecasting.main()
-t1 = time.process_time()
-exec_time = format_timespan(t1-t0, max_units=3)
-print("Forecasting Feed gas Tangguh : " + exec_time)
+#t0 = time.process_time()
+#feed_gas_tangguh_forecasting.main()
+#t1 = time.process_time()
+#exec_time = format_timespan(t1-t0, max_units=3)
+#print("Forecasting Feed Gas Tangguh : " + exec_time)
+
+#print('\n')
 
 t2 = time.process_time()
-condensate_tangguh_forecasting.main()
+lng_tangguh_forecasting.main()
 t3 = time.process_time()
-exec_time = format_timespan(t1-t0, max_units=3)
-print("Forecasting Condensate Tangguh : " + exec_time)
+exec_time = format_timespan(t3-t2, max_units=3)
+print("Forecasting LNG Production Tangguh : " + exec_time)
 
-total_exec_time = format_timespan(t3-t0, max_units=3)
-print("Total execution time : " + total_exec_time)
+#print('\n')
+
+#t4 = time.process_time()
+#condensate_tangguh_forecasting.main()
+#t5 = time.process_time()
+#exec_time = format_timespan(t5-t4, max_units=3)
+#print("Forecasting Condensate Tangguh : " + exec_time)
+
+#print('\n')
+
+#total_exec_time = format_timespan(t3-t0, max_units=3)
+#print("Total execution time : " + total_exec_time)
 
 exit()
 

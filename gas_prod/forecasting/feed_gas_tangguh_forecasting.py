@@ -118,7 +118,7 @@ def main():
     logMessage("Cleaning data ...")
     ##### CLEANING FEED GAS DATA #####
     #Load Data from Database
-    query = os.path.join('gas_prod','fg_tangguh_data_query.sql')
+    query = os.path.join('gas_prod/sql','fg_tangguh_data_query.sql')
     query_1 = open(query, mode="rt").read()
     #real_data = retrieve_data(query_1)
     real_data = get_sql_data(query_1, conn)
