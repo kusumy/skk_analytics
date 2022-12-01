@@ -213,10 +213,10 @@ def main():
     xgb_forecaster = make_reduction(xgb_regressor, window_length=6, strategy="recursive")
     
     logMessage("Creating XGBoost Model ....")
-    xgb_forecaster.fit(train_df) #, X=train_exog
+    xgb_forecaster.fit(train_df, X=train_exog) #, X=train_exog
     
     logMessage("XGBoost Model Prediction ...")
-    xgb_forecast = xgb_forecaster.predict(fh) #, X=future_exog
+    xgb_forecast = xgb_forecaster.predict(fh, X=future_exog) #, X=future_exog
     y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:,.2f}'.format)
     y_pred_xgb['year_num'] = [i.year for i in xgb_forecast.index]
     #Rename colum 0
@@ -238,10 +238,10 @@ def main():
     ranfor_forecaster = make_reduction(ranfor_regressor, window_length= ranfor_lags, strategy=ranfor_strategy)
     
     logMessage("Creating Random Forest Model ...")
-    ranfor_forecaster.fit(train_df) #, X=train_exog
+    ranfor_forecaster.fit(train_df, X=train_exog) #, X=train_exog
     
     logMessage("Random Forest Model Prediction ...")
-    ranfor_forecast = ranfor_forecaster.predict(fh) #, X=future_exog
+    ranfor_forecast = ranfor_forecaster.predict(fh, X=future_exog) #, X=future_exog
     y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:,.2f}'.format)
     y_pred_ranfor['year_num'] = [i.year for i in ranfor_forecast.index]
     #Rename colum 0
@@ -261,10 +261,10 @@ def main():
     linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
     
     logMessage("Creating Linear Regression Model ...")
-    linreg_forecaster.fit(train_df) #, X=train_exog
+    linreg_forecaster.fit(train_df, X=train_exog) #, X=train_exog
     
     logMessage("Linear Regression Model Prediction ...")
-    linreg_forecast = linreg_forecaster.predict(fh) #, X=future_exog
+    linreg_forecast = linreg_forecaster.predict(fh, X=future_exog) #, X=future_exog
     y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:,.2f}'.format)
     y_pred_linreg['year_num'] = [i.year for i in linreg_forecast.index]
     #Rename colum 0
@@ -285,10 +285,10 @@ def main():
     poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy)
     
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_forecaster.fit(train_df) #, X=train_exog
+    poly2_forecaster.fit(train_df, X=train_exog) #, X=train_exog
     
     logMessage("Polynomial Regression Orde 2 Model Prediction ...") 
-    poly2_forecast = poly2_forecaster.predict(fh) #, X=future_exog
+    poly2_forecast = poly2_forecaster.predict(fh, X=future_exog) #, X=future_exog
     y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:,.2f}'.format)
     y_pred_poly2['year_num'] = [i.year for i in poly2_forecast.index]
     #Rename colum 0
@@ -307,10 +307,10 @@ def main():
     poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy)
     
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_forecaster.fit(train_df) #, X=train_exog
+    poly3_forecaster.fit(train_df, X=train_exog) #, X=train_exog
     
     logMessage("Polynomial Regression Orde 3 Model Prediction ...")
-    poly3_forecast = poly3_forecaster.predict(fh) #, X=future_exog
+    poly3_forecast = poly3_forecaster.predict(fh, X=future_exog) #, X=future_exog
     y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:,.2f}'.format)
     y_pred_poly3['year_num'] = [i.year for i in poly3_forecast.index]
     #Rename colum 0
@@ -356,8 +356,8 @@ def main():
 def insert_forecast(conn, y_pred):
     total_updated_rows = 0
     for index, row in y_pred.iterrows():
-        #year_num = index.year #row['date']
-        year_num = 2023  # dummy
+        year_num = index.year #row['date']
+        #year_num = 2023  # dummy
         forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f = row[0], row[1], row[2], row[3], row[4], row[5]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num)
@@ -382,7 +382,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
                     forecast_f = %s,
                     updated_at = %s, 
                     updated_by = %s
-            """
+                WHERE year_num = %s"""
     #year_num
     #conn = None
     updated_rows = 0
@@ -391,7 +391,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
         cur = conn.cursor()
         # execute the UPDATE  statement
         cur.execute(sql, (forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, 
-                          date_now, updated_by))
+                          date_now, updated_by, year_num))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database

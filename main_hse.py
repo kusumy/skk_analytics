@@ -11,10 +11,10 @@ from humanfriendly import format_timespan
 import warnings
 warnings.filterwarnings('ignore')
 
-import hse.incident_rate_monthly_cum_forecasting as ir_monthly_cum
-import hse.incident_rate_yearly_forecasting as ir_yearly_forecasting
+import hse.forecasting.incident_rate_monthly_cum_forecasting as ir_monthly_cum
+import hse.forecasting.incident_rate_yearly_forecasting as ir_yearly_forecasting
 import hse.insample.incident_rate_monthly_cumulative_insample as ir_monthly_cum_insample
-import hse.incident_rate_yearly_forecasting as ir_yearly
+import hse.forecasting.incident_rate_yearly_forecasting as ir_yearly
 import hse.insample.incident_rate_monthly_cumulative_insample as ir_monthly_cum_insample
 
 # adding gas prod to the system path
@@ -47,13 +47,13 @@ t3 = time.process_time()
 exec_time = format_timespan(t3-t2, max_units=3)
 print("Forecasting incident rate yearly : " + exec_time)
 
-#print('\n')
+print('\n')
 
 #ir_monthly_cum_insample.main()
 #ir_yearly_forecasting.main()
 
-#total_exec_time = format_timespan(t3-t0, max_units=3)
-#print("Total execution time : " + total_exec_time)
+total_exec_time = format_timespan(t3-t0, max_units=3)
+print("Total execution time : " + total_exec_time)
 
 exit()
 
