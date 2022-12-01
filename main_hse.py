@@ -52,8 +52,8 @@ print("Forecasting incident rate yearly : " + exec_time)
 #ir_monthly_cum_insample.main()
 #ir_yearly_forecasting.main()
 
-total_exec_time = format_timespan(t3-t0, max_units=3)
-print("Total execution time : " + total_exec_time)
+#total_exec_time = format_timespan(t3-t0, max_units=3)
+#print("Total execution time : " + total_exec_time)
 
 exit()
 
