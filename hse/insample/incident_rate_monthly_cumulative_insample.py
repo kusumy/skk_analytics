@@ -355,7 +355,6 @@ def main():
     mape_poly2_str = str('MAPE: %.4f' % mape_poly2)
     logMessage("Polynomial Regression Orde 2 Model "+mape_poly2_str)
 
-
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
     from polyfit import PolynomRegressor, Constraints
 

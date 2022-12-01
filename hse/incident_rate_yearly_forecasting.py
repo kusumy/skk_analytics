@@ -325,7 +325,7 @@ def main():
                             y_pred_linreg[['forecast_d']],
                             y_pred_poly2[['forecast_e']],
                             y_pred_poly3[['forecast_f']]], axis=1)
-    y_all_pred['year_num'] = future_exog.index.values
+    #y_all_pred['year_num'] = future_exog.index.values
 
     #%%
     ##### PLOT PREDICTION #####
@@ -357,7 +357,7 @@ def insert_forecast(conn, y_pred):
     total_updated_rows = 0
     for index, row in y_pred.iterrows():
         #year_num = index.year #row['date']
-        year_num = index.year  # dummy
+        year_num = 2023  # dummy
         forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f = row[0], row[1], row[2], row[3], row[4], row[5]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num)
@@ -382,7 +382,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
                     forecast_f = %s,
                     updated_at = %s, 
                     updated_by = %s
-                WHERE year_num = %s"""
+            """
     #year_num
     #conn = None
     updated_rows = 0
@@ -391,7 +391,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
         cur = conn.cursor()
         # execute the UPDATE  statement
         cur.execute(sql, (forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, 
-                          date_now, updated_by, year_num))
+                          date_now, updated_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
