@@ -133,7 +133,7 @@ def main():
     #decomposition_plot(df.to_timestamp())
     #plot_acf_pacf(df.to_timestamp())
 
-    from chart_studio.plotly import plot_mpl
+    #from chart_studio.plotly import plot_mpl
     from statsmodels.tsa.seasonal import seasonal_decompose
     result = seasonal_decompose(df.trir.values, model="multiplicative", period=5)
     #fig = result.plot()
