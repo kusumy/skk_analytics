@@ -129,12 +129,12 @@ def main():
     df.index = pd.PeriodIndex(df.index, freq='Y')
     #df
 
-    import chart_studio.plotly
-    import cufflinks as cf
+    #import chart_studio.plotly
+    #import cufflinks as cf
 
     from plotly.offline import iplot
-    cf.go_offline()
-    cf.set_config_file(offline = False, world_readable = True)
+    #cf.go_offline()
+    #cf.set_config_file(offline = False, world_readable = True)
 
     #df.iplot(title="Yearly Incident Rate SKK Migas")
 
@@ -148,7 +148,8 @@ def main():
     #plot_acf_pacf(df['trir'])
 
     #%%
-    from chart_studio.plotly import plot_mpl
+    #from chart_studio.plotly import plot_mpl
+    
     from statsmodels.tsa.seasonal import seasonal_decompose
     result = seasonal_decompose(df.trir.values, model="multiplicative", period=5)
     fig = result.plot()
@@ -213,7 +214,6 @@ def main():
     #Rename colum 0
     y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
     mape_arimax = mean_absolute_percentage_error(y_test, arimax_forecast)
-
 
     ##### XGBOOST MODEL #####
     from xgboost import XGBRegressor
