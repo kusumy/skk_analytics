@@ -1,0 +1,10 @@
+2022-12-02 17:12:22,397 Connecting to database ...
+2022-12-02 17:14:43,915 input tempfile: /tmp/tmpw7lkxyvc/ebz20tdb.json
+2022-12-02 17:14:43,942 input tempfile: /tmp/tmpw7lkxyvc/y6oh1a6h.json
+2022-12-02 17:14:43,942 idx 0
+2022-12-02 17:14:43,943 running CmdStan, num_threads: None
+2022-12-02 17:14:43,943 CmdStan args: ['/home/spcuser/miniconda3/envs/py38_ts/lib/python3.8/site-packages/prophet/stan_model/prophet_model.bin', 'random', 'seed=81910', 'data', 'file=/tmp/tmpw7lkxyvc/ebz20tdb.json', 'init=/tmp/tmpw7lkxyvc/y6oh1a6h.json', 'output', 'file=/tmp/tmpw7lkxyvc/prophet_modelgnzdqp3j/prophet_model-20221202171443.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
+2022-12-02 17:14:43,943 Chain [1] start processing
+2022-12-02 17:14:44,059 Chain [1] done processing
+2022-12-02 17:15:51,039 Updating forecast result to database ...
+2022-12-02 17:15:54,789 Updated rows: 51
