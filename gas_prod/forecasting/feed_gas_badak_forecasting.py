@@ -267,7 +267,7 @@ def main():
     # Create SARIMAX Model
     #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, 
     #                            m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
-    sarimax_model = ARIMA(order=(2, 0, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
+    sarimax_model = ARIMA(order=(4, 1, 5), seasonal_order=(2, 0, 2, 12), suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
     sarimax_model.fit(train_df, X=train_exog)
     logMessage("SARIMAX Model Summary")
