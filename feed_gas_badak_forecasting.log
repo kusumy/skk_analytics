@@ -1,0 +1,86 @@
+2022-12-02 14:30:24,218 Connecting to database ...
+2022-12-02 14:30:25,308 1. ADF : -1.0203838340262954
+2022-12-02 14:30:25,308 2. P-Value : 0.7457573584361813
+2022-12-02 14:30:25,308 3. Num Of Lags 29: 
+2022-12-02 14:30:25,308 4. Num Of Observations Used For ADF Regression: 3571
+2022-12-02 14:30:25,308 5. Critical Values : 
+2022-12-02 14:30:25,308 	 1%: -3.432182541829493
+2022-12-02 14:30:25,308 	 5%: -2.8623497140302914
+2022-12-02 14:30:25,308 	 10%: -2.5672010239749072
+2022-12-02 14:31:55,827 Creating ARIMAX Model ...
+2022-12-02 14:31:58,760 ARIMAX Model Summary
+2022-12-02 14:31:58,763                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                 3601
+Model:               SARIMAX(4, 1, 5)   Log Likelihood                3303.873
+Date:                Fri, 02 Dec 2022   AIC                          -6587.747
+Time:                        14:31:58   BIC                          -6525.860
+Sample:                    01-01-2013   HQIC                         -6565.692
+                         - 11-10-2022                                         
+Covariance Type:                  opg                                         
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+ar.L1          3.6897      0.015    242.638      0.000       3.660       3.719
+ar.L2         -5.2487      0.042   -124.303      0.000      -5.331      -5.166
+ar.L3          3.4161      0.040     84.513      0.000       3.337       3.495
+ar.L4         -0.8591      0.013    -64.412      0.000      -0.885      -0.833
+ma.L1         -1.1595      0.018    -64.827      0.000      -1.195      -1.124
+ma.L2          0.5780      0.013     44.637      0.000       0.553       0.603
+ma.L3         -0.3006      0.014    -22.127      0.000      -0.327      -0.274
+ma.L4          0.0834      0.020      4.086      0.000       0.043       0.123
+ma.L5          0.0766      0.017      4.642      0.000       0.044       0.109
+sigma2         0.0093   9.09e-05    102.069      0.000       0.009       0.009
+===================================================================================
+Ljung-Box (L1) (Q):                   0.08   Jarque-Bera (JB):             59241.58
+Prob(Q):                              0.78   Prob(JB):                         0.00
+Heteroskedasticity (H):               1.20   Skew:                            -0.85
+Prob(H) (two-sided):                  0.00   Kurtosis:                        22.80
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-12-02 14:31:58,768 ARIMAX Model Prediction ..
+2022-12-02 14:58:29,747 Creating SARIMAX Model ...
+2022-12-02 14:58:44,043 ARIMAX Model Summary
+2022-12-02 14:58:44,047                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                 3601
+Model:               SARIMAX(4, 1, 5)   Log Likelihood                3303.873
+Date:                Fri, 02 Dec 2022   AIC                          -6587.747
+Time:                        14:58:44   BIC                          -6525.860
+Sample:                    01-01-2013   HQIC                         -6565.692
+                         - 11-10-2022                                         
+Covariance Type:                  opg                                         
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+ar.L1          3.6897      0.015    242.638      0.000       3.660       3.719
+ar.L2         -5.2487      0.042   -124.303      0.000      -5.331      -5.166
+ar.L3          3.4161      0.040     84.513      0.000       3.337       3.495
+ar.L4         -0.8591      0.013    -64.412      0.000      -0.885      -0.833
+ma.L1         -1.1595      0.018    -64.827      0.000      -1.195      -1.124
+ma.L2          0.5780      0.013     44.637      0.000       0.553       0.603
+ma.L3         -0.3006      0.014    -22.127      0.000      -0.327      -0.274
+ma.L4          0.0834      0.020      4.086      0.000       0.043       0.123
+ma.L5          0.0766      0.017      4.642      0.000       0.044       0.109
+sigma2         0.0093   9.09e-05    102.069      0.000       0.009       0.009
+===================================================================================
+Ljung-Box (L1) (Q):                   0.08   Jarque-Bera (JB):             59241.58
+Prob(Q):                              0.78   Prob(JB):                         0.00
+Heteroskedasticity (H):               1.20   Skew:                            -0.85
+Prob(H) (two-sided):                  0.00   Kurtosis:                        22.80
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-12-02 14:58:44,052 ARIMAX Model Prediction ..
+2022-12-02 14:58:44,407 Creating Prophet Model ....
+2022-12-02 14:58:44,445 input tempfile: /tmp/tmp8ifo3mc3/p2py_bt6.json
+2022-12-02 14:58:44,594 input tempfile: /tmp/tmp8ifo3mc3/jdmzm4m9.json
+2022-12-02 14:58:44,594 idx 0
+2022-12-02 14:58:44,594 running CmdStan, num_threads: None
+2022-12-02 14:58:44,594 CmdStan args: ['/home/spcuser/miniconda3/envs/py38_ts/lib/python3.8/site-packages/prophet/stan_model/prophet_model.bin', 'random', 'seed=16277', 'data', 'file=/tmp/tmp8ifo3mc3/p2py_bt6.json', 'init=/tmp/tmp8ifo3mc3/jdmzm4m9.json', 'output', 'file=/tmp/tmp8ifo3mc3/prophet_modelzp7u7t4o/prophet_model-20221202145844.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
+2022-12-02 14:58:44,594 Chain [1] start processing
+2022-12-02 14:58:44,876 Chain [1] done processing
+2022-12-02 14:58:44,889 Prophet Model Prediction ...
