@@ -1,20 +1,20 @@
-2022-12-01 15:07:26,276 Connecting to database ...
-2022-12-01 15:07:33,313 1. ADF : -1.475746596108019
-2022-12-01 15:07:33,313 2. P-Value : 0.5454732248865217
-2022-12-01 15:07:33,313 3. Num Of Lags 0: 
-2022-12-01 15:07:33,313 4. Num Of Observations Used For ADF Regression: 116
-2022-12-01 15:07:33,313 5. Critical Values : 
-2022-12-01 15:07:33,313 	 1%: -3.4880216384691867
-2022-12-01 15:07:33,319 	 5%: -2.8867966864160075
-2022-12-01 15:07:33,319 	 10%: -2.5802408234244947
-2022-12-01 15:07:34,593 Creating ARIMAX Model ...
-2022-12-01 15:07:34,593 ARIMAX Model Summary
-2022-12-01 15:07:34,593                                SARIMAX Results                                
+2022-12-02 15:04:55,503 Connecting to database ...
+2022-12-02 15:05:11,885 1. ADF : -1.475746596108019
+2022-12-02 15:05:11,885 2. P-Value : 0.5454732248865217
+2022-12-02 15:05:11,885 3. Num Of Lags 0: 
+2022-12-02 15:05:11,886 4. Num Of Observations Used For ADF Regression: 116
+2022-12-02 15:05:11,886 5. Critical Values : 
+2022-12-02 15:05:11,886 	 1%: -3.4880216384691867
+2022-12-02 15:05:11,887 	 5%: -2.8867966864160075
+2022-12-02 15:05:11,887 	 10%: -2.5802408234244947
+2022-12-02 15:05:13,931 Creating ARIMAX Model ...
+2022-12-02 15:05:13,932 ARIMAX Model Summary
+2022-12-02 15:05:13,937                                SARIMAX Results                                
 ==============================================================================
 Dep. Variable:                      y   No. Observations:                  108
 Model:               SARIMAX(0, 1, 0)   Log Likelihood                 135.268
-Date:                Thu, 01 Dec 2022   AIC                           -254.536
-Time:                        15:07:34   BIC                           -233.153
+Date:                Fri, 02 Dec 2022   AIC                           -254.536
+Time:                        15:05:13   BIC                           -233.153
 Sample:                    01-31-2013   HQIC                          -245.868
                          - 12-31-2021                                         
 Covariance Type:                  opg                                         
@@ -38,35 +38,39 @@ Prob(H) (two-sided):                  0.00   Kurtosis:                        16
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2022-12-01 15:07:34,601 ARIMAX Model Prediction ..
-2022-12-01 15:07:34,671 ARIMAX Model MAPE: 0.2598
-2022-12-01 15:07:34,696 Creating XGBoost Model ....
-2022-12-01 15:07:36,324 XGBoost Model Prediction ...
-2022-12-01 15:07:36,341 XGBOOST Model MAPE: 0.1537
-2022-12-01 15:07:36,341 Creating Random Forest Model ...
-2022-12-01 15:07:36,556 Random Forest Model Prediction ...
-2022-12-01 15:07:36,605 Random Forest Model MAPE: 0.0996
-2022-12-01 15:07:36,605 Creating Linear Regression Model ...
-2022-12-01 15:07:36,613 Linear Regression Model Prediction ...
-2022-12-01 15:07:36,621 Linear Regression Model MAPE: 0.1601
-2022-12-01 15:07:36,859 Creating Polynomial Regression Orde 2 Model ...
-2022-12-01 15:07:36,881 Polynomial Regression Orde 2 Model Prediction ...
-2022-12-01 15:07:36,953 Polynomial Regression Orde 2 Model MAPE: 0.1252
-2022-12-01 15:07:36,953 Creating Polynomial Regression Orde 3 Model ...
-2022-12-01 15:07:36,986 Polynomial Regression Orde 3 Model Prediction ...
-2022-12-01 15:07:37,049 Polynomial Regression Orde 3 Model MAPE: 0.1245
-2022-12-01 15:07:37,049 Updating forecast result to database ...
-2022-12-01 15:07:38,080 Updated rows: None
-2022-12-01 15:07:38,080 Done
-2022-12-01 15:07:38,080 Connecting to database ...
-2022-12-01 15:07:43,703 1. ADF : -0.3342950725929684
-2022-12-01 15:07:43,703 2. P-Value : 0.9205047225576606
-2022-12-01 15:07:43,703 3. Num Of Lags 2: 
-2022-12-01 15:07:43,703 4. Num Of Observations Used For ADF Regression: 7
-2022-12-01 15:07:43,713 5. Critical Values : 
-2022-12-01 15:07:43,713 	 1%: -4.9386902332361515
-2022-12-01 15:07:43,713 	 5%: -3.477582857142857
-2022-12-01 15:07:43,713 	 10%: -2.8438679591836733
-2022-12-01 15:07:44,845 Updating forecast result to database ...
-2022-12-01 15:07:44,898 Updated rows: None
-2022-12-01 15:07:44,898 Done
+2022-12-02 15:05:13,947 ARIMAX Model Prediction ..
+2022-12-02 15:05:14,044 ARIMAX Model MAPE: 0.2598
+2022-12-02 15:05:14,091 Creating XGBoost Model ....
+2022-12-02 15:05:14,179 XGBoost Model Prediction ...
+2022-12-02 15:05:14,216 XGBOOST Model MAPE: 0.1537
+2022-12-02 15:05:14,217 Creating Random Forest Model ...
+2022-12-02 15:05:14,534 Random Forest Model Prediction ...
+2022-12-02 15:05:14,653 Random Forest Model MAPE: 0.0996
+2022-12-02 15:05:14,654 Creating Linear Regression Model ...
+2022-12-02 15:05:14,673 Linear Regression Model Prediction ...
+2022-12-02 15:05:14,691 Linear Regression Model MAPE: 0.1601
+2022-12-02 15:05:15,128 Creating Polynomial Regression Orde 2 Model ...
+2022-12-02 15:05:15,177 Polynomial Regression Orde 2 Model Prediction ...
+2022-12-02 15:05:15,335 Polynomial Regression Orde 2 Model MAPE: 0.1252
+2022-12-02 15:05:15,336 Creating Polynomial Regression Orde 3 Model ...
+2022-12-02 15:05:15,384 Polynomial Regression Orde 3 Model Prediction ...
+2022-12-02 15:05:15,538 Polynomial Regression Orde 3 Model MAPE: 0.1245
+2022-12-02 15:05:15,547 Updating forecast result to database ...
+2022-12-02 15:05:20,319 Updated rows: None
+2022-12-02 15:05:20,321 Updating MAPE result to database ...
+2022-12-02 15:15:22,058 Updated rows: 1
+2022-12-02 15:15:22,058 Done
+2022-12-02 15:15:22,060 Connecting to database ...
+2022-12-02 15:15:24,162 1. ADF : -0.3342950725929684
+2022-12-02 15:15:24,163 2. P-Value : 0.9205047225576606
+2022-12-02 15:15:24,164 3. Num Of Lags 2: 
+2022-12-02 15:15:24,164 4. Num Of Observations Used For ADF Regression: 7
+2022-12-02 15:15:24,165 5. Critical Values : 
+2022-12-02 15:15:24,166 	 1%: -4.9386902332361515
+2022-12-02 15:15:24,166 	 5%: -3.477582857142857
+2022-12-02 15:15:24,167 	 10%: -2.8438679591836733
+2022-12-02 15:15:35,884 Updating forecast result to database ...
+2022-12-02 15:15:36,289 Updated rows: None
+2022-12-02 15:15:36,290 Updating MAPE result to database ...
+2022-12-02 15:15:54,816 Updated rows: 1
+2022-12-02 15:15:54,816 Done

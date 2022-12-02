@@ -395,19 +395,24 @@ def main():
 
     # %%
     #Create Dataframe Mape All Method
-    all_mape_pred = {'mape_forecast_a' : [mape_arimax],
+    dict_mape_pred = {'mape_forecast_a' : [mape_arimax],
                     'mape_forecast_b' : [mape_xgb],
                     'mape_forecast_c' : [mape_ranfor],
                     'mape_forecast_d' : [mape_linreg],
                     'mape_forecast_e' : [mape_poly2],
                     'mape_forecast_f' : [mape_poly3],
-                    'type' : 1}
-    all_mape_pred = pd.DataFrame(all_mape_pred)
+                    'type_id' : 1}
+    all_mape_pred = pd.DataFrame(dict_mape_pred)
     #all_mape_pred
     
     # Save forecast result to database
     logMessage("Updating forecast result to database ...")
     total_updated_rows = insert_forecast(conn, y_all_pred)
+    logMessage("Updated rows: {}".format(total_updated_rows))
+    
+    # Save mape result to database
+    logMessage("Updating MAPE result to database ...")
+    total_updated_rows = insert_mape(conn, all_mape_pred)
     logMessage("Updated rows: {}".format(total_updated_rows))
     
     logMessage("Done")
@@ -426,12 +431,12 @@ def insert_forecast(conn, y_all_pred):
 
 def insert_mape(conn, all_mape_pred):
     total_updated_rows = 0
-    for row in all_mape_pred.iterrows():
-        type = row['type']
-        mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, type = row[0], row[1], row[2], row[3], row[4], row[5]
+    for index, row in all_mape_pred.iterrows():
+        type_id = row['type_id']
+        mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f = row[0], row[1], row[2], row[3], row[4], row[5]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        updated_rows = update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, type)
+        updated_rows = update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, type_id)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
@@ -490,7 +495,7 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
                     mape_forecast_f = %s,
                     updated_at = %s, 
                     updated_by = %s
-                WHERE type = %s"""
+                WHERE type_id = %s"""
     #conn = None
     updated_rows = 0
     try:
