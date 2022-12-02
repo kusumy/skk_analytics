@@ -363,19 +363,19 @@ def main():
     ds_exog = 'date'
     x_exog = 'planned_shutdown'
     y_exog = 'wpnb_gas'
-    test_exog = data_exog[[ds_exog,x_exog,y_exog]]
-    test_exog = test_exog.set_index(ds_exog)
-    test_exog.index = pd.DatetimeIndex(test_exog.index, freq='D')
+    future_exog = data_exog[[ds_exog,x_exog,y_exog]]
+    future_exog = future_exog.set_index(ds_exog)
+    future_exog.index = pd.DatetimeIndex(future_exog.index, freq='D')
 
     #Create exogenous date index
-    test_exog['planned_shutdown'] = test_exog['planned_shutdown'].values
-    test_exog['wpnb_gas'] = test_exog['wpnb_gas'].astype(np.float32)
-    test_exog['month'] = [i.month for i in test_exog.index]
-    test_exog['day'] = [i.day for i in test_exog.index]
-    test_exog[['wpnb_gas']].applymap('{:.2f}'.format)
+    future_exog['planned_shutdown'] = future_exog['planned_shutdown'].values
+    future_exog['wpnb_gas'] = future_exog['wpnb_gas'].astype(np.float32)
+    future_exog['month'] = [i.month for i in future_exog.index]
+    future_exog['day'] = [i.day for i in future_exog.index]
+    future_exog[['wpnb_gas']].applymap('{:.2f}'.format)
 
     #Create forecasting horizon
-    fh = ForecastingHorizon(test_exog.index, is_relative=False)
+    fh = ForecastingHorizon(future_exog.index, is_relative=False)
 
     #Plotting for illustration
     fig1, ax = plt.subplots(figsize=(20,8))
@@ -416,7 +416,7 @@ def main():
     
     logMessage("ARIMAX Model Prediction ..")
     t0 = time.process_time()
-    arimax_forecast = arimax_model.predict(fh, X=test_exog)
+    arimax_forecast = arimax_model.predict(fh, X=future_exog)
     t1 = time.process_time()
     exec_time = "Execution time for ARIMA model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
     logMessage(exec_time)
@@ -460,7 +460,7 @@ def main():
     
     logMessage("SARIMAX Model Prediction ..")
     t0 = time.process_time()
-    sarimax_forecast = sarimax_model.predict(fh, X=test_exog)
+    sarimax_forecast = sarimax_model.predict(fh, X=future_exog)
     t1 = time.process_time()
     exec_time = "Execution time for SARIMA model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
     logMessage(exec_time)
@@ -509,7 +509,7 @@ def main():
     
     logMessage("Prophet Model Prediction ...")
     t0 = time.process_time()
-    prophet_forecast = prophet_forecaster.predict(fh, X=test_exog) #, X=X_test
+    prophet_forecast = prophet_forecaster.predict(fh, X=future_exog) #, X=X_test
     t1 = time.process_time()
     exec_time = "Execution time for Prophet model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
     logMessage(exec_time)
@@ -545,7 +545,7 @@ def main():
     
     logMessage("Random Forest Model Prediction ...")
     t0 = time.process_time()
-    ranfor_forecast = ranfor_forecaster.predict(fh, X=test_exog) #, X=X_test
+    ranfor_forecast = ranfor_forecaster.predict(fh, X=future_exog) #, X=X_test
     t1 = time.process_time()
     exec_time = "Execution time for Random Forest model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
     logMessage(exec_time)
@@ -579,7 +579,7 @@ def main():
     
     logMessage("XGBoost Model Prediction ...")
     t0 = time.process_time()
-    xgb_forecast = xgb_forecaster.predict(fh, X=test_exog) #, X=X_test
+    xgb_forecast = xgb_forecaster.predict(fh, X=future_exog) #, X=X_test
     t1 = time.process_time()
     exec_time = "Execution time for XGBoost model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
     logMessage(exec_time)
@@ -614,7 +614,7 @@ def main():
     
     logMessage("Linear Regression Model Prediction ...")
     t0 = time.process_time()
-    linreg_forecast = linreg_forecaster.predict(fh, X=test_exog) #, X=X_test
+    linreg_forecast = linreg_forecaster.predict(fh, X=future_exog) #, X=X_test
     t1 = time.process_time()
     exec_time = "Execution time for Linear Regression model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
     logMessage(exec_time)
@@ -650,7 +650,7 @@ def main():
     
     logMessage("Polynomial Regression Orde 2 Model Prediction ...")
     t0 = time.process_time()
-    poly2_forecast = poly2_forecaster.predict(fh, X=test_exog) #, X=X_test
+    poly2_forecast = poly2_forecaster.predict(fh, X=future_exog) #, X=X_test
     t1 = time.process_time()
     exec_time = "Execution time for Polynomial Regression Orde 2 model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
     logMessage(exec_time)
@@ -687,7 +687,7 @@ def main():
     
     logMessage("Polynomial Regression Orde 3 Model Prediction ...")
     t0 = time.process_time()
-    poly3_forecast = poly3_forecaster.predict(fh, X=test_exog) #, X=X_test
+    poly3_forecast = poly3_forecaster.predict(fh, X=future_exog) #, X=X_test
     t1 = time.process_time()
     exec_time = "Execution time for Polynomial Regression Orde 3 model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
     logMessage(exec_time)
@@ -710,7 +710,7 @@ def main():
                             y_pred_linreg[['forecast_f']],
                             y_pred_poly2[['forecast_g']],
                             y_pred_poly3[['forecast_h']]], axis=1)
-    y_all_pred['date'] = test_exog.index.values
+    y_all_pred['date'] = future_exog.index.values
 
     #%%
     # Plot prediction
