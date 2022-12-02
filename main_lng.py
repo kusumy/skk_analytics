@@ -16,7 +16,8 @@ warnings.filterwarnings('ignore')
 #import gas_prod.forecasting.lng_production_tangguh_forecasting as lng_tangguh_forecasting
 #import gas_prod.forecasting.condensate_tangguh_forecasting as condensate_tangguh_forecasting
 #import gas_prod.forecasting.lng_prod_badak_forecasting as lng_badak_forecasting
-import gas_prod.forecasting.feed_gas_badak_forecasting as feed_gas_badak_forecasting
+#import gas_prod.forecasting.feed_gas_badak_forecasting as feed_gas_badak_forecasting
+import gas_prod.forecasting.condensate_badak_forecasting as condensate_badak_forecasting
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -65,11 +66,19 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 
 #print('\n')
 
-t8 = time.process_time()
-feed_gas_badak_forecasting.main()
-t9 = time.process_time()
-exec_time = format_timespan(t9-t8, max_units=3)
-print("Forecasting Feed Gas PT Badak : " + exec_time)
+#t8 = time.process_time()
+#feed_gas_badak_forecasting.main()
+#t9 = time.process_time()
+#exec_time = format_timespan(t9-t8, max_units=3)
+#print("Forecasting Feed Gas PT Badak : " + exec_time)
+
+#print('\n')
+
+t10 = time.process_time()
+condensate_badak_forecasting.main()
+t11 = time.process_time()
+exec_time = format_timespan(t11-t10, max_units=3)
+print("Forecasting Condensate PT Badak : " + exec_time)
 
 #print('\n')
 

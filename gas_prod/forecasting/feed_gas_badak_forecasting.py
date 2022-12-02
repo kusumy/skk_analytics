@@ -107,7 +107,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng')
+    conn = create_db_connection(section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
     
