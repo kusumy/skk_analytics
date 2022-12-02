@@ -1,0 +1,27 @@
+2022-12-02 16:57:46,819 Connecting to database ...
+2022-12-02 16:57:47,266 1. ADF : -5.342088339578342
+2022-12-02 16:57:47,266 2. P-Value : 4.4770789175323335e-06
+2022-12-02 16:57:47,266 3. Num Of Lags 14: 
+2022-12-02 16:57:47,266 4. Num Of Observations Used For ADF Regression: 1309
+2022-12-02 16:57:47,266 5. Critical Values : 
+2022-12-02 16:57:47,266 	 1%: -3.4353554773774553
+2022-12-02 16:57:47,266 	 5%: -2.86375051023515
+2022-12-02 16:57:47,266 	 10%: -2.5679468876340037
+2022-12-02 16:58:47,124 input tempfile: /tmp/tmpz1njlb40/09ffigo9.json
+2022-12-02 16:58:47,141 input tempfile: /tmp/tmpz1njlb40/kimwfyt3.json
+2022-12-02 16:58:47,141 idx 0
+2022-12-02 16:58:47,141 running CmdStan, num_threads: None
+2022-12-02 16:58:47,141 CmdStan args: ['/home/spcuser/miniconda3/envs/py38_ts/lib/python3.8/site-packages/prophet/stan_model/prophet_model.bin', 'random', 'seed=7252', 'data', 'file=/tmp/tmpz1njlb40/09ffigo9.json', 'init=/tmp/tmpz1njlb40/kimwfyt3.json', 'output', 'file=/tmp/tmpz1njlb40/prophet_modeltbxn_tj5/prophet_model-20221202165847.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
+2022-12-02 16:58:47,141 Chain [1] start processing
+2022-12-02 16:58:47,177 Chain [1] done processing
+2022-12-02 16:58:47,178 Chain [1] error: error during processing Communication error on send
+2022-12-02 16:58:47,178 Optimization terminated abnormally. Falling back to Newton.
+2022-12-02 16:58:47,178 input tempfile: /tmp/tmpz1njlb40/482l68hv.json
+2022-12-02 16:58:47,198 input tempfile: /tmp/tmpz1njlb40/qlonvi63.json
+2022-12-02 16:58:47,198 idx 0
+2022-12-02 16:58:47,198 running CmdStan, num_threads: None
+2022-12-02 16:58:47,198 CmdStan args: ['/home/spcuser/miniconda3/envs/py38_ts/lib/python3.8/site-packages/prophet/stan_model/prophet_model.bin', 'random', 'seed=24290', 'data', 'file=/tmp/tmpz1njlb40/482l68hv.json', 'init=/tmp/tmpz1njlb40/qlonvi63.json', 'output', 'file=/tmp/tmpz1njlb40/prophet_modelobj01tme/prophet_model-20221202165847.csv', 'method=optimize', 'algorithm=newton', 'iter=10000']
+2022-12-02 16:58:47,198 Chain [1] start processing
+2022-12-02 16:58:49,742 Chain [1] done processing
+2022-12-02 16:59:20,234 Updating forecast result to database ...
+2022-12-02 16:59:23,370 Updated rows: 51
