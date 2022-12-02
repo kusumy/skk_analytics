@@ -223,6 +223,7 @@ def main():
     ##### FORECASTING #####
 
     ##### ARIMAX MODEL #####
+    from sktime.forecasting.arima import ARIMA
     from pmdarima.arima.utils import ndiffs, nsdiffs
     from sklearn.metrics import mean_squared_error
     import statsmodels.api as sm
@@ -264,15 +265,16 @@ def main():
     sarimax_suppress_warnings = True
 
     # Create SARIMAX Model
-    sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, 
-                                m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+    #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, 
+    #                            m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+    sarimax_model = ARIMA(order=(2, 0, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
-    sarimax_model.fit(train_df, exogenous=train_exog)
+    sarimax_model.fit(train_df, X=train_exog)
     logMessage("SARIMAX Model Summary")
     logMessage(arimax_model.summary())
     
     logMessage("SARIMAX Model Prediction ..")
-    sarimax_forecast = sarimax_model.predict(len(fh), X=future_exog)
+    sarimax_forecast = sarimax_model.predict(fh, X=future_exog)
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
     y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]
@@ -464,8 +466,8 @@ def main():
 
     ##### JOIN PREDICTION RESULT TO DATAFRAME #####
     logMessage("Creating all model prediction result data frame ...")
-    y_all_pred = pd.concat([#y_pred_arimax[['forecast_a']],
-                            #y_pred_sarimax[['forecast_b']],
+    y_all_pred = pd.concat([y_pred_arimax[['forecast_a']],
+                            y_pred_sarimax[['forecast_b']],
                             y_pred_prophet[['forecast_c']],
                             y_pred_ranfor[['forecast_d']],
                             y_pred_xgb[['forecast_e']],
@@ -478,8 +480,8 @@ def main():
     # Plot prediction
     fig, ax = plt.subplots(figsize=(20,8))
     ax.plot(train_df, label='train')
-    #ax.plot(arimax_forecast, label='arimax_pred')
-    #ax.plot(sarimax_forecast, label='sarimax_pred')
+    ax.plot(arimax_forecast, label='arimax_pred')
+    ax.plot(sarimax_forecast, label='sarimax_pred')
     ax.plot(prophet_forecast, label='prophet_pred')
     ax.plot(ranfor_forecast, label='ranfor_pred')
     ax.plot(xgb_forecast, label='xgb_pred')
