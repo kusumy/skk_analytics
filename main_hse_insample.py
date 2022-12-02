@@ -11,7 +11,7 @@ from humanfriendly import format_timespan
 import warnings
 warnings.filterwarnings('ignore')
 
-#import hse.insample.incident_rate_monthly_cumulative_insample as ir_monthly_cum_insample
+import hse.insample.incident_rate_monthly_cumulative_insample as ir_monthly_cum_insample
 import hse.insample.yearly_incident_rate_insample as ir_yearly_insample
 
 # adding gas prod to the system path
@@ -30,13 +30,13 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #endDate = str(args['enddate'])
 # do whatever the script does
 
-#t0 = time.process_time()
-#ir_monthly_cum_insample.main()
-#t1 = time.process_time()
-#exec_time = format_timespan(t1-t0, max_units=3)
-#print("Forecasting incident rate monthly cumulative : " + exec_time)
+t0 = time.process_time()
+ir_monthly_cum_insample.main()
+t1 = time.process_time()
+exec_time = format_timespan(t1-t0, max_units=3)
+print("Forecasting incident rate monthly cumulative : " + exec_time)
 
-#print('\n')
+print('\n')
 
 t2 = time.process_time()
 ir_yearly_insample.main()
