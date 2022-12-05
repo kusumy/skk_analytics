@@ -403,23 +403,13 @@ def main():
     #arimax_model = AutoARIMA(d=arimax_differencing, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
     arimax_model = ARIMA(order=(2, 0, 2), suppress_warnings=arimax_suppress_warnings)
     logMessage("Creating ARIMAX Model ...")
-    # Start time counting
-    t0 = time.process_time()
     arimax_model.fit(train_df, X=train_exog)
-    # End time counting
-    t1 = time.process_time()
-    exec_time = "Execution time for ARIMA model fitting: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_model.summary())
     
     logMessage("ARIMAX Model Prediction ..")
-    t0 = time.process_time()
     arimax_forecast = arimax_model.predict(fh, X=future_exog)
-    t1 = time.process_time()
-    exec_time = "Execution time for ARIMA model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
     y_pred_arimax['day_num'] = [i.day for i in arimax_forecast.index]
@@ -447,23 +437,12 @@ def main():
     #                         seasonal=sarimax_seasonal, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     sarimax_model = ARIMA(order=(2, 0, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")  
-    # Start time counting
-    t0 = time.process_time()
     sarimax_model.fit(train_df, X=train_exog)
-    # End time counting
-    t1 = time.process_time()
-    exec_time = "Execution time for SARIMA model fitting: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
-    
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_model.summary())
     
     logMessage("SARIMAX Model Prediction ..")
-    t0 = time.process_time()
     sarimax_forecast = sarimax_model.predict(fh, X=future_exog)
-    t1 = time.process_time()
-    exec_time = "Execution time for SARIMA model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
@@ -500,19 +479,11 @@ def main():
                         weekly_seasonality=prophet_weekly_seasonality,
                         yearly_seasonality=prophet_yearly_seasonality)
     
-    t0 = time.process_time()
     logMessage("Creating Prophet Model ....")
     prophet_forecaster.fit(train_df, train_exog) #, X_train
-    t1 = time.process_time()
-    exec_time = "Execution time for Prophet model fitting: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     
     logMessage("Prophet Model Prediction ...")
-    t0 = time.process_time()
     prophet_forecast = prophet_forecaster.predict(fh, X=future_exog) #, X=X_test
-    t1 = time.process_time()
-    exec_time = "Execution time for Prophet model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     y_pred_prophet = pd.DataFrame(prophet_forecast).applymap('{:.2f}'.format)
     y_pred_prophet['day_num'] = [i.day for i in prophet_forecast.index]
     y_pred_prophet['month_num'] = [i.month for i in prophet_forecast.index]
@@ -537,18 +508,10 @@ def main():
     ranfor_forecaster = make_reduction(ranfor_regressor, window_length=ranfor_lags, strategy=ranfor_strategy) #30, nonexog=30
 
     logMessage("Creating Random Forest Model ...")
-    t0 = time.process_time()
     ranfor_forecaster.fit(train_df, train_exog) #, X_train
-    t1 = time.process_time()
-    exec_time = "Execution time for Random Forest model fitting: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     
     logMessage("Random Forest Model Prediction ...")
-    t0 = time.process_time()
     ranfor_forecast = ranfor_forecaster.predict(fh, X=future_exog) #, X=X_test
-    t1 = time.process_time()
-    exec_time = "Execution time for Random Forest model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:.2f}'.format)
     y_pred_ranfor['day_num'] = [i.day for i in ranfor_forecast.index]
     y_pred_ranfor['month_num'] = [i.month for i in ranfor_forecast.index]
@@ -571,18 +534,10 @@ def main():
     xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
     
     logMessage("Creating XGBoost Model ....")
-    t0 = time.process_time()
     xgb_forecaster.fit(train_df, train_exog) #, X_train
-    t1 = time.process_time()
-    exec_time = "Execution time for XGBoost model creation: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     
     logMessage("XGBoost Model Prediction ...")
-    t0 = time.process_time()
     xgb_forecast = xgb_forecaster.predict(fh, X=future_exog) #, X=X_test
-    t1 = time.process_time()
-    exec_time = "Execution time for XGBoost model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     
     y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:.2f}'.format)
     y_pred_xgb['day_num'] = [i.day for i in xgb_forecast.index]
@@ -606,18 +561,11 @@ def main():
     linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
     
     logMessage("Creating Linear Regression Model ...")
-    t0 = time.process_time()
     linreg_forecaster.fit(train_df, X=train_exog)
-    t1 = time.process_time()
-    exec_time = "Execution time for Linear Regression model creation: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
-    
+
     logMessage("Linear Regression Model Prediction ...")
-    t0 = time.process_time()
     linreg_forecast = linreg_forecaster.predict(fh, X=future_exog) #, X=X_test
-    t1 = time.process_time()
-    exec_time = "Execution time for Linear Regression model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
+
     y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:.2f}'.format)
     y_pred_linreg['day_num'] = [i.day for i in linreg_forecast.index]
     y_pred_linreg['month_num'] = [i.month for i in linreg_forecast.index]
@@ -642,19 +590,10 @@ def main():
     poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy)
     
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    t0 = time.process_time()
     poly2_forecaster.fit(train_df, X=train_exog) #, X=X_train
-    t1 = time.process_time()
-    exec_time = "Execution time for Polynomial Regression Orde 2 model creation: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
-    
+
     logMessage("Polynomial Regression Orde 2 Model Prediction ...")
-    t0 = time.process_time()
     poly2_forecast = poly2_forecaster.predict(fh, X=future_exog) #, X=X_test
-    t1 = time.process_time()
-    exec_time = "Execution time for Polynomial Regression Orde 2 model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
-    
     y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:.2f}'.format)
     y_pred_poly2['day_num'] = [i.day for i in poly2_forecast.index]
     y_pred_poly2['month_num'] = [i.month for i in poly2_forecast.index]
@@ -679,18 +618,10 @@ def main():
     poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy)
     
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    t0 = time.process_time()
     poly3_forecaster.fit(train_df, X=train_exog) #, X=X_train
-    t1 = time.process_time()
-    exec_time = "Execution time for Polynomial Regression Orde 3 model creation: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     
     logMessage("Polynomial Regression Orde 3 Model Prediction ...")
-    t0 = time.process_time()
     poly3_forecast = poly3_forecaster.predict(fh, X=future_exog) #, X=X_test
-    t1 = time.process_time()
-    exec_time = "Execution time for Polynomial Regression Orde 3 model prediction: {}".format(format_timespan(t1-t0, max_units=3), True)
-    logMessage(exec_time)
     y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:.2f}'.format)
     y_pred_poly3['day_num'] = [i.day for i in poly3_forecast.index]
     y_pred_poly3['month_num'] = [i.month for i in poly3_forecast.index]
