@@ -457,14 +457,27 @@ def main():
     ##### ARIMA(2,0,0)(2,1,0)[12] #####
     #%%
     from pmdarima.arima import auto_arima
+    from sktime.forecasting.arima import ARIMA
+    
+    #Set parameters
+    sarimax_differencing = 0
+    sarimax_seasonal_differencing = 1
+    sarimax_sp = 12
+    sarimax_stationary = False
+    sarimax_seasonal = True
+    sarimax_trace = True
+    sarimax_error_action = "ignore"
+    sarimax_suppress_warnings = True
+    
     sarimax_model = auto_arima(y=y_train_cleaned.feed_gas, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
+    #sarimax_model = ARIMA(order=(2, 0, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...") 
     sarimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_model.summary())
     
     logMessage("SARIMAX Model Prediction ..")
-    sarimax_forecast = sarimax_model.predict(len(fh), X=X_test[exogenous_features])
+    sarimax_forecast = sarimax_model.predict(len(fh), X=X_test[exogenous_features]) #len(fh)
     y_test["Forecast_SARIMAX"] = sarimax_forecast
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
@@ -626,7 +639,7 @@ def main():
     #Create MAPE
     linreg_mape = mean_absolute_percentage_error(y_test['feed_gas'], linreg_forecast)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
-    logMessage("Linear Regression Model "+xgb_mape_str)
+    logMessage("Linear Regression Model "+linreg_mape_str)
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
