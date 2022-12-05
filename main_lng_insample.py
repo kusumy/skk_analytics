@@ -11,10 +11,8 @@ from humanfriendly import format_timespan
 import warnings
 warnings.filterwarnings('ignore')
 
-#In sampel
 import gas_prod.insample.feed_gas_tangguh_with_planned_shutdown_exog_all_method as feed_gas_tangguh
-#In sampel
-import gas_prod.insample.condensate_tangguh_with_planned_shutdown_exog_all_method as condensate_tangguh
+#import gas_prod.insample.condensate_tangguh_with_planned_shutdown_exog_all_method as condensate_tangguh
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -34,19 +32,19 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 t0 = time.process_time()
 #feed_gas_tangguh.main()
 #condensate_tangguh.main()
-feed_gas_tangguh_forecasting.main()
+feed_gas_tangguh.main()
 t1 = time.process_time()
 exec_time = format_timespan(t1-t0, max_units=3)
 print("Forecasting Feed gas Tangguh : " + exec_time)
 
-t2 = time.process_time()
-condensate_tangguh_forecasting.main()
-t3 = time.process_time()
-exec_time = format_timespan(t1-t0, max_units=3)
-print("Forecasting Condensate Tangguh : " + exec_time)
+#t2 = time.process_time()
+#condensate_tangguh_forecasting.main()
+#t3 = time.process_time()
+#exec_time = format_timespan(t1-t0, max_units=3)
+#print("Forecasting Condensate Tangguh : " + exec_time)
 
-total_exec_time = format_timespan(t3-t0, max_units=3)
-print("Total execution time : " + total_exec_time)
+#total_exec_time = format_timespan(t3-t0, max_units=3)
+#print("Total execution time : " + total_exec_time)
 
 exit()
 

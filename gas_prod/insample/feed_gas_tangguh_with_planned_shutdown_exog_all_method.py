@@ -106,12 +106,12 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng')
+    conn = create_db_connection(section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
         
     # Prepare data
-    file = os.path.join('gas_prod','feed_gas_unplanned-planned_shutdown_cleaned_with.csv')
+    query_1 = os.path.join('gas_prod/insample','feed_gas_unplanned-planned_shutdown_cleaned_with.csv')
     data = pd.read_csv(file, sep=',')
     
     # Retrieve data from database
@@ -214,8 +214,7 @@ def main():
 
     #Create MAPE
     arimax_mape = mean_absolute_percentage_error(y_test.feed_gas, y_test.Forecast_ARIMAX)
-    arimax_mape_100 = 100*arimax_mape
-    arimax_mape_str = str('MAPE: %.4f' % arimax_mape_100) + '%'
+    arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
     logMessage("ARIMAX Model "+arimax_mape_str)
 
     # Rename column to forecast_a
@@ -244,8 +243,7 @@ def main():
 
     #Create MAPE
     sarimax_mape = mean_absolute_percentage_error(y_test.feed_gas, y_test.Forecast_SARIMAX)
-    sarimax_mape_100 = 100*sarimax_mape
-    sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape_100) + '%'
+    sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
     logMessage("SARIMAX Model "+sarimax_mape_str)
 
     # Rename column to forecast_b
@@ -294,8 +292,7 @@ def main():
 
     #Create MAPE
     prophet_mape = mean_absolute_percentage_error(y_test['feed_gas'], prophet_forecast)
-    prophet_mape_100 = 100*prophet_mape
-    prophet_mape_str = str('MAPE: %.4f' % prophet_mape_100) + '%'
+    prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
 
     # Rename column to forecast_c
@@ -330,8 +327,7 @@ def main():
 
     #Create MAPE
     ranfor_mape = mean_absolute_percentage_error(y_test['feed_gas'], ranfor_forecast)
-    ranfor_mape_100 = 100*ranfor_mape
-    ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape_100) + '%'
+    ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
 
     # Rename column to forecast_e
@@ -364,8 +360,7 @@ def main():
 
     #Create MAPE
     xgb_mape = mean_absolute_percentage_error(y_test['feed_gas'], xgb_forecast)
-    xgb_mape_100 = 100*xgb_mape
-    xgb_mape_str = str('MAPE: %.4f' % xgb_mape_100) + '%'
+    xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
     
     # Rename column to forecast_e
@@ -397,8 +392,7 @@ def main():
 
     #Create MAPE
     linreg_mape = mean_absolute_percentage_error(y_test['feed_gas'], linreg_forecast)
-    linreg_mape_100 = 100*linreg_mape
-    linreg_mape_str = str('MAPE: %.4f' % linreg_mape_100) + '%'
+    linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
 
     # Rename column to forecast_f
@@ -432,8 +426,7 @@ def main():
 
     #Create MAPE
     poly2_mape = mean_absolute_percentage_error(y_test['feed_gas'], poly2_forecast)
-    poly2_mape_100 = 100*poly2_mape
-    poly2_mape_str = str('MAPE: %.4f' % poly2_mape_100) + '%'
+    poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Orde 2 Model "+poly2_mape_str)
 
     # Rename column to forecast_g
@@ -467,8 +460,7 @@ def main():
 
     #Create MAPE
     poly3_mape = mean_absolute_percentage_error(y_test['feed_gas'], poly3_forecast)
-    poly3_mape_100 = 100*poly3_mape
-    poly3_mape_str = str('MAPE: %.4f' % poly3_mape_100) + '%'
+    poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Orde 3 Model "+poly3_mape_str)
 
     # Rename column to forecast_h
@@ -509,20 +501,27 @@ def main():
 
     #%%
     #CREATE DATAFRAME MAPE
-    mape_data_fg =  {'arimax': [arimax_mape_100/100],
-                'sarimax': [sarimax_mape_100/100],
-                'prophet': [prophet_mape_100/100],
-                'random_forest': [ranfor_mape_100/100],
-                'xgboost': [xgb_mape_100/100],
-                'linear_regression': [linreg_mape_100/100],
-                'polynomial_degree_2': [poly2_mape_100/100],
-                'polynomial_degree_3': [poly3_mape_100/100]}
+    all_mape_pred =  {'arimax': [arimax_mape],
+                'sarimax': [sarimax_mape],
+                'prophet': [prophet_mape],
+                'random_forest': [ranfor_mape],
+                'xgboost': [xgb_mape],
+                'linear_regression': [linreg_mape],
+                'polynomial_degree_2': [poly2_mape],
+                'polynomial_degree_3': [poly3_mape],
+                'lng_plant' : 'BP Tangguh',
+                'product': 'Feed Gas'}
 
-    all_mape_fg = pd.DataFrame(mape_data_fg)
+    all_mape_pred = pd.DataFrame(all_mape_pred)
     
     # Save forecast result to database
     logMessage("Updating forecast result to database ...")
     total_updated_rows = insert_forecast(conn, y_all_pred)
+    logMessage("Updated rows: {}".format(total_updated_rows))
+    
+    # Save mape result to database
+    logMessage("Updating MAPE result to database ...")
+    total_updated_rows = insert_mape(conn, all_mape_pred)
     logMessage("Updated rows: {}".format(total_updated_rows))
     
     print("Done")
@@ -536,6 +535,19 @@ def insert_forecast(conn, y_pred):
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
         updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date)
+        total_updated_rows = total_updated_rows + updated_rows 
+        
+    return total_updated_rows
+
+def insert_mape(conn, all_mape_pred):
+    total_updated_rows = 0
+    for index, row in all_mape_pred.iterrows():
+        lng_plant = row['lng_plant']
+        product = row['product']
+        mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h = row[0], row[1], row[2], row[3], row[4], row[5]
+        
+        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
+        updated_rows = update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h , lng_plant, product)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
@@ -578,6 +590,42 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
 
     return updated_rows
 
-# if __name__ == "__main__":
-#     #main(sys.argv[1], sys.argv[2], sys.argv[3])
-#     main()
+def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, 
+                        mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
+                        lng_plant, product):
+    
+    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    created_by = 'PYTHON'
+    
+    """ insert mape result after last row in table """
+    sql = """ UPDATE hse_analytics_mape
+                SET mape_forecast_a = %s, 
+                    mape_forecast_b = %s, 
+                    mape_forecast_c = %s, 
+                    mape_forecast_d = %s, 
+                    mape_forecast_e = %s, 
+                    mape_forecast_f = %s,
+                    mape_forecast_g = %s,
+                    mape_forecast_h = %s,
+                    updated_at = %s, 
+                    updated_by = %s
+                WHERE lng_plant = %s
+                AND product = %s"""
+    #conn = None
+    updated_rows = 0
+    try:
+        # create a new cursor
+        cur = conn.cursor()
+        # execute the UPDATE  statement
+        cur.execute(sql, (mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f,
+                          date_now, created_by, lng_plant, product))
+        # get the number of updated rows
+        updated_rows = cur.rowcount
+        # Commit the changes to the database
+        conn.commit()
+        # Close cursor
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        logMessage(error)
+
+    return updated_rows
