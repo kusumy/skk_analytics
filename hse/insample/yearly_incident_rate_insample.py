@@ -107,7 +107,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_hse')
+    conn = create_db_connection(section='postgresql_ml_hse_skk')
     if conn == None:
         exit()
     
@@ -238,7 +238,6 @@ def main():
 
     # Calculate model performance
     mape_xgb = mean_absolute_percentage_error(y_test, xgb_forecast)
-
 
     ##### RANDOM FOREST MODEL #####
     from sklearn.ensemble import RandomForestRegressor
