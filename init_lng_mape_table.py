@@ -7,7 +7,7 @@ warnings.filterwarnings('ignore')
 import sys
  
 # setting path
-sys.path.append('./')
+#sys.path.append('.')
 
 from connection import create_db_connection
 
@@ -53,7 +53,7 @@ sql1 = """
 
 # Connect to database
 # Exit program if not connected to database
-conn = create_db_connection(section='postgresql_ml_lng_skk')
+conn = create_db_connection(section='postgresql')
 if conn == None:
     exit()
 else:

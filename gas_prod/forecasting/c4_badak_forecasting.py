@@ -242,7 +242,7 @@ def main():
     # Create SARIMAX Model
     #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     sarimax_model = ARIMA(order=(5, 1, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
-    sarimax_model.fit(train_df, exogenous=train_exog)
+    sarimax_model.fit(train_df, X=train_exog)
     sarimax_model.summary()
 
     sarimax_forecast = sarimax_model.predict(fh, X=future_exog)
