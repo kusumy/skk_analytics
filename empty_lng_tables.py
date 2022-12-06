@@ -14,7 +14,7 @@ def create_db_connection():
     # Read database configuration INI
     config = configparser.ConfigParser()
     config.read('database.ini')
-    postgresql = config['postgresql_ml_lng']
+    postgresql = config['postgresql_ml_lng_skk']
     host = postgresql['host']
     dbname = postgresql['database']
     user = postgresql['user']

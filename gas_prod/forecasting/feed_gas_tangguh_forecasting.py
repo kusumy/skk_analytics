@@ -331,15 +331,15 @@ def main():
 
     #%%
     #from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(train_df.values, model="additive", period=365)
-    fig = result.plot()
+    #from statsmodels.tsa.seasonal import seasonal_decompose
+    #result = seasonal_decompose(train_df.values, model="additive", period=365)
+    #fig = result.plot()
     #plt.show()
-    plt.close()
+    #plt.close()
     
     #%%
     #Ad Fuller Test
-    ad_test(train_df)
+    #ad_test(train_df)
 
     #%%
     #Create Exogenous Features for Training
@@ -353,7 +353,7 @@ def main():
     time_predict = pd.period_range('2022-11-21', periods=109, freq='D')
 
     #Load Data from Database
-    query_exog = os.path.join('gas_prod','fg_tangguh_exog_query.sql')
+    query_exog = os.path.join('gas_prod/sql','fg_tangguh_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     data_exog = get_sql_data(query_2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')
