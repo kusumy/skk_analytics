@@ -245,7 +245,7 @@ def main():
     sarimax_model.fit(train_df, exogenous=train_exog)
     sarimax_model.summary()
 
-    sarimax_forecast = sarimax_model.predict(len(fh), X=future_exog)
+    sarimax_forecast = sarimax_model.predict(fh, X=future_exog)
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
     y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]

@@ -239,12 +239,12 @@ def main():
     #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     sarimax_model = ARIMA(order=(0, 0, 1), seasonal_order=(0, 1, 1, 12), suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
-    sarimax_model.fit(train_df, exogenous=train_exog)
+    sarimax_model.fit(train_df, X=train_exog)
     logMessage("SARIMAX Model Summary")
     logMessage(arimax_model.summary())
     
     logMessage("SARIMAX Model Prediction ..")
-    sarimax_forecast = sarimax_model.predict(len(fh), X=future_exog)
+    sarimax_forecast = sarimax_model.predict(fh, X=future_exog) #len(fh) if using sktime
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
     y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]

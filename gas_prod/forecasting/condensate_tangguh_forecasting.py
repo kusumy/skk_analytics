@@ -116,7 +116,7 @@ def main():
     logMessage("Cleaning data ...")
     ##### CLEANING CONDENSATE DATA #####
     #Load Data from Database
-    query = os.path.join('gas_prod','condensate_tangguh_data_query.sql')
+    query = os.path.join('gas_prod/sql','condensate_tangguh_data_query.sql')
     query_1 = open(query, mode="rt").read()
     #real_data = retrieve_data(query_1)
     real_data = get_sql_data(query_1, conn)
@@ -353,7 +353,7 @@ def main():
 
     #%%
     #Load Data from Database
-    query_exog = os.path.join('gas_prod','condensate_tangguh_exog_query.sql')
+    query_exog = os.path.join('gas_prod/sql','condensate_tangguh_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     data_exog = get_sql_data(query_2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')

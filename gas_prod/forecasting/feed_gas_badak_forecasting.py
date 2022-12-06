@@ -177,12 +177,12 @@ def main():
     #plot_acf_pacf(df_smoothed)
 
     #%%
-    from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(df_smoothed.feed_gas.values, model="multiplicative", period=365)
-    fig = result.plot()
+    #from chart_studio.plotly import plot_mpl
+    #from statsmodels.tsa.seasonal import seasonal_decompose
+    #result = seasonal_decompose(df_smoothed.feed_gas.values, model="multiplicative", period=365)
+    #fig = result.plot()
     #plt.show()
-    plt.close()
+    #plt.close()
 
     #%%
     #Ad Fuller Test
@@ -235,14 +235,16 @@ def main():
     arimax_suppress_warnings = True
 
     #Create ARIMAX Model
-    arimax_model = auto_arima(train_df, exogenous=future_exog, d=arimax_differencing, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
+    #ARIMA(4,1,5)
+    #arimax_model = auto_arima(train_df, exogenous=future_exog, d=arimax_differencing, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
+    arimax_model = ARIMA(order=(4, 1, 5), suppress_warnings=arimax_suppress_warnings)
     logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(train_df, exogenous=train_exog)
+    arimax_model.fit(train_df, X=train_exog)
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_model.summary())
     
     logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(len(fh), X=future_exog)
+    arimax_forecast = arimax_model.predict(fh, X=future_exog) #if pmdarima using len(fh)
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
     y_pred_arimax['day_num'] = [i.day for i in arimax_forecast.index]
     y_pred_arimax['month_num'] = [i.month for i in arimax_forecast.index]

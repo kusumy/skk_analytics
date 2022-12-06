@@ -281,7 +281,7 @@ def main():
     sarimax_error_action = "ignore"
     sarimax_suppress_warnings = True
     
-    sarimax_model = auto_arima(df_smoothed, X=X_train, d=1, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
+    sarimax_model = auto_arima(df_smoothed, X=X_train, d=1, D=0, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
     #sarimax_model = ARIMA(order=(3, 1, 0), seasonal_order=(1, 1, 1, 12), suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...") 
     sarimax_model.fit(df_smoothed, X=X_train)
