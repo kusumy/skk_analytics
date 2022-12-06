@@ -137,11 +137,11 @@ def main():
     #plot_acf_pacf(train_df)
 
     #%%
-    from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(df.lng_production.values, model="multiplicative", period=365)
-    fig = result.plot()
-    plt.close()
+    # from chart_studio.plotly import plot_mpl
+    # from statsmodels.tsa.seasonal import seasonal_decompose
+    # result = seasonal_decompose(df.lng_production.values, model="multiplicative", period=365)
+    # fig = result.plot()
+    # plt.close()
 
     #%%
     #Ad Fuller Test
@@ -181,12 +181,12 @@ def main():
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
 
     # plotting for illustration
-    fig1, ax = plt.subplots(figsize=(20,8))
-    ax.plot(train_df, label='train')
-    ax.set_ylabel("LNG Production")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    plt.close()
+    # fig1, ax = plt.subplots(figsize=(20,8))
+    # ax.plot(train_df, label='train')
+    # ax.set_ylabel("LNG Production")
+    # ax.set_xlabel("Datestamp")
+    # ax.legend(loc='best')
+    # plt.close()
 
 
     ##### FORECASTING #####
@@ -194,7 +194,7 @@ def main():
     ##### ARIMAX MODEL #####
     from pmdarima.arima.utils import ndiffs, nsdiffs
     import statsmodels.api as sm
-    from sktime.forecasting.arima import AutoARIMA
+    from sktime.forecasting.arima import AutoARIMA, ARIMA
 
     #Set parameters
     arimax_differencing = 1
@@ -205,7 +205,8 @@ def main():
 
     # Create ARIMA Model
     #ARIMA(1,1,3)(0,0,0)[0]
-    arimax_model = AutoARIMA(d=arimax_differencing, stationary=arimax_stationary, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
+    #arimax_model = AutoARIMA(d=arimax_differencing, stationary=arimax_stationary, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
+    arimax_model = ARIMA(order=(1, 1, 3), suppress_warnings=arimax_suppress_warnings)
     logMessage("Creating ARIMAX Model ...")
     arimax_model.fit(train_df, X=train_exog)
     future_exog = future_exog.sort_index()
@@ -239,8 +240,9 @@ def main():
 
     # Create SARIMA Model
     #ARIMA(2,1,3)(0,0,0)[12] 
-    sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, sp=sarimax_sp, stationary=sarimax_stationary,
-                    seasonal=sarimax_seasonal, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+    #sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, sp=sarimax_sp, stationary=sarimax_stationary,
+    #                seasonal=sarimax_seasonal, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+    sarimax_model = ARIMA(order=(1, 1, 3), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
     sarimax_model.fit(train_df, X=train_exog)
     logMessage("SARIMAX Model Summary")

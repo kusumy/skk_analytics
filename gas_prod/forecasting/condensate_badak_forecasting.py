@@ -137,19 +137,19 @@ def main():
     low, up = smoother.get_intervals('prediction_interval')
 
     # plotting for illustration
-    plt.style.use('fivethirtyeight')
-    fig1, ax = plt.subplots(figsize=(18,7))
-    ax.plot(df.index, df[y], label='original')
-    ax.plot(df.index, smoother.smooth_data[0], linewidth=3, color='blue', label='smoothed')
-    ax.fill_between(df.index, low[0], up[0], alpha=0.3)
-    ax.set_ylabel("Condensate")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    title = ("PT Badak Condensate Production")
-    ax.set_title(title)
-    #plt.savefig("ptbadak_smoothed.jpg")
-    #plt.show()
-    plt.close()
+    # plt.style.use('fivethirtyeight')
+    # fig1, ax = plt.subplots(figsize=(18,7))
+    # ax.plot(df.index, df[y], label='original')
+    # ax.plot(df.index, smoother.smooth_data[0], linewidth=3, color='blue', label='smoothed')
+    # ax.fill_between(df.index, low[0], up[0], alpha=0.3)
+    # ax.set_ylabel("Condensate")
+    # ax.set_xlabel("Datestamp")
+    # ax.legend(loc='best')
+    # title = ("PT Badak Condensate Production")
+    # ax.set_title(title)
+    # #plt.savefig("ptbadak_smoothed.jpg")
+    # #plt.show()
+    # plt.close()
 
     #%%
     # Copy data from original
@@ -157,11 +157,11 @@ def main():
     # Replace original with smoothed data
     df_smoothed[y] = smoother.smooth_data[0]
 
-    import chart_studio.plotly
-    import cufflinks as cf
-    from plotly.offline import iplot
-    cf.go_offline()
-    cf.set_config_file(offline = False, world_readable = True)
+    # import chart_studio.plotly
+    # import cufflinks as cf
+    # from plotly.offline import iplot
+    # cf.go_offline()
+    # cf.set_config_file(offline = False, world_readable = True)
     #df_smoothed.iplot(title="Condensate PT Badak")
 
     #%%
@@ -174,12 +174,12 @@ def main():
     #plot_acf_pacf(df_smoothed)
 
     #%%
-    from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(df_smoothed.condensate.values, model="multiplicative", period=365)
-    fig = result.plot()
-    plt.show()
-    #plt.close()
+    # from chart_studio.plotly import plot_mpl
+    # from statsmodels.tsa.seasonal import seasonal_decompose
+    # result = seasonal_decompose(df_smoothed.condensate.values, model="multiplicative", period=365)
+    # fig = result.plot()
+    # #plt.show()
+    # plt.close()
 
     #%%
     #Ad Fuller Test
@@ -229,9 +229,10 @@ def main():
     arimax_suppress_warnings = True
 
     # Create ARIMAX Model
-    arimax_model = auto_arima(train_df, exogenous=future_exog, d=arimax_differencing, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
+    #arimax_model = auto_arima(train_df, exogenous=future_exog, d=arimax_differencing, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
+    arimax_model = ARIMA(order=(5, 1, 2), suppress_warnings=arimax_suppress_warnings)
     logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(train_df, exogenous=train_exog)
+    arimax_model.fit(train_df, X=train_exog)
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_model.summary())
 

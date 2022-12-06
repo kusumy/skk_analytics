@@ -167,18 +167,18 @@ def main():
     from cProfile import label
     from imaplib import Time2Internaldate
 
-    fig = px.line(new_s, y='feed_gas')
-    # Add horizontal line for 3 sigma
-    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean + std", 
-                annotation_position="top right")
-    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean - 3*std", 
-                annotation_position="bottom right")
-    fig.add_scatter(x=anomalies_data.index, y=anomalies_data['feed_gas'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    fig.update_layout(title_text='Feed Gas Tangguh', title_font_size=24)
-    #fig.show()
-    plt.close()
+    # fig = px.line(new_s, y='feed_gas')
+    # # Add horizontal line for 3 sigma
+    # fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+    #             annotation_text="Mean + std", 
+    #             annotation_position="top right")
+    # fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+    #             annotation_text="Mean - 3*std", 
+    #             annotation_position="bottom right")
+    # fig.add_scatter(x=anomalies_data.index, y=anomalies_data['feed_gas'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    # fig.update_layout(title_text='Feed Gas Tangguh', title_font_size=24)
+    # #fig.show()
+    # plt.close()
 
     #%%
     #Replace Anomaly Values
@@ -215,7 +215,6 @@ def main():
     
         return last_date.strftime("%Y-%m-%d")
 
-    
     def get_first_date_of_prev_month(year, month, step=-1):
         """Return the first date of the month.
 
@@ -249,6 +248,7 @@ def main():
         last_date = last_date + relativedelta(months=step)
     
         return last_date.strftime("%Y-%m-%d")
+
 
     for index, row in anomalies_data.iterrows():
         yr = index.year
@@ -286,26 +286,26 @@ def main():
     from imaplib import Time2Internaldate
 
 
-    fig = px.line(new_s, y='feed_gas')
+    # fig = px.line(new_s, y='feed_gas')
 
-    # Add horizontal line for 3 sigma
-    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean + std", 
-                annotation_position="top right")
-    fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean + 3*std", 
-                annotation_position="top right")
-    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean - 3*std", 
-                annotation_position="bottom right")
-    fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean - std", 
-                annotation_position="bottom right")
-    fig.add_scatter(x=anomalies_data.index, y=anomalies_data['feed_gas'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    fig.add_scatter(x=anomaly_upd.index, y=anomaly_upd['feed_gas'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
-    fig.update_layout(title_text='Feed Gas BP Tangguh', title_font_size=24)
-    #fig.show()
-    plt.close()
+    # # Add horizontal line for 3 sigma
+    # fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+    #             annotation_text="Mean + std", 
+    #             annotation_position="top right")
+    # fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
+    #             annotation_text="Mean + 3*std", 
+    #             annotation_position="top right")
+    # fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+    #             annotation_text="Mean - 3*std", 
+    #             annotation_position="bottom right")
+    # fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
+    #             annotation_text="Mean - std", 
+    #             annotation_position="bottom right")
+    # fig.add_scatter(x=anomalies_data.index, y=anomalies_data['feed_gas'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    # fig.add_scatter(x=anomaly_upd.index, y=anomaly_upd['feed_gas'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
+    # fig.update_layout(title_text='Feed Gas BP Tangguh', title_font_size=24)
+    # #fig.show()
+    # plt.close()
 
     # Prepare data to forecast
     data = new_s[['feed_gas', 'wpnb_gas', 'planned_shutdown']].copy()
@@ -378,12 +378,12 @@ def main():
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
 
     #Plotting for illustration
-    fig1, ax = plt.subplots(figsize=(20,8))
-    ax.plot(train_df, label='train')
-    ax.set_ylabel("Feed Gas")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    plt.close()
+    # fig1, ax = plt.subplots(figsize=(20,8))
+    # ax.plot(train_df, label='train')
+    # ax.set_ylabel("Feed Gas")
+    # ax.set_xlabel("Datestamp")
+    # ax.legend(loc='best')
+    # plt.close()
 
 
     #%%

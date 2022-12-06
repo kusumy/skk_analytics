@@ -136,19 +136,19 @@ def main():
     low, up = smoother.get_intervals('prediction_interval')
 
     # plotting for illustration
-    plt.style.use('fivethirtyeight')
-    fig1, ax = plt.subplots(figsize=(18,7))
-    ax.plot(df.index, df[y], label='original')
-    ax.plot(df.index, smoother.smooth_data[0], linewidth=3, color='blue', label='smoothed')
-    ax.fill_between(df.index, low[0], up[0], alpha=0.3)
-    ax.set_ylabel("Feed Gas")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    title = ("PT Badak Feed Gas Production")
-    ax.set_title(title)
-    #plt.savefig("ptbadak_smoothed.jpg")
-    #plt.show()
-    plt.close()
+    # plt.style.use('fivethirtyeight')
+    # fig1, ax = plt.subplots(figsize=(18,7))
+    # ax.plot(df.index, df[y], label='original')
+    # ax.plot(df.index, smoother.smooth_data[0], linewidth=3, color='blue', label='smoothed')
+    # ax.fill_between(df.index, low[0], up[0], alpha=0.3)
+    # ax.set_ylabel("Feed Gas")
+    # ax.set_xlabel("Datestamp")
+    # ax.legend(loc='best')
+    # title = ("PT Badak Feed Gas Production")
+    # ax.set_title(title)
+    # #plt.savefig("ptbadak_smoothed.jpg")
+    # #plt.show()
+    # plt.close()
 
     #%%
     # Copy data from original

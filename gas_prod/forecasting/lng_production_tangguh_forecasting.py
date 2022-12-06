@@ -164,21 +164,21 @@ def main():
     #anomalies_data.tail(100)
 
     # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
+    # from cProfile import label
+    # from imaplib import Time2Internaldate
 
-    fig = px.line(new_s, y='lng_production')
-    # Add horizontal line for 3 sigma
-    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean + std", 
-                annotation_position="top right")
-    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean - 3*std", 
-                annotation_position="bottom right")
-    fig.add_scatter(x=anomalies_data.index, y=anomalies_data['lng_production'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    fig.update_layout(title_text='LNG Production Tangguh', title_font_size=24)
-    #fig.show()
-    plt.close()
+    # fig = px.line(new_s, y='lng_production')
+    # # Add horizontal line for 3 sigma
+    # fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+    #             annotation_text="Mean + std", 
+    #             annotation_position="top right")
+    # fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+    #             annotation_text="Mean - 3*std", 
+    #             annotation_position="bottom right")
+    # fig.add_scatter(x=anomalies_data.index, y=anomalies_data['lng_production'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    # fig.update_layout(title_text='LNG Production Tangguh', title_font_size=24)
+    # #fig.show()
+    # plt.close()
 
     #Replace Anomaly Values
     from datetime import date, datetime, timedelta
@@ -279,30 +279,30 @@ def main():
 
     #Display Cleaned Data
     # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
+    # from cProfile import label
+    # from imaplib import Time2Internaldate
 
-    fig = px.line(new_s, y='lng_production')
+    # fig = px.line(new_s, y='lng_production')
 
-    # Add horizontal line for 3 sigma
-    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean + std", 
-                annotation_position="top right")
-    fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean + 3*std", 
-                annotation_position="top right")
-    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean - 3*std", 
-                annotation_position="bottom right")
-    fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean - std", 
-                annotation_position="bottom right")
-    fig.add_scatter(x=anomalies_data.index, y=anomalies_data['lng_production'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    fig.add_scatter(x=anomaly_upd.index, y=anomaly_upd['lng_production'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
-    fig.update_layout(title_text='LNG Production BP Tangguh', title_font_size=24)
+    # # Add horizontal line for 3 sigma
+    # fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+    #             annotation_text="Mean + std", 
+    #             annotation_position="top right")
+    # fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
+    #             annotation_text="Mean + 3*std", 
+    #             annotation_position="top right")
+    # fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+    #             annotation_text="Mean - 3*std", 
+    #             annotation_position="bottom right")
+    # fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
+    #             annotation_text="Mean - std", 
+    #             annotation_position="bottom right")
+    # fig.add_scatter(x=anomalies_data.index, y=anomalies_data['lng_production'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    # fig.add_scatter(x=anomaly_upd.index, y=anomaly_upd['lng_production'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
+    # fig.update_layout(title_text='LNG Production BP Tangguh', title_font_size=24)
 
-    #fig.show()
-    plt.close()
+    # #fig.show()
+    # plt.close()
 
     #%%
     #prepare data
@@ -329,11 +329,11 @@ def main():
     #plot_acf_pacf(train_df)
 
     #%%
-    from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(train_df, model="additive", period=100)
-    fig = result.plot()
-    plt.close()
+    # from chart_studio.plotly import plot_mpl
+    # from statsmodels.tsa.seasonal import seasonal_decompose
+    # result = seasonal_decompose(train_df, model="additive", period=100)
+    # fig = result.plot()
+    # plt.close()
 
     #%%
     #Ad Fuller Test
@@ -373,12 +373,12 @@ def main():
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
 
     # plotting for illustration
-    fig1, ax = plt.subplots(figsize=(20,8))
-    ax.plot(train_df, label='train')
-    ax.set_ylabel("LNG Production")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    plt.close()
+    # fig1, ax = plt.subplots(figsize=(20,8))
+    # ax.plot(train_df, label='train')
+    # ax.set_ylabel("LNG Production")
+    # ax.set_xlabel("Datestamp")
+    # ax.legend(loc='best')
+    # plt.close()
 
 
     ##### FORECASTING #####
@@ -396,7 +396,8 @@ def main():
     arimax_differencing = 0
 
     # Create ARIMAX Model
-    arimax_model = AutoARIMA(d=arimax_differencing, suppress_warnings=arimax_suppress_warnings, error_action=arimax_error_action)
+    #arimax_model = AutoARIMA(d=arimax_differencing, suppress_warnings=arimax_suppress_warnings, error_action=arimax_error_action)
+    arimax_model = ARIMA(order=(1, 0, 1), suppress_warnings=arimax_suppress_warnings)
     logMessage("Creating ARIMAX Model ...")
     arimax_model.fit(train_df, X=train_exog)
     future_exog = future_exog.sort_index()

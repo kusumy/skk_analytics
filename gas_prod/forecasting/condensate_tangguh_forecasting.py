@@ -162,21 +162,21 @@ def main():
     #anomalies_data.tail(100)
 
     # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
+    # from cProfile import label
+    # from imaplib import Time2Internaldate
 
-    fig = px.line(new_s, y='condensate')
-    # Add horizontal line for 3 sigma
-    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean + std", 
-                annotation_position="top right")
-    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean - 3*std", 
-                annotation_position="bottom right")
-    fig.add_scatter(x=anomalies_data.index, y=anomalies_data['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    fig.update_layout(title_text='Condensate Tangguh', title_font_size=24)
-    #fig.show()
-    plt.close()
+    # fig = px.line(new_s, y='condensate')
+    # # Add horizontal line for 3 sigma
+    # fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+    #             annotation_text="Mean + std", 
+    #             annotation_position="top right")
+    # fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+    #             annotation_text="Mean - 3*std", 
+    #             annotation_position="bottom right")
+    # fig.add_scatter(x=anomalies_data.index, y=anomalies_data['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    # fig.update_layout(title_text='Condensate Tangguh', title_font_size=24)
+    # #fig.show()
+    # plt.close()
 
     #%%
     #Replace Anomaly Values
@@ -279,27 +279,27 @@ def main():
     #%%
     #Display Cleaned Data
     #Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
+    # from cProfile import label
+    # from imaplib import Time2Internaldate
 
-    fig = px.line(new_s, y='condensate')
+    # fig = px.line(new_s, y='condensate')
 
-    # Add horizontal line for 3 sigma
-    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean + std", 
-                annotation_position="top right")
-    fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean + 3*std", 
-                annotation_position="top right")
-    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean - 3*std", 
-                annotation_position="bottom right")
-    fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean - std", 
-                annotation_position="bottom right")
-    fig.add_scatter(x=anomalies_data.index, y=anomalies_data['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    fig.add_scatter(x=anomaly_upd.index, y=anomaly_upd['condensate'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
-    fig.update_layout(title_text='Condensate BP Tangguh', title_font_size=24)
+    # # Add horizontal line for 3 sigma
+    # fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+    #             annotation_text="Mean + std", 
+    #             annotation_position="top right")
+    # fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
+    #             annotation_text="Mean + 3*std", 
+    #             annotation_position="top right")
+    # fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+    #             annotation_text="Mean - 3*std", 
+    #             annotation_position="bottom right")
+    # fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
+    #             annotation_text="Mean - std", 
+    #             annotation_position="bottom right")
+    # fig.add_scatter(x=anomalies_data.index, y=anomalies_data['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    # fig.add_scatter(x=anomaly_upd.index, y=anomaly_upd['condensate'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
+    # fig.update_layout(title_text='Condensate BP Tangguh', title_font_size=24)
 
     #fig.show()
     #plt.close()
@@ -329,11 +329,11 @@ def main():
     #plot_acf_pacf(train_df)
 
     #%%
-    from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(train_df.values, model="additive", period=365)
-    fig = result.plot()
-    plt.show()
+    # from chart_studio.plotly import plot_mpl
+    # from statsmodels.tsa.seasonal import seasonal_decompose
+    # result = seasonal_decompose(train_df.values, model="additive", period=365)
+    # fig = result.plot()
+    # plt.close()
 
     #%%
     #Ad Fuller Test
@@ -394,7 +394,7 @@ def main():
     ##### ARIMAX MODEL #####
     from pmdarima.arima.utils import ndiffs, nsdiffs
     import statsmodels.api as sm
-    from sktime.forecasting.arima import AutoARIMA
+    from sktime.forecasting.arima import ARIMA
 
     #Set parameters
     arimax_differencing = 0
@@ -402,7 +402,8 @@ def main():
     arimax_suppress_warnings = True
 
     # Create ARIMA Model
-    arimax_model = AutoARIMA(d=arimax_differencing, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
+    #arimax_model = ARIMA(d=arimax_differencing, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
+    arimax_model = ARIMA(order=(1, 0, 2), suppress_warnings=arimax_suppress_warnings)
     logMessage("Creating ARIMAX Model ...")
     arimax_model.fit(train_df, X=train_exog)
     logMessage("ARIMAX Model Summary")
