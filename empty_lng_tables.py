@@ -65,6 +65,9 @@ sql1 = """
             forecast_h = null, 
             updated_at = null, 
             updated_by = null
+        WHERE
+            prod_date >= '2022-11-21'
+            and prod_date <= '2022-12-31'
        """
 
 sql2 = """
@@ -79,6 +82,9 @@ sql2 = """
             forecast_h = null, 
             updated_at = null, 
             updated_by = null
+        WHERE
+            prod_date >= '2022-11-21'
+            and prod_date <= '2022-12-31'
        """
 
 sql3 = """
@@ -93,6 +99,9 @@ sql3 = """
             forecast_h = null, 
             updated_at = null, 
             updated_by = null
+        WHERE
+            prod_date >= '2022-11-21'
+            and prod_date <= '2022-12-31'
        """
 
 sql4 = """
@@ -107,6 +116,9 @@ sql4 = """
             forecast_h = null, 
             updated_at = null, 
             updated_by = null
+        WHERE
+            prod_date >= '2022-11-21'
+            and prod_date <= '2022-12-31'
        """
 
 sql5 = """
@@ -121,6 +133,9 @@ sql5 = """
             forecast_h = null, 
             updated_at = null, 
             updated_by = null
+        WHERE
+            prod_date >= '2022-11-21'
+            and prod_date <= '2022-12-31'
        """
 
 # Add the arguments to the parser
