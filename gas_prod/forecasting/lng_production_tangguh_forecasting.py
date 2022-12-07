@@ -329,7 +329,7 @@ def main():
         # Create ARIMAX Model
         logMessage("Creating ARIMAX Model ...")
         #arimax_model = AutoARIMA(d=arimax_differencing, suppress_warnings=arimax_suppress_warnings, error_action=arimax_error_action)
-        arimax_model = ARIMA(order=(1, 0, 1), suppress_warnings=arimax_suppress_warnings)
+        arimax_model = ARIMA(order=(1, 1, 1), suppress_warnings=arimax_suppress_warnings)
         arimax_model.fit(train_df, X=train_exog)
         future_exog = future_exog.sort_index()
         logMessage("ARIMAX Model Summary")
@@ -361,7 +361,7 @@ def main():
         logMessage("Creating ARIMAX Model ...")
         #sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_sesonal_differencing, suppress_warnings=sarimax_suppress_warnings,
         #                  seasonal=sarimax_seasonal, sp=sarimax_period, trace=sarimax_trace, error_action=sarimax_error_action)
-        sarimax_model = ARIMA(order=(1, 0, 1), seasonal_order=(0, 1, 1, 12), suppress_warnings=sarimax_suppress_warnings)
+        sarimax_model = ARIMA(order=(1, 0, 2), seasonal_order=(0, 1, 1, 4), suppress_warnings=sarimax_suppress_warnings)
         sarimax_model.fit(train_df, X=train_exog)
         logMessage("SARIMAX Model Summary")
         logMessage(sarimax_model.summary())
@@ -424,7 +424,7 @@ def main():
 
         #Set parameters
         ranfor_n_estimators = 157
-        ranfor_lags = 36
+        ranfor_lags = 75
         ranfor_random_state = 0
         ranfor_criterion = "squared_error"
         ranfor_strategy = "recursive"
@@ -452,7 +452,7 @@ def main():
 
         #Set parameters
         xgb_objective = 'reg:squarederror'
-        xgb_lags = 34
+        xgb_lags = 16
         xgb_strategy = "recursive"
 
         # Create regressor object
@@ -478,7 +478,7 @@ def main():
         from sklearn.linear_model import LinearRegression
 
         #Set Parameters
-        linreg_lags = 2
+        linreg_lags = 10
         linreg_normalize = True
         linreg_strategy = "recursive"
 
