@@ -1,0 +1,84 @@
+2022-12-07 13:35:22,870 Forecasting Feed Gas BP Tangguh ...
+2022-12-07 13:35:22,871 Connecting to database ...
+2022-12-07 13:35:28,032 Cleaning data ...
+2022-12-07 13:35:28,740 Creating ARIMAX Model ...
+2022-12-07 13:35:29,957 ARIMAX Model Summary
+2022-12-07 13:35:29,959                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                 1055
+Model:               SARIMAX(2, 0, 2)   Log Likelihood               -5716.218
+Date:                Wed, 07 Dec 2022   AIC                          11452.436
+Time:                        13:35:29   BIC                          11502.049
+Sample:                    01-01-2020   HQIC                         11471.243
+                         - 11-20-2022                                         
+Covariance Type:                  opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+intercept           11.3895      8.147      1.398      0.162      -4.578      27.357
+planned_shutdown  -363.8880      8.603    -42.296      0.000    -380.750    -347.026
+wpnb_gas            -0.0173      0.097     -0.178      0.859      -0.208       0.173
+month                0.0139      6.601      0.002      0.998     -12.925      12.952
+day                 -0.6101      0.533     -1.145      0.252      -1.655       0.434
+ar.L1                1.5600      0.084     18.566      0.000       1.395       1.725
+ar.L2               -0.5680      0.079     -7.181      0.000      -0.723      -0.413
+ma.L1               -0.8807      0.084    -10.477      0.000      -1.046      -0.716
+ma.L2                0.0462      0.037      1.251      0.211      -0.026       0.118
+sigma2            3060.0339     54.913     55.725      0.000    2952.407    3167.661
+===================================================================================
+Ljung-Box (L1) (Q):                   0.01   Jarque-Bera (JB):             55583.76
+Prob(Q):                              0.92   Prob(JB):                         0.00
+Heteroskedasticity (H):               1.74   Skew:                            -0.52
+Prob(H) (two-sided):                  0.00   Kurtosis:                        38.54
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-12-07 13:35:29,967 ARIMAX Model Prediction ..
+2022-12-07 13:35:29,983 Creating SARIMAX Model ...
+2022-12-07 13:35:47,983 SARIMAX Model Summary
+2022-12-07 13:35:47,985                                      SARIMAX Results                                      
+==========================================================================================
+Dep. Variable:                                  y   No. Observations:                 1055
+Model:             SARIMAX(2, 0, 0)x(2, 1, 0, 12)   Log Likelihood               -5806.768
+Date:                            Wed, 07 Dec 2022   AIC                          11633.536
+Time:                                    13:35:47   BIC                          11683.034
+Sample:                                01-01-2020   HQIC                         11652.310
+                                     - 11-20-2022                                         
+Covariance Type:                              opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+intercept           -5.7034      2.139     -2.666      0.008      -9.897      -1.510
+planned_shutdown  -462.7733      7.569    -61.141      0.000    -477.608    -447.938
+wpnb_gas             0.0461      0.042      1.097      0.273      -0.036       0.128
+month                4.8831      2.967      1.646      0.100      -0.931      10.698
+day                 -0.2296      0.365     -0.629      0.529      -0.944       0.485
+ar.L1                0.5768      0.017     33.587      0.000       0.543       0.610
+ar.L2                0.1633      0.018      8.989      0.000       0.128       0.199
+ar.S.L12            -0.6369      0.019    -34.412      0.000      -0.673      -0.601
+ar.S.L24            -0.3135      0.020    -15.473      0.000      -0.353      -0.274
+sigma2            4133.3166     60.366     68.471      0.000    4015.001    4251.632
+===================================================================================
+Ljung-Box (L1) (Q):                   1.66   Jarque-Bera (JB):             20742.14
+Prob(Q):                              0.20   Prob(JB):                         0.00
+Heteroskedasticity (H):               1.48   Skew:                            -0.61
+Prob(H) (two-sided):                  0.00   Kurtosis:                        24.81
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-12-07 13:35:47,993 SARIMAX Model Prediction ..
+2022-12-07 13:35:48,126 Creating Prophet Model ....
+2022-12-07 13:35:48,240 cmd: where.exe tbb.dll
+cwd: None
+2022-12-07 13:35:48,274 Adding TBB (C:\ProgramData\Miniconda3\envs\py38_ts\lib\site-packages\prophet\stan_model\cmdstan-2.26.1\stan\lib\stan_math\lib\tbb) to PATH
+2022-12-07 13:35:48,302 input tempfile: C:\Users\kusumy\AppData\Local\Temp\tmpdqlzdydv\l6ryqyfh.json
+2022-12-07 13:35:48,375 input tempfile: C:\Users\kusumy\AppData\Local\Temp\tmpdqlzdydv\mkjpkgdt.json
+2022-12-07 13:35:48,377 idx 0
+2022-12-07 13:35:48,378 running CmdStan, num_threads: None
+2022-12-07 13:35:48,378 CmdStan args: ['C:\\ProgramData\\Miniconda3\\envs\\py38_ts\\Lib\\site-packages\\prophet\\stan_model\\prophet_model.bin', 'random', 'seed=46432', 'data', 'file=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmpdqlzdydv\\l6ryqyfh.json', 'init=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmpdqlzdydv\\mkjpkgdt.json', 'output', 'file=C:\\Users\\kusumy\\AppData\\Local\\Temp\\tmpdqlzdydv\\prophet_modelt6dtejgt\\prophet_model-20221207133548.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
+2022-12-07 13:35:48,378 Chain [1] start processing
+2022-12-07 13:35:48,860 Chain [1] done processing
+2022-12-07 13:35:48,875 Prophet Model Prediction ...
+2022-12-07 13:35:48,875 [WinError 6] The handle is invalid

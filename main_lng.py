@@ -40,7 +40,7 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 # Configure logging
 configLogging("main_lng.log")
     
-logMessage("Forecasting Feed Gas BP Tangguh ...")
+# Forecasting Feed Gas BP Tangguh ...
 t0 = time.process_time()
 feed_gas_tangguh_forecasting.main()
 t1 = time.process_time()
@@ -49,7 +49,7 @@ logMessage("Forecasting Feed Gas BP Tangguh : " + exec_time)
 
 logMessage('\n')
 
-logMessage("Forecasting Feed Gas PT Badak ...")
+#"Forecasting Feed Gas PT Badak ...
 t2 = time.process_time()
 feed_gas_badak_forecasting.main() 
 t3 = time.process_time()
@@ -58,7 +58,7 @@ logMessage("Forecasting Feed Gas PT Badak : " + exec_time)
 
 logMessage('\n')
 
-logMessage("Forecasting LNG Production BP Tangguh ...")
+# Forecasting LNG Production BP Tangguh ...
 t4 = time.process_time()
 lng_tangguh_forecasting.main() 
 t5 = time.process_time()
@@ -67,7 +67,7 @@ logMessage("Forecasting LNG Production BP Tangguh : " + exec_time)
 
 logMessage('\n')
 
-logMessage("Forecasting LNG Production PT Badak ...")
+# Forecasting LNG Production PT Badak ...
 t6 = time.process_time()
 lng_badak_forecasting.main()
 t7 = time.process_time()
@@ -76,7 +76,7 @@ logMessage("Forecasting LNG Production PT Badak : " + exec_time)
 
 logMessage('\n')
 
-logMessage("Forecasting Condensate BP Tangguh ...")
+# Forecasting Condensate BP Tangguh ...
 t8 = time.process_time()
 condensate_tangguh_forecasting.main()
 t9 = time.process_time()
@@ -85,7 +85,7 @@ logMessage("Forecasting Condensate BP Tangguh : " + exec_time)
 
 logMessage('\n')
 
-logMessage("Forecasting Condensate PT Badak ...")
+# Forecasting Condensate PT Badak ...
 t10 = time.process_time()
 condensate_badak_forecasting.main()
 t11 = time.process_time()
@@ -94,7 +94,7 @@ logMessage("Forecasting Condensate PT Badak : " + exec_time)
 
 logMessage('\n')
 
-logMessage("Forecasting C3 PT Badak ...")
+# Forecasting C3 PT Badak ...
 t12 = time.process_time()
 c3_badak_forecasting.main()
 t13 = time.process_time()
@@ -103,7 +103,7 @@ logMessage("Forecasting C3 PT Badak : " + exec_time)
 
 logMessage('\n')
 
-logMessage("Forecasting C4 PT Badak ...")
+# Forecasting C4 PT Badak ...
 t14 = time.process_time()
 c4_badak_forecasting.main()
 t15 = time.process_time()
