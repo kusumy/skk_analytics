@@ -8,6 +8,7 @@ import pandas as pd
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.tsa.stattools import adfuller, kpss
 
 def configLogging(filename="log.log"):
     # Configure logging
@@ -67,6 +68,21 @@ def stationarity_check(ts):
     for key, value in dftest[4].items():
         dfoutput['Critical Value (%s)'%key] = value
     print(dfoutput)
+
+def check_stationarity(df):
+    kps = kpss(df)
+    adf = adfuller(df)
+
+    kpss_pv, adf_pv = kps[1], adf[1]
+    kpssh, adfh = 'Stationary', 'Non-stationary'
+
+    if adf_pv < 0.05:
+        # Reject ADF Null Hypothesis
+        adfh = 'Stationary'
+    if kpss_pv < 0.05:
+        # Reject KPSS Null Hypothesis
+        kpssh = 'Non-stationary'
+    return (kpssh, adfh)
 
 def decomposition_plot(ts):
 # Apply seasonal_decompose 
