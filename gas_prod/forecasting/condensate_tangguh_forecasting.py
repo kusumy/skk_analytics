@@ -334,9 +334,9 @@ def main():
         arimax_suppress_warnings = True
 
         # Create ARIMA Model
+        logMessage("Creating ARIMAX Model ...")
         #arimax_model = ARIMA(d=arimax_differencing, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
         arimax_model = ARIMA(order=(1, 0, 2), suppress_warnings=arimax_suppress_warnings)
-        logMessage("Creating ARIMAX Model ...")
         arimax_model.fit(train_df, X=train_exog)
         logMessage("ARIMAX Model Summary")
         logMessage(arimax_model.summary())
@@ -367,10 +367,10 @@ def main():
         sarimax_suppress_warnings = True
 
         # Create SARIMAX Model
+        logMessage("Creating SARIMAX Model ...")
         #sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, sp=sarimax_sp, stationary=sarimax_stationary,
         #                  seasonal=sarimax_seasonal, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
         sarimax_model = ARIMA(order=(2,0,2), seasonal_order=(2,1,0,12),  suppress_warnings=sarimax_suppress_warnings)
-        logMessage("Creating SARIMAX Model ...")
         sarimax_model.fit(train_df, X=train_exog)
         logMessage("SARIMAX Model Summary")
         logMessage(sarimax_model.summary())
@@ -402,6 +402,7 @@ def main():
         prophet_yearly_seasonality = 10
 
         #Create regressor object
+        logMessage("Creating Prophet Model ....")
         prophet_forecaster = Prophet(
                         seasonality_mode=prophet_seasonality_mode,
                         n_changepoints=prophet_n_changepoints,
@@ -413,7 +414,6 @@ def main():
                         weekly_seasonality=prophet_weekly_seasonality,
                         yearly_seasonality=prophet_yearly_seasonality)
 
-        logMessage("Creating Prophet Model ....")
         prophet_forecaster.fit(train_df, train_exog) #, X_train
         logMessage("Prophet Model Prediction ...")
         prophet_forecast = prophet_forecaster.predict(fh, X=future_exog) #, X=X_test
@@ -438,10 +438,10 @@ def main():
         ranfor_strategy = "recursive"
 
         #Create regressor object
+        logMessage("Creating Random Forest Model ...")
         ranfor_regressor = RandomForestRegressor(n_estimators = ranfor_n_estimators, random_state=ranfor_random_state, criterion=ranfor_criterion)
         ranfor_forecaster = make_reduction(ranfor_regressor, window_length=ranfor_lags, strategy=ranfor_strategy) #30, nonexog=30
-        logMessage("Creating Random Forest Model ...")
-
+        
         ranfor_forecaster.fit(train_df, train_exog) #, X_train
         logMessage("Random Forest Model Prediction")
         ranfor_forecast = ranfor_forecaster.predict(fh, X=future_exog) #, X=X_test
@@ -560,28 +560,7 @@ def main():
         #Rename colum 0
         y_pred_poly3.rename(columns={0:'forecast_h'}, inplace=True)
 
-        #%%
-        # Plot prediction
-        fig, ax = plt.subplots(figsize=(20,8))
-        ax.plot(train_df, label='train')
-        ax.plot(arimax_forecast, label='arimax_pred')
-        ax.plot(sarimax_forecast, label='sarimax_pred')
-        ax.plot(prophet_forecast, label='prophet_pred')
-        ax.plot(ranfor_forecast, label='ranfor_pred')
-        ax.plot(xgb_forecast, label='xgb_pred')
-        ax.plot(linreg_forecast, label='linreg_pred')
-        ax.plot(poly2_forecast, label='poly2_pred')
-        ax.plot(poly3_forecast, label='poly3_pred')
-        title = 'Condensate BP Tangguh Forecasting with Exogenous Variable WPNB Oil, Planned Shuwdown, Day & Month)'
-        ax.set_title(title)
-        ax.set_ylabel("LNG Production")
-        ax.set_xlabel("Datestamp")
-        ax.legend(loc='best')
-        #plt.savefig("Condensate BP Tangguh Forecasting" + ".jpg")
-        #plt.show()
-        plt.close()
-
-        # %%
+    
         ##### JOIN PREDICTION RESULT TO DATAFRAME #####
         logMessage("Creating all model prediction result data frame ...")
         y_all_pred = pd.concat([y_pred_arimax[['forecast_a']],
@@ -593,6 +572,26 @@ def main():
                                 y_pred_poly2[['forecast_g']],
                                 y_pred_poly3[['forecast_h']]], axis=1)
         y_all_pred['date'] = future_exog.index.values
+        
+        # Plot prediction
+        fig, ax = plt.subplots(figsize=(20,8))
+        ax.plot(train_df, label='train')
+        ax.plot(arimax_forecast, label='arimax_pred')
+        ax.plot(sarimax_forecast, label='sarimax_pred')
+        ax.plot(prophet_forecast, label='prophet_pred')
+        ax.plot(ranfor_forecast, label='ranfor_pred')
+        ax.plot(xgb_forecast, label='xgb_pred')
+        ax.plot(linreg_forecast, label='linreg_pred')
+        ax.plot(poly2_forecast, label='poly2_pred')
+        ax.plot(poly3_forecast, label='poly3_pred')
+        title = 'Condensate BP Tangguh Forecasting with Exogenous Variable WPNB Gas, Planned Shuwdown, Day & Month)'
+        ax.set_title(title)
+        ax.set_ylabel("Condensate")
+        ax.set_xlabel("Datestamp")
+        ax.legend(loc='best')
+        #plt.savefig("Condensate BP Tangguh Forecasting" + ".jpg")
+        #plt.show()
+        plt.close()
 
         # %%
         # Save forecast result to database
