@@ -428,7 +428,7 @@ def main():
     from sktime.forecasting.arima import AutoARIMA
     from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 
-    # Create SARIMAX (forecast_b) Model
+    # Create ARIMAX (forecast_a) Model
     arimax_model = AutoARIMA(d=0, suppress_warnings=True, error_action='ignore')
     logMessage("Creating ARIMAX Model ...")
     arimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
