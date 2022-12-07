@@ -18,16 +18,20 @@ from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
 
-from connection import config, retrieve_data, create_db_connection
+from connection import config, retrieve_data, create_db_connection, get_sql_data
 from utils import configLogging, logMessage, ad_test
 
 from pmdarima import model_selection
-from sklearn.metrics import (mean_absolute_error,
-                             mean_absolute_percentage_error,
-                             mean_squared_error, r2_score)
+from sklearn.metrics import (mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, r2_score)
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
+
+from adtk.detector import ThresholdAD
+from adtk.visualization import plot
+from adtk.data import validate_series
+pd.options.plotting.backend = "plotly"
+from dateutil.relativedelta import *
 
 def stationarity_check(ts):
             
@@ -107,18 +111,13 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng')
+    conn = create_db_connection(section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
         
     # Prepare data
-    file = os.path.join('gas_prod','condensate_unplanned-planned_shutdown_cleaned_with.csv')
-    data = pd.read_csv(file, sep=',')
-    
-    # Retrieve data from database
-    # Data cleanup & Anomaly Detection
-    # Data Smoothing
-    
+    query_1 = open(os.path.join('gas_prod/sql', 'condensate_tangguh_data_query_insample.sql'), mode="rt").read()
+    data = get_sql_data(query_1, conn)
 
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
@@ -134,20 +133,245 @@ def main():
     #df
 
     #%%
-    # stationarity_check(df)
-    # decomposition_plot(df)
-    # plot_acf_pacf(df)
+    data_cleaning = data[['date', 'condensate', 'wpnb_oil', 'unplanned_shutdown', 'planned_shutdown']].copy()
+    ds_cleaning = 'date'
+    data_cleaning = data_cleaning.set_index(ds_cleaning)
+    data_cleaning['unplanned_shutdown'] = data_cleaning['unplanned_shutdown'].astype('int')
+    s = validate_series(data_cleaning)
+
+    # plotting for illustration
+    plt.style.use('fivethirtyeight')
+
+    fig1, ax = plt.subplots(figsize=(20,8))
+    ax.plot(data_cleaning['condensate'], label='condensate')
+    ax.set_ylabel("condensate")
+    ax.set_xlabel("Datestamp")
+    ax.legend(loc='best')
+    plt.close()
 
     #%%
-    #from chart_studio.plotly import plot_mpl
+    # Calculate standar deviation
+    fg_std = data_cleaning['condensate'].std()
+    fg_mean = data_cleaning['condensate'].mean()
+
+    #Detect Anomaly Values
+    # Create anomaly detection model
+    high_limit1 = fg_mean+3*fg_std
+    low_limit1 = fg_mean-3*fg_std
+    high_limit2 = fg_mean+fg_std
+    low_limit2 = fg_mean-fg_std
+
+    threshold_ad = ThresholdAD(data_cleaning['unplanned_shutdown']==0)
+    anomalies = threshold_ad.detect(s)
+
+    anomalies = anomalies.drop('condensate', axis=1)
+    anomalies = anomalies.drop('wpnb_oil', axis=1)
+    anomalies = anomalies.drop('planned_shutdown', axis=1)
+    
+    #%%
+    # Create anomaly detection model
+    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies =  threshold_ad.detect(s)
+
+    # Copy data frame of anomalies
+    copy_anomalies =  anomalies.copy()
+    # Rename columns
+    copy_anomalies.rename(columns={'unplanned_shutdown':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s = pd.concat([s, copy_anomalies], axis=1)
+
+    # Get only anomalies data
+    anomalies_data = new_s[new_s['anomaly'] == False]
+    #anomalies_data.tail(100)
+
+    #%%
+    # Plot data and its anomalies
+    from cProfile import label
+    from imaplib import Time2Internaldate
+
+    fig = px.line(new_s, y='condensate')
+
+    # Add horizontal line for 3 sigma
+    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean + std", 
+                annotation_position="top right")
+    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean - 3*std", 
+                annotation_position="bottom right")
+    fig.add_scatter(x=anomalies_data.index, y=anomalies_data['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    fig.update_layout(title_text='Condensate BP Tangguh', title_font_size=24)
+
+    #fig.show()
+    plt.close()
+
+    #%%
+    #REPLACE ANOMALY VALUES
+    from datetime import date, datetime, timedelta
+
+    def get_first_date_of_current_month(year, month):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_month(year, month):
+        """Return the last date of the month.
+        
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+        
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+        
+        return last_date.strftime("%Y-%m-%d")
+
+    
+    def get_first_date_of_prev_month(year, month, step=-1):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        first_date = first_date + relativedelta(months=step)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_prev_month(year, month, step=-1):
+        """Return the last date of the month.
+        
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+        
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+            
+        last_date = last_date + relativedelta(months=step)
+        
+        return last_date.strftime("%Y-%m-%d")
+
+    for index, row in anomalies_data.iterrows():
+        yr = index.year
+        mt = index.month
+        
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+        
+        # Get last year start date month
+        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        
+        # Get last month last date
+        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        
+        # Get mean fead gas data for the month
+        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        mean_month=new_s['condensate'].reset_index().query(sql).mean().values[0]
+        
+        # update value at specific location
+        new_s.at[index,'condensate'] = mean_month
+        
+        print(sql), print(mean_month)
+
+    # Check if updated
+    new_s[new_s['anomaly'] == False]
+
+    anomaly_upd = new_s[new_s['anomaly'] == False]
+
+    #%%
+    # Plot data and its anomalies
+    from cProfile import label
+    from imaplib import Time2Internaldate
+
+
+    fig = px.line(new_s, y='condensate')
+
+    # Add horizontal line for 3 sigma
+    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean + std", 
+                annotation_position="top right")
+    fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean + 3*std", 
+                annotation_position="top right")
+    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean - 3*std", 
+                annotation_position="bottom right")
+    fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean - std", 
+                annotation_position="bottom right")
+    fig.add_scatter(x=anomalies_data.index, y=anomalies_data['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    fig.add_scatter(x=anomaly_upd.index, y=anomaly_upd['condensate'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
+    fig.update_layout(title_text='Condensate BP Tangguh', title_font_size=24)
+
+    #fig.show()
+    plt.close()
+
+
+    #%%
+    data_cleaned = new_s[['condensate', 'wpnb_oil', 'planned_shutdown']].copy()
+    data_cleaned = data_cleaned.reset_index()
+
+    ds_cleaned = 'date'
+    y_cleaned = 'condensate'
+    df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
+    df_cleaned = df_cleaned.set_index(ds_cleaned)
+    df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
+
+    #Select column target
+    train_df = df_cleaned['condensate']
+
+    #%%
+    #stationarity_check(train_df)
+
+    #%%
+    #decomposition_plot(train_df)
+
+    #%%
+    #plot_acf_pacf(df_cleaned['condensate'])
+
+    #%%
+    from chart_studio.plotly import plot_mpl
     from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(df.condensate.values, model="additive", period=365)
-    #fig = result.plot()
-    #plt.show()
+    result = seasonal_decompose(train_df.values, model="additive", period=365)
+    fig = result.plot()
+    plt.close()
 
     #%%
-    # Ad Fuller test
-    ad_test(df['condensate'])
+    from statsmodels.tsa.stattools import adfuller
+    def ad_test(dataset):
+        dftest = adfuller(df, autolag = 'AIC')
+        print("1. ADF : ",dftest[0])
+        print("2. P-Value : ", dftest[1])
+        print("3. Num Of Lags : ", dftest[2])
+        print("4. Num Of Observations Used For ADF Regression:", dftest[3])
+        print("5. Critical Values :")
+        for key, val in dftest[4].items():
+            print("\t",key, ": ", val)
+    ad_test(train_df)
 
     #%%
     from sktime.forecasting.model_selection import temporal_train_test_split
@@ -155,29 +379,28 @@ def main():
 
     # Test size
     test_size = 0.2
-    # Split data
+    # Split data (original data)
     y_train, y_test = temporal_train_test_split(df, test_size=test_size)
+    # Split data (original data)
+    y_train_cleaned, y_test_cleaned = temporal_train_test_split(df_cleaned, test_size=test_size)
     # Horizon
     fh = ForecastingHorizon(y_test.index, is_relative=False)
 
     #%%
     # create features (exog) from date
-    df['month'] = [i.month for i in df.index]
-    df['planned_shutdown'] = data['planned_shutdown'].values
-    df['day'] = [i.day for i in df.index]
-    df['wpnb_oil'] = data['wpnb_oil'].values
+    df_cleaned['month'] = [i.month for i in df_cleaned.index]
+    df_cleaned['planned_shutdown'] = data['planned_shutdown'].values
+    df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    df_cleaned['wpnb_oil'] = data['wpnb_oil'].values
     #df['day_of_year'] = [i.dayofyear for i in df.index]
     #df['week_of_year'] = [i.weekofyear for i in df.index]
-    #df.tail(20)
 
     #%%
     # Split into train and test
-    X_train, X_test = temporal_train_test_split(df.iloc[:,1:], test_size=test_size)
-    #X_train
-
+    X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
+    
     #%%
-    exogenous_features = ["month", "day", "planned_shutdown", "wpnb_oil"]
-    #exogenous_features
+    exogenous_features = ["month", "planned_shutdown", "day", "wpnb_oil"]
 
     #%%
     # plotting for illustration
@@ -199,6 +422,7 @@ def main():
     from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 
     # Create ARIMAX (forecast_a) Model
+    #ARIMA(1,0,3)
     arimax_model = AutoARIMA(d=0, suppress_warnings=True, error_action='ignore')
     logMessage("Creating ARIMAX Model ...")
     arimax_model.fit(y_train.condensate, X=X_train[exogenous_features])
@@ -207,7 +431,6 @@ def main():
 
     logMessage("ARIMAX Model Prediction ..")
     arimax_forecast = arimax_model.predict(fh, X=X_test[exogenous_features])
-    y_test["Forecast_ARIMAX"] = arimax_forecast
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
     y_pred_arimax['day_num'] = [i.day for i in arimax_forecast.index]
     y_pred_arimax['month_num'] = [i.month for i in arimax_forecast.index]
@@ -216,9 +439,8 @@ def main():
     y_pred_arimax['date'] = pd.DatetimeIndex(y_pred_arimax['date'], freq='D')
 
     #Create MAPE
-    arimax_mape = mean_absolute_percentage_error(y_test.condensate, y_test.Forecast_ARIMAX)
-    arimax_mape_100 = 100*arimax_mape
-    arimax_mape_str = str('MAPE: %.4f' % arimax_mape_100) + '%'
+    arimax_mape = mean_absolute_percentage_error(y_test.condensate, arimax_forecast)
+    arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
     logMessage("ARIMAX Model "+arimax_mape_str)
 
     # Rename column to forecast_a
@@ -228,11 +450,10 @@ def main():
     #%%
     from pmdarima.arima import auto_arima, ARIMA
     
-    #sarimax_model = auto_arima(y=y_train.condensate, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
-    sarimax_model = ARIMA(order=(2,0,2), seasonal_order=(2,1,0,12),  suppress_warnings=True)
+    sarimax_model = auto_arima(y=y_train.condensate, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
+    #sarimax_model = ARIMA(order=(2,0,2), seasonal_order=(2,1,0,12),  suppress_warnings=True)
     logMessage("Creating SARIMAX Model ...")
     sarimax_model.fit(y_train.condensate, X=X_train[exogenous_features])
-    sarimax_model.summary()
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_model.summary())
 
@@ -248,8 +469,7 @@ def main():
 
     #Create MAPE
     sarimax_mape = mean_absolute_percentage_error(y_test.condensate, y_test.Forecast_SARIMAX)
-    sarimax_mape_100 = 100*sarimax_mape
-    sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape_100) + '%'
+    sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
     logMessage("SARIMAX Model "+sarimax_mape_str)
     
     # Rename column to forecast_b
@@ -298,8 +518,7 @@ def main():
 
     #Create MAPE
     prophet_mape = mean_absolute_percentage_error(y_test['condensate'], prophet_forecast)
-    prophet_mape_100 = 100*prophet_mape
-    prophet_mape_str = str('MAPE: %.4f' % prophet_mape_100) + '%'
+    prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
 
     # Rename column to forecast_c
@@ -334,8 +553,7 @@ def main():
 
     #Create MAPE
     ranfor_mape = mean_absolute_percentage_error(y_test['condensate'], ranfor_forecast)
-    ranfor_mape_100 = 100*ranfor_mape
-    ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape_100) + '%'
+    ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
 
     # Rename column to forecast_e
@@ -348,7 +566,7 @@ def main():
 
     #Set Parameters
     xgb_objective = 'reg:squarederror'
-    xgb_lags = 25
+    xgb_lags = 13
     xgb_strategy = "recursive"
 
     xgb_regressor = XGBRegressor(objective=xgb_objective)
@@ -368,8 +586,7 @@ def main():
 
     #Create MAPE
     xgb_mape = mean_absolute_percentage_error(y_test['condensate'], xgb_forecast)
-    xgb_mape_100 = 100*xgb_mape
-    xgb_mape_str = str('MAPE: %.4f' % xgb_mape_100) + '%'
+    xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
     
     # Rename column to forecast_e
@@ -381,7 +598,7 @@ def main():
     from sklearn.linear_model import LinearRegression
 
     #Set Parameters
-    linreg_lags = 22
+    linreg_lags = 12
     linreg_strategy = "recursive"
 
     linreg_regressor = LinearRegression(normalize=True)
@@ -401,8 +618,7 @@ def main():
 
     #Create MAPE
     linreg_mape = mean_absolute_percentage_error(y_test['condensate'], linreg_forecast)
-    linreg_mape_100 = 100*linreg_mape
-    linreg_mape_str = str('MAPE: %.4f' % linreg_mape_100) + '%'
+    linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
 
     # Rename column to forecast_f
@@ -436,8 +652,7 @@ def main():
 
     #Create MAPE
     poly2_mape = mean_absolute_percentage_error(y_test['condensate'], poly2_forecast)
-    poly2_mape_100 = 100*poly2_mape
-    poly2_mape_str = str('MAPE: %.4f' % poly2_mape_100) + '%'
+    poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Orde 2 Model "+poly2_mape_str)
 
     # Rename column to forecast_g
@@ -449,7 +664,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly3_lags = 0.55
+    poly3_lags = 0.59
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"
@@ -471,8 +686,7 @@ def main():
 
     #Create MAPE
     poly3_mape = mean_absolute_percentage_error(y_test['condensate'], poly3_forecast)
-    poly3_mape_100 = 100*poly3_mape
-    poly3_mape_str = str('MAPE: %.4f' % poly3_mape_100) + '%'
+    poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
 
     logMessage("Polynomial Regression Orde 3 Model "+poly3_mape_str)
 
@@ -480,7 +694,7 @@ def main():
     y_pred_poly3.rename(columns={'condensate':'forecast_h'}, inplace=True)
     
     # %%
-    # Join prediction data frame
+    ##### JOIN PREDICTION RESULT TO DATAFRAME #####
     logMessage("Creating all model prediction result data frame ...")
     y_all_pred = pd.concat([y_pred_arimax[['forecast_a']], 
                             y_pred_sarimax[['forecast_b']], 
@@ -491,6 +705,22 @@ def main():
                             y_pred_poly2[['forecast_g']], 
                             y_pred_poly3[['forecast_h']]
                            ], axis=1)
+    y_all_pred['date'] = y_test.index.values
+    
+    #CREATE DATAFRAME MAPE
+    logMessage("Creating all model mape result data frame ...")
+    all_mape_pred =  {'mape_forecast_a': [arimax_mape],
+                'mape_forecast_b': [sarimax_mape],
+                'mape_forecast_c': [prophet_mape],
+                'mape_forecast_d': [ranfor_mape],
+                'mape_forecast_e': [xgb_mape],
+                'mape_forecast_f': [linreg_mape],
+                'mape_forecast_g': [poly2_mape],
+                'mape_forecast_h': [poly3_mape],
+                'lng_plant' : 'BP Tangguh',
+                'product' : 'Condensate'}
+
+    all_mape_pred = pd.DataFrame(all_mape_pred)
 
     #%%
     ##### PLOT PREDICTION #####
@@ -513,18 +743,6 @@ def main():
     plt.close()
     #plt.show()
 
-    #%%
-    #CREATE DATAFRAME MAPE
-    mape_data_condensate =  {'arimax': [arimax_mape_100/100],
-                'sarimax': [sarimax_mape_100/100],
-                'prophet': [prophet_mape_100/100],
-                'random_forest': [ranfor_mape_100/100],
-                'xgboost': [xgb_mape_100/100],
-                'linear_regression': [linreg_mape_100/100],
-                'polynomial_degree_2': [poly2_mape_100/100],
-                'polynomial_degree_3': [poly3_mape_100/100]}
-
-    all_mape_condensate = pd.DataFrame(mape_data_condensate)
     #all_mape_condensate
     
     # Save forecast result to database
@@ -532,9 +750,13 @@ def main():
     total_updated_rows = insert_forecast(conn, y_all_pred)
     logMessage("Updated rows: {}".format(total_updated_rows))
     
+    # Save mape result to database
+    logMessage("Updating MAPE result to database ...")
+    total_updated_rows = insert_mape(conn, all_mape_pred)
+    logMessage("Updated rows: {}".format(total_updated_rows))
+    
     print("Done")
 
-# %%
 # %%
 def insert_forecast(conn, y_pred):
     total_updated_rows = 0
@@ -544,6 +766,19 @@ def insert_forecast(conn, y_pred):
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
         updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date)
+        total_updated_rows = total_updated_rows + updated_rows 
+        
+    return total_updated_rows
+
+def insert_mape(conn, all_mape_pred):
+    total_updated_rows = 0
+    for index, row in all_mape_pred.iterrows():
+        lng_plant = row['lng_plant']
+        product = row['product']
+        mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+        
+        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
+        updated_rows = update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h , lng_plant, product)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
@@ -583,5 +818,45 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         logging.error(error)
+
+    return updated_rows
+
+def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, 
+                        mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
+                        lng_plant, product):
+    
+    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    created_by = 'PYTHON'
+    
+    """ insert mape result after last row in table """
+    sql = """ UPDATE lng_analytics_mape
+                SET mape_forecast_a = %s, 
+                    mape_forecast_b = %s, 
+                    mape_forecast_c = %s, 
+                    mape_forecast_d = %s, 
+                    mape_forecast_e = %s, 
+                    mape_forecast_f = %s,
+                    mape_forecast_g = %s,
+                    mape_forecast_h = %s,
+                    updated_at = %s, 
+                    updated_by = %s
+                WHERE lng_plant = %s
+                AND product = %s"""
+    #conn = None
+    updated_rows = 0
+    try:
+        # create a new cursor
+        cur = conn.cursor()
+        # execute the UPDATE  statement
+        cur.execute(sql, (mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
+                          date_now, created_by, lng_plant, product))
+        # get the number of updated rows
+        updated_rows = cur.rowcount
+        # Commit the changes to the database
+        conn.commit()
+        # Close cursor
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        logMessage(error)
 
     return updated_rows
