@@ -330,11 +330,10 @@ def main():
         arimax_suppress_warnings = True
 
         # Create ARIMA Model
+        logMessage("Creating ARIMAX Model ...")
         #arimax_model = AutoARIMA(d=arimax_differencing, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
         arimax_model = ARIMA(order=(2, 0, 2), suppress_warnings=arimax_suppress_warnings)
-        logMessage("Creating ARIMAX Model ...")
         arimax_model.fit(train_df, X=train_exog)
-        
         logMessage("ARIMAX Model Summary")
         logMessage(arimax_model.summary())
         
@@ -363,10 +362,10 @@ def main():
         sarimax_suppress_warnings = True
 
         # Create SARIMAX Model
+        logMessage("Creating SARIMAX Model ...") 
         #sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, sp=sarimax_sp, stationary=sarimax_stationary,
         #                         seasonal=sarimax_seasonal, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
         sarimax_model = ARIMA(order=(2, 0, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
-        logMessage("Creating SARIMAX Model ...")  
         sarimax_model.fit(train_df, X=train_exog)
         logMessage("SARIMAX Model Summary")
         logMessage(sarimax_model.summary())
@@ -398,6 +397,7 @@ def main():
         prophet_yearly_seasonality = 10
 
         #Create regressor object
+        logMessage("Creating Prophet Model ....")
         prophet_forecaster = Prophet(
                             seasonality_mode=prophet_seasonality_mode,
                             n_changepoints=prophet_n_changepoints,
@@ -408,8 +408,6 @@ def main():
                             daily_seasonality=prophet_daily_seasonality,
                             weekly_seasonality=prophet_weekly_seasonality,
                             yearly_seasonality=prophet_yearly_seasonality)
-        
-        logMessage("Creating Prophet Model ....")
         prophet_forecaster.fit(train_df, train_exog) #, X_train
         
         logMessage("Prophet Model Prediction ...")
@@ -434,10 +432,9 @@ def main():
         ranfor_strategy = "recursive"
 
         #Create regressor object
+        logMessage("Creating Random Forest Model ...")
         ranfor_regressor = RandomForestRegressor(n_estimators = ranfor_n_estimators, random_state=ranfor_random_state, criterion=ranfor_criterion)
         ranfor_forecaster = make_reduction(ranfor_regressor, window_length=ranfor_lags, strategy=ranfor_strategy) #30, nonexog=30
-
-        logMessage("Creating Random Forest Model ...")
         ranfor_forecaster.fit(train_df, train_exog) #, X_train
         
         logMessage("Random Forest Model Prediction ...")
@@ -460,10 +457,9 @@ def main():
         xgb_strategy = "recursive"
 
         #Create regressor object
+        logMessage("Creating XGBoost Model ....")
         xgb_regressor = XGBRegressor(objective=xgb_objective)
         xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
-        
-        logMessage("Creating XGBoost Model ....")
         xgb_forecaster.fit(train_df, train_exog) #, X_train
         
         logMessage("XGBoost Model Prediction ...")
@@ -487,10 +483,9 @@ def main():
         linreg_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating Linear Regression Model ...")
         linreg_regressor = LinearRegression(normalize=linreg_normalize)
         linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
-        
-        logMessage("Creating Linear Regression Model ...")
         linreg_forecaster.fit(train_df, X=train_exog)
 
         logMessage("Linear Regression Model Prediction ...")
@@ -516,10 +511,9 @@ def main():
         poly2_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating Polynomial Regression Orde 2 Model ...")
         poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
         poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy)
-        
-        logMessage("Creating Polynomial Regression Orde 2 Model ...")
         poly2_forecaster.fit(train_df, X=train_exog) #, X=X_train
 
         logMessage("Polynomial Regression Orde 2 Model Prediction ...")
@@ -544,10 +538,9 @@ def main():
         poly3_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating Polynomial Regression Orde 3 Model ...")
         poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
         poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy)
-        
-        logMessage("Creating Polynomial Regression Orde 3 Model ...")
         poly3_forecaster.fit(train_df, X=train_exog) #, X=X_train
         
         logMessage("Polynomial Regression Orde 3 Model Prediction ...")
@@ -585,7 +578,7 @@ def main():
         ax.plot(linreg_forecast, label='linreg_pred')
         ax.plot(poly2_forecast, label='poly2_pred')
         ax.plot(poly3_forecast, label='poly3_pred')
-        title = 'Condensate BP Tangguh Forecasting with Exogenous Variable WPNB Gas, Planned Shuwdown, Day & Month)'
+        title = 'Feed Gas BP Tangguh Forecasting with Exogenous Variable WPNB Gas, Planned Shuwdown, Day & Month)'
         ax.set_title(title)
         ax.set_ylabel("LNG Production")
         ax.set_xlabel("Datestamp")

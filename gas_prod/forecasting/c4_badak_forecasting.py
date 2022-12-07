@@ -146,10 +146,13 @@ def main():
         arimax_suppress_warnings = True
 
         # Create ARIMAX Model
+        logMessage("Creating ARIMAX Model ...")
         arimax_model = auto_arima(train_df, exogenous=future_exog, d=arimax_differencing, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
         arimax_model.fit(train_df, exogenous=train_exog)
-        arimax_model.summary()
+        logMessage("ARIMAX Model Summary")
+        logMessage(arimax_model.summary())
 
+        logMessage("ARIMAX Model Prediction ..")
         arimax_forecast = arimax_model.predict(len(fh), X=future_exog)
         y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
         y_pred_arimax['day_num'] = [i.day for i in arimax_forecast.index]
@@ -173,10 +176,12 @@ def main():
         sarimax_suppress_warnings = True
 
         # Create SARIMAX Model
+        logMessage("Creating SARIMAX Model ...")
         #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
         sarimax_model = ARIMA(order=(5, 1, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
         sarimax_model.fit(train_df, X=train_exog)
-        sarimax_model.summary()
+        logMessage("SARIMAX Model Summary")
+        logMessage(sarimax_model.summary())
 
         sarimax_forecast = sarimax_model.predict(fh, X=future_exog)
         y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
@@ -204,6 +209,7 @@ def main():
         prophet_yearly_seasonality = 13
 
         #Create Forecaster
+        logMessage("Creating Prophet Model ....")
         prophet_forecaster = Prophet(
                 seasonality_mode=prophet_seasonality_mode,
                 n_changepoints=prophet_n_changepoints,
@@ -216,6 +222,7 @@ def main():
                 yearly_seasonality=prophet_yearly_seasonality)
 
         prophet_forecaster.fit(train_df, train_exog) #, X_train
+        logMessage("Prophet Model Prediction ...")
         prophet_forecast = prophet_forecaster.predict(fh, X=future_exog) #, X=X_test
         y_pred_prophet = pd.DataFrame(prophet_forecast).applymap('{:.2f}'.format)
         y_pred_prophet['day_num'] = [i.day for i in prophet_forecast.index]
@@ -238,10 +245,12 @@ def main():
         ranfor_strategy = "recursive"
 
         # create regressor object
+        logMessage("Creating Random Forest Model ...")
         ranfor_regressor = RandomForestRegressor(n_estimators = ranfor_n_estimators, random_state=ranfor_random_state, criterion=ranfor_criterion)
         ranfor_forecaster = make_reduction(ranfor_regressor, window_length=ranfor_lags, strategy=ranfor_strategy)
 
         ranfor_forecaster.fit(train_df, train_exog) #, X_train
+        logMessage("Random Forest Model Prediction")
         ranfor_forecast = ranfor_forecaster.predict(fh, X=future_exog) #, X=X_test
         y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:.2f}'.format)
         y_pred_ranfor['day_num'] = [i.day for i in ranfor_forecast.index]
@@ -262,9 +271,11 @@ def main():
         xgb_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating XGBoost Model ...")
         xgb_regressor = XGBRegressor(objective=xgb_objective)
         xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
 
+        logMessage("XGBoost Model Prediction ...")
         xgb_forecaster.fit(train_df, train_exog) #, X_train
         xgb_forecast = xgb_forecaster.predict(fh, X=future_exog) #, X=X_test
         y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:.2f}'.format)
@@ -286,11 +297,13 @@ def main():
         linreg_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating Linear Regression Model ...")
         linreg_regressor = LinearRegression(normalize=linreg_normalize)
         linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
         linreg_forecaster.fit(train_df, X=train_exog)
 
         # Create forecasting
+        logMessage("Linear Regression Model Prediction ...")
         linreg_forecast = linreg_forecaster.predict(fh, X=future_exog) #, X=X_test
         y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:.2f}'.format)
         y_pred_linreg['day_num'] = [i.day for i in linreg_forecast.index]
@@ -312,11 +325,13 @@ def main():
         poly2_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating Polynomial Regression Orde 2 Model ...")
         poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
         poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy) #WL=0.9 (degree 2), WL=0.7 (degree 3)
         poly2_forecaster.fit(train_df, X=train_exog) #, X=X_train
 
         # Create forecasting
+        logMessage("Polynomial Regression Orde 2 Model Prediction ...")
         poly2_forecast = poly2_forecaster.predict(fh, X=future_exog) #, X=X_test
         y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:.2f}'.format)
         y_pred_poly2['day_num'] = [i.day for i in poly2_forecast.index]
@@ -338,11 +353,13 @@ def main():
         poly3_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating Polynomial Regression Orde 3 Model ...")
         poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
         poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy) #WL=0.9 (degree 2), WL=0.7 (degree 3)
         poly3_forecaster.fit(train_df, X=train_exog) #, X=X_train
 
         # Create forecasting
+        logMessage("Polynomial Regression Orde 3 Model Prediction ...")
         poly3_forecast = poly3_forecaster.predict(fh, X=future_exog) #, X=X_test
         y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:.2f}'.format)
         y_pred_poly3['day_num'] = [i.day for i in poly3_forecast.index]

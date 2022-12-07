@@ -197,7 +197,7 @@ def main():
         logMessage("Creating SARIMAX Model ...")
         sarimax_model.fit(train_df, X=train_exog)
         logMessage("SARIMAX Model Summary")
-        logMessage(arimax_model.summary())
+        logMessage(sarimax_model.summary())
         
         logMessage("SARIMAX Model Prediction ..")
         sarimax_forecast = sarimax_model.predict(fh, X=future_exog)
@@ -288,10 +288,10 @@ def main():
         xgb_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating XGBoost Model ...")
         xgb_regressor = XGBRegressor(objective=xgb_objective)
         xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
-        logMessage("Creating XGBoost Model ...")
-
+        
         logMessage("XGBoost Model Prediction ...")
         xgb_forecaster.fit(train_df, train_exog) #, X_train
         xgb_forecast = xgb_forecaster.predict(fh, X=future_exog) #, X=X_test
@@ -314,9 +314,9 @@ def main():
         linreg_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating Linear Regression Model ...")
         linreg_regressor = LinearRegression(normalize=linreg_normalize)
         linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
-        logMessage("Creating Linear Regression Model ...")
         linreg_forecaster.fit(train_df, X=train_exog)
 
         logMessage("Linear Regression Model Prediction ...")
@@ -342,9 +342,9 @@ def main():
         poly2_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating Polynomial Regression Orde 2 Model ...")
         poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
         poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy) #WL=0.9 (degree 2), WL=0.7 (degree 3)
-        logMessage("Creating Polynomial Regression Orde 2 Model ...")
         poly2_forecaster.fit(train_df, X=train_exog) #, X=X_train
 
         logMessage("Polynomial Regression Orde 2 Model Prediction ...")
@@ -370,9 +370,9 @@ def main():
         poly3_strategy = "recursive"
 
         # Create regressor object
+        logMessage("Creating Polynomial Regression Orde 3 Model ...")
         poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
         poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy) #WL=0.9 (degree 2), WL=0.7 (degree 3)
-        logMessage("Creating Polynomial Regression Orde 3 Model ...")
         poly3_forecaster.fit(train_df, X=train_exog) #, X=X_train
 
         logMessage("Polynomial Regression Orde 3 Model Prediction ...")
