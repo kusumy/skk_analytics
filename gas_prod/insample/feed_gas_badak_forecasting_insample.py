@@ -220,7 +220,7 @@ def main():
     df['day'] = [i.day for i in df.index]
     #df['day_of_year'] = [i.dayofyear for i in df.index]
     #df['week_of_year'] = [i.weekofyear for i in df.index]
-    df.tail(20)
+    #df.tail(20)
 
     #%%
     # Split into train and test

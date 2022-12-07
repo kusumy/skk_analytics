@@ -133,7 +133,7 @@ def main():
     df = data[[ds,y]]
     df = df.set_index(ds)
     df.index = pd.DatetimeIndex(df.index, freq='D')
-    df
+    #df
 
     #%%
     data_cleaning = data[['date', 'feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
@@ -170,7 +170,7 @@ def main():
     anomalies = anomalies.drop('feed_gas', axis=1)
     anomalies = anomalies.drop('wpnb_gas', axis=1)
     anomalies = anomalies.drop('planned_shutdown', axis=1)
-    anomalies
+    #anomalies
 
     #%%
     # Create anomaly detection model
@@ -349,10 +349,10 @@ def main():
     train_df = df_cleaned['feed_gas']
 
     #%%
-    stationarity_check(train_df)
+    #stationarity_check(train_df)
 
     #%%
-    decomposition_plot(train_df)
+    #decomposition_plot(train_df)
 
     #%%
     #plot_acf_pacf(df_cleaned['feed_gas'])
@@ -362,7 +362,7 @@ def main():
     from statsmodels.tsa.seasonal import seasonal_decompose
     result = seasonal_decompose(train_df.values, model="additive", period=365)
     fig = result.plot()
-    plt.show()
+    plt.close()
 
     #%%
     from statsmodels.tsa.stattools import adfuller
@@ -398,16 +398,16 @@ def main():
     df_cleaned['wpnb_gas'] = data['wpnb_gas'].values
     #df['day_of_year'] = [i.dayofyear for i in df.index]
     #df['week_of_year'] = [i.weekofyear for i in df.index]
-    df_cleaned.tail(20)
+    #df_cleaned.tail(20)
 
     #%%
     # Split into train and test
     X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
-    X_train
+    #X_train
 
     #%%
     exogenous_features = ["month", "planned_shutdown", "day", "wpnb_gas"]
-    exogenous_features
+    #exogenous_features
 
     #%%
     # plotting for illustration
