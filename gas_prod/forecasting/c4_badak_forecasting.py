@@ -131,12 +131,12 @@ def main():
     train_df = df['lpg_c4']
 
     #%%
-    import chart_studio.plotly
-    import cufflinks as cf
+    # import chart_studio.plotly
+    # import cufflinks as cf
 
-    from plotly.offline import iplot
-    cf.go_offline()
-    cf.set_config_file(offline = False, world_readable = True)
+    # from plotly.offline import iplot
+    # cf.go_offline()
+    # cf.set_config_file(offline = False, world_readable = True)
 
     #df.iplot(title="LPG c4 PT Badak")
 
