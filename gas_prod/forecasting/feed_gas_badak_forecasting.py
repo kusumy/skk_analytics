@@ -157,12 +157,12 @@ def main():
     df_smoothed[y] = smoother.smooth_data[0]
 
     #%%
-    import chart_studio.plotly
-    import cufflinks as cf
+    #import chart_studio.plotly
+    #import cufflinks as cf
 
-    from plotly.offline import iplot
-    cf.go_offline()
-    cf.set_config_file(offline = False, world_readable = True)
+    #from plotly.offline import iplot
+    #cf.go_offline()
+    #cf.set_config_file(offline = False, world_readable = True)
 
     #%%
     #df_smoothed.iplot(title="Feed Gas PT Badak")
