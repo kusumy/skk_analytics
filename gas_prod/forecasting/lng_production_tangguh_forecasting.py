@@ -532,7 +532,7 @@ def main():
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
 
         #Set parameters
-        poly3_lags = 7
+        poly3_lags = 0.59
         poly3_regularization = None
         poly3_interactions = False
         poly3_strategy = "recursive"
