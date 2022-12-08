@@ -209,7 +209,7 @@ def main():
 
     # Create forecasting Horizon
     fh = ForecastingHorizon(y_test.index, is_relative=False)
-    fh
+    #fh
 
     #%%
     ## Create Exogenous Variable
@@ -219,7 +219,7 @@ def main():
     df['day'] = [i.day for i in df.index]
     #df['day_of_year'] = [i.dayofyear for i in df.index]
     #df['week_of_year'] = [i.weekofyear for i in df.index]
-    df.tail(20)
+    #df.tail(20)
 
     #%%
     # Split into train and test
@@ -242,12 +242,12 @@ def main():
     arimax_suppress_warnings = True
     arimax_random_state = 15
     arimax_n_fits = 50
-    arimax_method = 'basinhopping'
+    #arimax_method = 'basinhopping'
 
     # Create ARIMAX Model
     arimax_model = auto_arima(y_train_smoothed, exogenous=X_train[exogenous_features], d=arimax_differencing, trace=arimax_trace,
                             error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings,
-                            random_state=arimax_random_state, n_fits = arimax_n_fits, method = arimax_method)
+                            random_state=arimax_random_state, n_fits = arimax_n_fits)
     logMessage("Creating ARIMAX Model ...")
     arimax_model.fit(y_train_smoothed, exogenous=X_train[exogenous_features])
     logMessage("ARIMAX Model Summary")
@@ -347,7 +347,7 @@ def main():
     y_pred_prophet['date'] = y_pred_prophet['year_num'].astype(str) + '-' + y_pred_prophet['month_num'].astype(str) + '-' + y_pred_prophet['day_num'].astype(str)
     y_pred_prophet['date'] = pd.DatetimeIndex(y_pred_prophet['date'], freq='D')
     #Rename colum 0
-    y_pred_prophet.rename(columns={0:'forecast_c'}, inplace=True)
+    y_pred_prophet.rename(columns={'condensate':'forecast_c'}, inplace=True)
 
     # Calculate model performance
     prophet_mape = mean_absolute_percentage_error(y_test.condensate, prophet_forecast)
@@ -381,7 +381,7 @@ def main():
     y_pred_ranfor['date'] = y_pred_ranfor['year_num'].astype(str) + '-' + y_pred_ranfor['month_num'].astype(str) + '-' + y_pred_ranfor['day_num'].astype(str)
     y_pred_ranfor['date'] = pd.DatetimeIndex(y_pred_ranfor['date'], freq='D')
     #Rename colum 0
-    y_pred_ranfor.rename(columns={0:'forecast_d'}, inplace=True)
+    y_pred_ranfor.rename(columns={'condensate':'forecast_d'}, inplace=True)
 
     # Calculate model performance
     ranfor_mape = mean_absolute_percentage_error(y_test.condensate, ranfor_forecast)
@@ -413,7 +413,7 @@ def main():
     y_pred_xgb['date'] = y_pred_xgb['year_num'].astype(str) + '-' + y_pred_xgb['month_num'].astype(str) + '-' + y_pred_xgb['day_num'].astype(str)
     y_pred_xgb['date'] = pd.DatetimeIndex(y_pred_xgb['date'], freq='D')
     #Rename colum 0
-    y_pred_xgb.rename(columns={0:'forecast_e'}, inplace=True)
+    y_pred_xgb.rename(columns={'condensate':'forecast_e'}, inplace=True)
 
     # Calculate model performance
     xgb_mape = mean_absolute_percentage_error(y_test.condensate, xgb_forecast)
@@ -445,7 +445,7 @@ def main():
     y_pred_linreg['date'] = y_pred_linreg['year_num'].astype(str) + '-' + y_pred_linreg['month_num'].astype(str) + '-' + y_pred_linreg['day_num'].astype(str)
     y_pred_linreg['date'] = pd.DatetimeIndex(y_pred_linreg['date'], freq='D')
     #Rename colum 0
-    y_pred_linreg.rename(columns={0:'forecast_f'}, inplace=True)
+    y_pred_linreg.rename(columns={'condensate':'forecast_f'}, inplace=True)
 
     # Calculate model performance
     linreg_mape = mean_absolute_percentage_error(y_test.condensate, linreg_forecast)
@@ -478,7 +478,7 @@ def main():
     y_pred_poly2['date'] = y_pred_poly2['year_num'].astype(str) + '-' + y_pred_poly2['month_num'].astype(str) + '-' + y_pred_poly2['day_num'].astype(str)
     y_pred_poly2['date'] = pd.DatetimeIndex(y_pred_poly2['date'], freq='D')
     #Rename colum 0
-    y_pred_poly2.rename(columns={0:'forecast_g'}, inplace=True)
+    y_pred_poly2.rename(columns={'condensate':'forecast_g'}, inplace=True)
 
     # Calculate model performance
     poly2_mape = mean_absolute_percentage_error(y_test.condensate, poly2_forecast)
@@ -511,11 +511,11 @@ def main():
     y_pred_poly3['date'] = y_pred_poly3['year_num'].astype(str) + '-' + y_pred_poly3['month_num'].astype(str) + '-' + y_pred_poly3['day_num'].astype(str)
     y_pred_poly3['date'] = pd.DatetimeIndex(y_pred_poly3['date'], freq='D')
     #Rename colum 0
-    y_pred_poly3.rename(columns={0:'forecast_h'}, inplace=True)
+    y_pred_poly3.rename(columns={'condensate':'forecast_h'}, inplace=True)
 
     # Calculate model performance
     poly3_mape = mean_absolute_percentage_error(y_test.condensate, poly3_forecast)
-    poly3_mape = str('MAPE: %.4f' % poly3_mape_str)
+    poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Orde 3 Model "+poly3_mape_str)
 
 

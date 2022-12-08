@@ -741,12 +741,12 @@ def main():
                     'mape_forecast_f': [linreg_mape],
                     'mape_forecast_g': [poly2_mape],
                     'mape_forecast_h': [poly3_mape],
+#                    'running_date' : '2022-12-08',
                     'lng_plant' : 'BP Tangguh',
-                    'product' : 'LNG Production',
-                    'running_date' : '2022-12-07'}
+                    'product' : 'LNG Production'}
 
     all_mape_pred = pd.DataFrame(all_mape_pred)
-    all_mape_pred['running_date'] = pd.to_datetime(all_mape_pred['running_date'])
+#    all_mape_pred['running_date'] = pd.to_datetime(all_mape_pred['running_date'])
 
     # Save forecast result to database
     logMessage("Updating forecast result to database ...")
@@ -778,11 +778,11 @@ def insert_mape(conn, all_mape_pred):
     for index, row in all_mape_pred.iterrows():
         lng_plant = row['lng_plant']
         product = row['product']
-        running_date = row['running_date']
+        #running_date = row['running_date']
         mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        updated_rows = update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h , lng_plant, product, running_date)
+        updated_rows = update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h , lng_plant, product)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
@@ -791,7 +791,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
                         forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    created_by = 'python'
+    created_by = 'PYTHON'
     
     """ insert forecasting result after last row in table """
     sql = """ UPDATE lng_production_daily
@@ -825,7 +825,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
 
     return updated_rows
 
-def update_mape_value(conn, running_date, mape_forecast_a, mape_forecast_b, mape_forecast_c, 
+def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, 
                         mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
                         lng_plant, product):
     
@@ -842,11 +842,10 @@ def update_mape_value(conn, running_date, mape_forecast_a, mape_forecast_b, mape
                     mape_forecast_f = %s,
                     mape_forecast_g = %s,
                     mape_forecast_h = %s,
-                    running_date = %s,
                     updated_at = %s, 
                     updated_by = %s
-                    WHERE lng_plant = 'BP Tangguh'
-                    AND product = 'LNG Production'"""
+                    WHERE lng_plant = %s
+                    AND product = %s"""
     #conn = None
     updated_rows = 0
     try:
@@ -854,7 +853,7 @@ def update_mape_value(conn, running_date, mape_forecast_a, mape_forecast_b, mape
         cur = conn.cursor()
         # execute the UPDATE  statement
         cur.execute(sql, (mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
-                          date_now, created_by, lng_plant, product, running_date))
+                          date_now, created_by, lng_plant, product))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
