@@ -741,7 +741,6 @@ def main():
                     'mape_forecast_f': [linreg_mape],
                     'mape_forecast_g': [poly2_mape],
                     'mape_forecast_h': [poly3_mape],
-#                    'running_date' : '2022-12-08',
                     'lng_plant' : 'BP Tangguh',
                     'product' : 'LNG Production'}
 
@@ -778,7 +777,6 @@ def insert_mape(conn, all_mape_pred):
     for index, row in all_mape_pred.iterrows():
         lng_plant = row['lng_plant']
         product = row['product']
-        #running_date = row['running_date']
         mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
