@@ -24,7 +24,7 @@ from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 from pmdarima import model_selection 
-import mlflow
+#import mlflow
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from adtk.data import validate_series
