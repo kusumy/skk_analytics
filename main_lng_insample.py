@@ -11,11 +11,11 @@ from humanfriendly import format_timespan
 import warnings
 warnings.filterwarnings('ignore')
 
-#import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
+import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
 #import gas_prod.insample.condensate_tangguh_forecasting_insample as condensate_tangguh_insample
 #import gas_prod.insample.feed_gas_badak_forecasting_insample as feed_gas_badak_insample
 #import gas_prod.insample.lng_production_tangguh_forecasting_insample as lng_production_tangguh_insample
-import gas_prod.insample.condensate_badak_forecasting_insample as condensate_badak_insample
+#import gas_prod.insample.condensate_badak_forecasting_insample as condensate_badak_insample
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -32,12 +32,11 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #endDate = str(args['enddate'])
 # do whatever the script does
 
-#t0 = time.process_time()
-
-#feed_gas_tangguh_insample.main()
-#t1 = time.process_time()
-#exec_time = format_timespan(t1-t0, max_units=3)
-#print("Forecasting Feed Gas BP Tangguh : " + exec_time)
+t0 = time.process_time()
+feed_gas_tangguh_insample.main()
+t1 = time.process_time()
+exec_time = format_timespan(t1-t0, max_units=3)
+print("Forecasting Feed Gas BP Tangguh : " + exec_time)
 
 #print('\n')
 
@@ -65,11 +64,11 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 
 #print('\n')
 
-t8 = time.process_time()
-condensate_badak_insample.main()
-t9 = time.process_time()
-exec_time = format_timespan(t9-t8, max_units=3)
-print("Forecasting Condensate Badak : " + exec_time)
+#t8 = time.process_time()
+#condensate_badak_insample.main()
+#t9 = time.process_time()
+#exec_time = format_timespan(t9-t8, max_units=3)
+#print("Forecasting Condensate Badak : " + exec_time)
 
 #print('\n')
 

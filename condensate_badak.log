@@ -1,12 +1,12 @@
-2022-12-08 15:33:17,288 Connecting to database ...
-2022-12-08 15:33:19,056 Creating ARIMAX Model ...
-2022-12-08 15:34:53,351 ARIMAX Model Summary
-2022-12-08 15:34:53,356                                SARIMAX Results                                
+2022-12-09 13:57:36,927 Connecting to database ...
+2022-12-09 13:57:38,265 Creating ARIMAX Model ...
+2022-12-09 13:59:10,732 ARIMAX Model Summary
+2022-12-09 13:59:10,735                                SARIMAX Results                                
 ==============================================================================
 Dep. Variable:                      y   No. Observations:                 3240
 Model:               SARIMAX(3, 2, 5)   Log Likelihood                1156.061
-Date:                Thu, 08 Dec 2022   AIC                          -2290.122
-Time:                        15:34:53   BIC                          -2223.212
+Date:                Fri, 09 Dec 2022   AIC                          -2290.122
+Time:                        13:59:10   BIC                          -2223.212
 Sample:                    01-01-2013   HQIC                         -2266.148
                          - 11-14-2021                                         
 Covariance Type:                  opg                                         
@@ -33,83 +33,87 @@ Prob(H) (two-sided):                  0.00   Kurtosis:                        49
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2022-12-08 15:34:53,366 ARIMAX Model Prediction ..
-2022-12-08 15:34:53,419 ARIMAX Model MAPE: 0.1728
-2022-12-08 15:34:53,419 Creating SARIMAX Model ...
-2022-12-08 15:35:45,050 SARIMAX Model Summary
-2022-12-08 15:35:45,055                                      SARIMAX Results                                      
+2022-12-09 13:59:10,740 ARIMAX Model Prediction ..
+2022-12-09 13:59:10,766 ARIMAX Model MAPE: 0.1728
+2022-12-09 13:59:10,766 Creating SARIMAX Model ...
+2022-12-09 14:20:51,264 SARIMAX Model Summary
+2022-12-09 14:20:51,268                                      SARIMAX Results                                      
 ==========================================================================================
 Dep. Variable:                                  y   No. Observations:                 3240
-Model:             SARIMAX(5, 1, 2)x(2, 0, 2, 12)   Log Likelihood                1178.476
-Date:                            Thu, 08 Dec 2022   AIC                          -2326.953
-Time:                                    15:35:45   BIC                          -2235.708
-Sample:                                01-01-2013   HQIC                         -2294.260
+Model:             SARIMAX(3, 1, 2)x(2, 0, 2, 12)   Log Likelihood                1214.957
+Date:                            Fri, 09 Dec 2022   AIC                          -2405.914
+Time:                                    14:20:51   BIC                          -2332.917
+Sample:                                01-01-2013   HQIC                         -2379.759
                                      - 11-14-2021                                         
 Covariance Type:                              opg                                         
 ==============================================================================
                  coef    std err          z      P>|z|      [0.025      0.975]
 ------------------------------------------------------------------------------
-intercept      0.0007      0.008      0.095      0.925      -0.015       0.016
-month          0.0011      0.002      0.691      0.489      -0.002       0.004
-day         9.907e-05      0.000      0.718      0.473      -0.000       0.000
-ar.L1          1.6607      0.048     34.872      0.000       1.567       1.754
-ar.L2         -0.2645      0.102     -2.587      0.010      -0.465      -0.064
-ar.L3         -0.4331      0.128     -3.395      0.001      -0.683      -0.183
-ar.L4         -0.2774      0.133     -2.090      0.037      -0.538      -0.017
-ar.L5          0.2997      0.051      5.849      0.000       0.199       0.400
-ma.L1          1.1147      0.046     24.331      0.000       1.025       1.205
-ma.L2          0.6029      0.054     11.262      0.000       0.498       0.708
-ar.S.L12       0.2675      0.117      2.284      0.022       0.038       0.497
-ar.S.L24      -0.3079      0.113     -2.735      0.006      -0.529      -0.087
-ma.S.L12      -0.2393      0.121     -1.977      0.048      -0.476      -0.002
-ma.S.L24       0.1906      0.116      1.638      0.101      -0.037       0.419
-sigma2         0.0282      0.000    106.445      0.000       0.028       0.029
+month          0.0004      0.001      0.273      0.785      -0.002       0.003
+day         1.716e-05      0.000      0.127      0.899      -0.000       0.000
+ar.L1          2.5376      0.018    137.784      0.000       2.501       2.574
+ar.L2         -2.1984      0.036    -61.530      0.000      -2.268      -2.128
+ar.L3          0.6527      0.018     36.268      0.000       0.617       0.688
+ma.L1          0.3061      0.018     16.674      0.000       0.270       0.342
+ma.L2          0.1541      0.023      6.800      0.000       0.110       0.198
+ar.S.L12       0.2608      0.118      2.206      0.027       0.029       0.492
+ar.S.L24      -0.3100      0.115     -2.692      0.007      -0.536      -0.084
+ma.S.L12      -0.2217      0.122     -1.823      0.068      -0.460       0.017
+ma.S.L24       0.1913      0.119      1.612      0.107      -0.041       0.424
+sigma2         0.0276      0.000    110.209      0.000       0.027       0.028
 ===================================================================================
-Ljung-Box (L1) (Q):                  17.09   Jarque-Bera (JB):            174736.54
-Prob(Q):                              0.00   Prob(JB):                         0.00
-Heteroskedasticity (H):               0.19   Skew:                            -0.98
-Prob(H) (two-sided):                  0.00   Kurtosis:                        38.93
+Ljung-Box (L1) (Q):                   0.03   Jarque-Bera (JB):            247615.86
+Prob(Q):                              0.86   Prob(JB):                         0.00
+Heteroskedasticity (H):               0.19   Skew:                            -0.99
+Prob(H) (two-sided):                  0.00   Kurtosis:                        45.79
 ===================================================================================
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2022-12-08 15:35:45,067 SARIMAX Model Prediction ..
-2022-12-08 15:35:45,120 SARIMAX Model MAPE: 0.1680
-2022-12-08 15:35:45,849 Creating Prophet Model ...
-2022-12-08 15:35:45,956 input tempfile: /tmp/tmpgmf7vq4k/_e5n6yal.json
-2022-12-08 15:35:46,022 input tempfile: /tmp/tmpgmf7vq4k/o67e11rz.json
-2022-12-08 15:35:46,023 idx 0
-2022-12-08 15:35:46,023 running CmdStan, num_threads: None
-2022-12-08 15:35:46,023 CmdStan args: ['/home/spcuser/miniconda3/envs/py38_ts/lib/python3.8/site-packages/prophet/stan_model/prophet_model.bin', 'random', 'seed=64516', 'data', 'file=/tmp/tmpgmf7vq4k/_e5n6yal.json', 'init=/tmp/tmpgmf7vq4k/o67e11rz.json', 'output', 'file=/tmp/tmpgmf7vq4k/prophet_modelg4w1oaos/prophet_model-20221208153546.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
-2022-12-08 15:35:46,023 Chain [1] start processing
-2022-12-08 15:35:48,871 Chain [1] done processing
-2022-12-08 15:35:48,891 <bound method BaseEstimator._get_fitted_params of Prophet(changepoint_prior_scale=0.5, daily_seasonality=11,
+2022-12-09 14:20:51,273 SARIMAX Model Prediction ..
+2022-12-09 14:20:51,305 SARIMAX Model MAPE: 0.1660
+2022-12-09 14:20:51,305 SARIMAX Model Parameters (3, 1, 2)(2, 0, 2, 12)
+2022-12-09 14:20:51,651 Creating Prophet Model ...
+2022-12-09 14:20:51,698 input tempfile: /tmp/tmpjm6v_pf5/uk9g0gzs.json
+2022-12-09 14:20:51,762 input tempfile: /tmp/tmpjm6v_pf5/7v55e3qk.json
+2022-12-09 14:20:51,763 idx 0
+2022-12-09 14:20:51,763 running CmdStan, num_threads: None
+2022-12-09 14:20:51,763 CmdStan args: ['/home/spcuser/miniconda3/envs/py38_ts/lib/python3.8/site-packages/prophet/stan_model/prophet_model.bin', 'random', 'seed=15694', 'data', 'file=/tmp/tmpjm6v_pf5/uk9g0gzs.json', 'init=/tmp/tmpjm6v_pf5/7v55e3qk.json', 'output', 'file=/tmp/tmpjm6v_pf5/prophet_model320r1xao/prophet_model-20221209142051.csv', 'method=optimize', 'algorithm=lbfgs', 'iter=10000']
+2022-12-09 14:20:51,763 Chain [1] start processing
+2022-12-09 14:20:54,495 Chain [1] done processing
+2022-12-09 14:20:54,511 <bound method BaseEstimator._get_fitted_params of Prophet(changepoint_prior_scale=0.5, daily_seasonality=11,
         holidays_prior_scale=2, n_changepoints=30,
         seasonality_mode='multiplicative', seasonality_prior_scale=10,
         weekly_seasonality=10, yearly_seasonality=10)>
-2022-12-08 15:35:48,895 Prophet Model Prediction ...
-2022-12-08 15:35:49,538 Prophet Model MAPE: 0.2154
-2022-12-08 15:35:49,538 Creating Random Forest Model ...
-2022-12-08 15:35:53,264 Random Forest Model Prediction ...
-2022-12-08 15:35:56,873 Random Forest Model MAPE: 0.1680
-2022-12-08 15:35:56,899 Creating XGBoost Model ....
-2022-12-08 15:35:57,099 XGBoost Model Prediction ...
-2022-12-08 15:35:57,720 XGBoost Model MAPE: 0.1717
-2022-12-08 15:35:57,720 Creating Linear Regression Model ...
-2022-12-08 15:35:57,755 Linear Regression Model Prediction ...
-2022-12-08 15:35:57,831 Linear Regression Model MAPE: 0.1747
-2022-12-08 15:35:57,960 Creating Polynomial Regression Orde 2 Model ...
-2022-12-08 15:36:01,587 Polynomial Regression Orde 2 Model Prediction ...
-2022-12-08 15:36:02,455 Polynomial Regression Orde 2 Model MAPE: 0.1813
-2022-12-08 15:36:02,456 Creating Polynomial Regression Orde 3 Model ...
-2022-12-08 15:37:40,257 Polynomial Regression Orde 3 Model Prediction ...
-2022-12-08 15:37:40,999 Polynomial Regression Orde 3 Model MAPE: 0.1523
-2022-12-08 15:37:40,999 Creating all model prediction result data frame ...
-2022-12-08 15:37:41,009 Creating all model mape result data frame ...
-2022-12-08 15:37:41,010 Creating all model params result data frame ...
-2022-12-08 15:37:41,050 Updating forecast result to database ...
-2022-12-08 15:38:04,907 Updated rows: 361
-2022-12-08 15:38:04,907 Updating MAPE result to database ...
-2022-12-08 15:38:04,970 Updated rows: 1
-2022-12-08 15:38:04,970 Updating Model Parameter result to database ...
-2022-12-08 15:39:05,502 Updated rows: 1
+2022-12-09 14:20:54,512 Prophet Model Prediction ...
+2022-12-09 14:20:54,831 Prophet Model MAPE: 0.2154
+2022-12-09 14:20:54,832 Prophet Model Parameter multiplicative, 30, 10, 0.5, 2, 11, 10, 10
+2022-12-09 14:20:54,832 Creating Random Forest Model ...
+2022-12-09 14:20:58,509 Random Forest Model Prediction ...
+2022-12-09 14:20:59,883 Random Forest Model MAPE: 0.1680
+2022-12-09 14:20:59,884 Random Forest Model Parameter RandomForestRegressor(n_estimators=80, random_state=0), 20
+2022-12-09 14:20:59,893 Creating XGBoost Model ....
+2022-12-09 14:21:00,116 XGBoost Model Prediction ...
+2022-12-09 14:21:00,486 XGBoost Model MAPE: 0.1717
+2022-12-09 14:21:00,487 XGBoost Model Parameter 15, reg:squarederror
+2022-12-09 14:21:00,487 Creating Linear Regression Model ...
+2022-12-09 14:21:00,504 Linear Regression Model Prediction ...
+2022-12-09 14:21:00,536 Linear Regression Model MAPE: 0.1747
+2022-12-09 14:21:00,537 Linear Regression Parameters LinearRegression(normalize=True), 27
+2022-12-09 14:21:00,584 Creating Polynomial Regression Orde 2 Model ...
+2022-12-09 14:21:04,269 Polynomial Regression Orde 2 Model Prediction ...
+2022-12-09 14:21:04,592 Polynomial Regression Orde 2 Model MAPE: 0.1813
+2022-12-09 14:21:04,593 Polynomial Regression Orde 2 Parameter PolynomRegressor(deg=2), 30
+2022-12-09 14:21:04,593 Creating Polynomial Regression Orde 3 Model ...
+2022-12-09 14:22:50,341 Polynomial Regression Orde 3 Model Prediction ...
+2022-12-09 14:22:50,622 Polynomial Regression Orde 3 Model MAPE: 0.1523
+2022-12-09 14:22:50,622 Polynomial Regression Orde 3 Parameter PolynomRegressor(deg=3), 27
+2022-12-09 14:22:50,622 Creating all model prediction result data frame ...
+2022-12-09 14:22:50,626 Creating all model mape result data frame ...
+2022-12-09 14:22:50,626 Creating all model params result data frame ...
+2022-12-09 14:22:50,641 Updating forecast result to database ...
+2022-12-09 14:23:14,855 Updated rows: 361
+2022-12-09 14:23:14,855 Updating MAPE result to database ...
+2022-12-09 14:23:14,917 Updated rows: 1
+2022-12-09 14:23:14,917 Updating Model Parameter result to database ...
+2022-12-09 14:23:14,980 Updated rows: 1

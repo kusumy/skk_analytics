@@ -437,7 +437,6 @@ def main():
     
     logMessage("ARIMAX Model Prediction ..")
     arimax_forecast = arimax_model.predict(fh, X=X_test[exogenous_features])
-    y_test["Forecast_ARIMAX"] = arimax_forecast
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
     y_pred_arimax['day_num'] = [i.day for i in arimax_forecast.index]
     y_pred_arimax['month_num'] = [i.month for i in arimax_forecast.index]
@@ -446,11 +445,14 @@ def main():
     y_pred_arimax['date'] = pd.DatetimeIndex(y_pred_arimax['date'], freq='D')
 
     #Create MAPE
-    arimax_mape = mean_absolute_percentage_error(y_test.feed_gas, y_test.Forecast_ARIMAX)
+    arimax_mape = mean_absolute_percentage_error(y_test.feed_gas, arimax_forecast)
     arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
     logMessage("ARIMAX Model "+arimax_mape_str)
     #Rename colum 0
     y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
+    #Get parameter
+    arimax_param = str(arimax_model.get_fitted_params()['order'])
+    logMessage("ARIMAX Model Parameters "+arimax_param)
 
 
     ##### SARIMAX MODEL (forecast_b) #####
@@ -468,17 +470,21 @@ def main():
     sarimax_trace = True
     sarimax_error_action = "ignore"
     sarimax_suppress_warnings = True
+    sarimax_random_state = 15
+    sarimax_n_fits = 50
+    sarimax_stepwise = True
     
-    sarimax_model = auto_arima(y=y_train_cleaned.feed_gas, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
+    #sarimax_model = auto_arima(y=y_train_cleaned.feed_gas, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
     #sarimax_model = ARIMA(order=(2, 0, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
+    sarimax_model = AutoARIMA(d=sarimax_differencing, trace=sarimax_trace, n_fits=sarimax_n_fits, seasonal=sarimax_seasonal, D=sarimax_seasonal_differencing,  sp=sarimax_sp, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings, random_state=sarimax_random_state,
+                        stepwise=sarimax_stepwise)
     logMessage("Creating SARIMAX Model ...") 
     sarimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_model.summary())
     
     logMessage("SARIMAX Model Prediction ..")
-    sarimax_forecast = sarimax_model.predict(len(fh), X=X_test[exogenous_features]) #len(fh)
-    y_test["Forecast_SARIMAX"] = sarimax_forecast
+    sarimax_forecast = sarimax_model.predict(fh, X=X_test[exogenous_features]) #len(fh)
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
     y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]
@@ -487,12 +493,21 @@ def main():
     y_pred_sarimax['date'] = pd.DatetimeIndex(y_pred_sarimax['date'], freq='D')
 
     #Create MAPE
-    sarimax_mape = mean_absolute_percentage_error(y_test.feed_gas, y_test.Forecast_SARIMAX)
+    sarimax_mape = mean_absolute_percentage_error(y_test.feed_gas, sarimax_forecast)
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
-    logMessage("SARIMAX Model "+sarimax_mape_str)
-    #Rename colum 0
+    logMessage("SARIMAX Model MAPE "+sarimax_mape_str)
+    
+    #Rename colum feed_gas
     y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
+    
+    #Get parameters
+    sarimax_param_order = str(sarimax_model.get_fitted_params()['order'])
+    sarimax_param_order_seasonal = str(sarimax_model.get_fitted_params()['seasonal_order'])
+    sarimax_param = sarimax_param_order + sarimax_param_order_seasonal
+    logMessage("SARIMAX Model Parameters "+sarimax_param)
 
+    
+    #%%
     ##### PROPHET MODEL (forecast_c) #####
     #%%
     # Create model
@@ -539,6 +554,18 @@ def main():
     prophet_mape = mean_absolute_percentage_error(y_test['feed_gas'], prophet_forecast)
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
+    
+    #Get parameters
+    prophet_param_seasonality_mode = str(prophet_forecaster.get_params()['seasonality_mode'])
+    prophet_param_n_changepoints = str(prophet_forecaster.get_params()['n_changepoints'])
+    prophet_param_seasonality_prior_scale = str(prophet_forecaster.get_params()['seasonality_prior_scale'])
+    prophet_param_changepoint_prior_scale = str(prophet_forecaster.get_params()['changepoint_prior_scale'])
+    prophet_param_holidays_prior_scale = str(prophet_forecaster.get_params()['holidays_prior_scale'])
+    prophet_param_daily_seasonality = str(prophet_forecaster.get_params()['daily_seasonality'])
+    prophet_param_weekly_seasonality = str(prophet_forecaster.get_params()['weekly_seasonality'])
+    prophet_param_yearly_seasonality = str(prophet_forecaster.get_params()['yearly_seasonality'])
+    prophet_param = prophet_param_seasonality_mode + ', ' + prophet_param_n_changepoints + ', ' + prophet_param_seasonality_prior_scale + ', ' + prophet_param_changepoint_prior_scale + ', ' + prophet_param_holidays_prior_scale + ', ' + prophet_param_daily_seasonality + ', ' + prophet_param_weekly_seasonality + ', ' + prophet_param_yearly_seasonality
+    logMessage("Prophet Model Parameter "+prophet_param)
 
 
     ##### RANDOM FOREST MODEL (forecast_d) #####
@@ -575,6 +602,11 @@ def main():
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
 
+    #Get parameters
+    ranfor_param_estimator = str(ranfor_forecaster.get_fitted_params()['estimator'])
+    ranfor_param_lags = str(ranfor_forecaster.get_fitted_params()['window_length'])
+    ranfor_param = ranfor_param_estimator + ', ' + ranfor_param_lags
+    logMessage("Random Forest Model Parameter "+ranfor_param)
 
 
     ##### XGBOOST MODEL (forecast_e) #####
@@ -608,6 +640,12 @@ def main():
     xgb_mape = mean_absolute_percentage_error(y_test['feed_gas'], xgb_forecast)
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
+    
+    #Get parameters
+    xgb_param_lags = str(xgb_forecaster.get_params()['window_length'])
+    xgb_param_objective = str(xgb_forecaster.get_params()['estimator__objective'])
+    xgb_param = xgb_param_lags + ', ' + xgb_param_objective
+    logMessage("XGBoost Model Parameter "+xgb_param )
 
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
@@ -640,6 +678,12 @@ def main():
     linreg_mape = mean_absolute_percentage_error(y_test['feed_gas'], linreg_forecast)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
+    
+    #Get parameters
+    linreg_param_estimator = str(linreg_forecaster.get_fitted_params()['estimator'])
+    linreg_param_lags = str(linreg_forecaster.get_fitted_params()['window_length'])
+    linreg_param = linreg_param_estimator + ', ' + linreg_param_lags
+    logMessage("Linear Regression Parameters "+linreg_param)
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
@@ -674,6 +718,12 @@ def main():
     poly2_mape = mean_absolute_percentage_error(y_test['feed_gas'], poly2_forecast)
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Degree=2 Model "+poly2_mape_str)
+    
+    #Get parameters
+    poly2_param_estimator = str(poly2_forecaster.get_fitted_params()['estimator'])
+    poly2_param_lags = str(poly2_forecaster.get_fitted_params()['window_length'])
+    poly2_param = poly2_param_estimator + ', ' + poly2_param_lags
+    logMessage("Polynomial Regression Orde 2 Parameter "+poly2_param)
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
@@ -708,6 +758,12 @@ def main():
     poly3_mape = mean_absolute_percentage_error(y_test['feed_gas'], poly3_forecast)
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Degree=3 Model "+poly3_mape_str)
+    
+    #Get parameters
+    poly3_param_estimator = str(poly3_forecaster.get_fitted_params()['estimator'])
+    poly3_param_lags = str(poly3_forecaster.get_fitted_params()['window_length'])
+    poly3_param = poly3_param_estimator + ', ' + poly3_param_lags
+    logMessage("Polynomial Regression Orde 3 Parameter "+poly3_param)
 
 
     #%%
@@ -757,6 +813,21 @@ def main():
 
     all_mape_pred = pd.DataFrame(all_mape_pred)
     
+    #CREATE MAPE TO DATAFRAME
+    logMessage("Creating all model params result data frame ...")
+    all_model_param =  {'model_param_a': [arimax_param],
+                    'model_param_b': [sarimax_param],
+                    'model_param_c': [prophet_param],
+                    'model_param_d': [ranfor_param],
+                    'model_param_e': [xgb_param],
+                    'model_param_f': [linreg_param],
+                    'model_param_g': [poly2_param],
+                    'model_param_h': [poly3_param],
+                    'lng_plant' : 'BP Tangguh',
+                    'product' : 'Feed Gas'}
+
+    all_model_param = pd.DataFrame(all_model_param)
+    
     # Save forecast result to database
     logMessage("Updating forecast result to database ...")
     total_updated_rows = insert_forecast(conn, y_all_pred)
@@ -765,6 +836,11 @@ def main():
     # Save mape result to database
     logMessage("Updating MAPE result to database ...")
     total_updated_rows = insert_mape(conn, all_mape_pred)
+    logMessage("Updated rows: {}".format(total_updated_rows))
+    
+    # Save mape result to database
+    logMessage("Updating Model Parameter result to database ...")
+    total_updated_rows = insert_param(conn, all_model_param)
     logMessage("Updated rows: {}".format(total_updated_rows))
     
     print("Done")
@@ -795,11 +871,24 @@ def insert_mape(conn, all_mape_pred):
         
     return total_updated_rows
 
+def insert_param(conn, all_model_param):
+    total_updated_rows = 0
+    for index, row in all_model_param.iterrows():
+        lng_plant = row['lng_plant']
+        product = row['product']
+        model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+        
+        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
+        updated_rows = update_param_value(conn, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h , lng_plant, product)
+        total_updated_rows = total_updated_rows + updated_rows 
+        
+    return total_updated_rows
+
 def update_value(conn, forecast_a, forecast_b, forecast_c, 
                         forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    created_by = 'python'
+    created_by = 'PYTHON'
     
     """ insert forecasting result after last row in table """
     sql = """ UPDATE lng_feed_gas_daily
@@ -862,6 +951,49 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         # execute the UPDATE  statement
         cur.execute(sql, (mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
                           date_now, created_by, lng_plant, product))
+        # get the number of updated rows
+        updated_rows = cur.rowcount
+        # Commit the changes to the database
+        conn.commit()
+        # Close cursor
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        logMessage(error)
+
+    return updated_rows
+
+def update_param_value(conn, model_param_a, model_param_b, model_param_c, 
+                        model_param_d, model_param_e, model_param_f, model_param_g, model_param_h,
+                        lng_plant, product):
+    
+    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    created_by = 'PYTHON'
+    
+    """ insert mape result after last row in table """
+    sql = """ INSERT INTO lng_analytics_model_param
+                    (lng_plant,
+                    product,
+                    running_date,
+                    model_param_a,
+                    model_param_b,
+                    model_param_c,
+                    model_param_d,
+                    model_param_e,
+                    model_param_f,
+                    model_param_g,
+                    model_param_h,
+                    created_by)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+          """
+    
+    #conn = None
+    updated_rows = 0
+    try:
+        # create a new cursor
+        cur = conn.cursor()
+        # execute the UPDATE  statement
+        cur.execute(sql, (lng_plant, product, date_now, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h,
+                          created_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
