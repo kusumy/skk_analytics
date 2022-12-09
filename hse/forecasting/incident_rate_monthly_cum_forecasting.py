@@ -110,7 +110,7 @@ def main():
         exit()
         
     # Load Data from Database
-    query_1 = open(os.path.join('hse', 'query_month_cum.sql'), mode="rt").read()
+    query_1 = open(os.path.join('hse\\sql', 'query_month_cum.sql'), mode="rt").read()
     data = get_sql_data(query_1, conn)
     #data = retrieve_data(query_1, section='postgresql_ml_hse')
     data['year_num'] = data['year_num'].astype(int)
@@ -178,7 +178,7 @@ def main():
 
     #%%
     #import exogenous for predict
-    query_exog = open(os.path.join('hse', 'query_month_cum3.sql'), mode="rt").read()
+    query_exog = open(os.path.join('hse\\sql', 'query_month_cum3.sql'), mode="rt").read()
     data2 = get_sql_data(query_exog, conn)
     #data2 = retrieve_data(query_2, section='postgresql_ml_hse')
     data2['year_num'] = data2['year_num'].astype(int)
