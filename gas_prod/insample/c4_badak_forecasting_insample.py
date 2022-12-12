@@ -104,7 +104,7 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 #%%
 def main():
     # Configure logging
-    configLogging("lpg_c3_badak.log")
+    configLogging("lpg_c4_badak.log")
     
     # Connect to database
     # Exit program if not connected to database
@@ -114,20 +114,20 @@ def main():
         exit()
 
     #Load data from database
-    query_1 = open(os.path.join('gas_prod/sql', 'c3_badak_data_query.sql'), mode="rt").read()
+    query_1 = open(os.path.join('gas_prod/sql', 'c4_badak_data_query.sql'), mode="rt").read()
     data = get_sql_data(query_1, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
     #%%
     ds = 'date'
-    y = 'lpg_c3' #Choose the column target
+    y = 'lpg_c4' #Choose the column target
     df = data[[ds,y]]
     df = df.set_index(ds)
     df.index = pd.DatetimeIndex(df.index, freq='D')
 
     #Select column target
-    train_df = df['lpg_c3']
+    train_df = df['lpg_c4']
 
     #%%
     #import chart_studio.plotly
@@ -137,7 +137,7 @@ def main():
     #cf.go_offline()
     #cf.set_config_file(offline = False, world_readable = True)
 
-    #df.iplot(title="LPG C3 PT Badak")
+    #df.iplot(title="LPG C4 PT Badak")
 
     #%%
     #stationarity_check(train_df)
@@ -173,7 +173,7 @@ def main():
     from sktime.forecasting.base import ForecastingHorizon
 
     # Test size
-    test_size = 0.2
+    test_size = 0.1
     # Split data
     y_train, y_test = temporal_train_test_split(df, test_size=test_size)
     # Horizon
@@ -185,16 +185,14 @@ def main():
     df['day'] = [i.day for i in df.index]
     #df['day_of_year'] = [i.dayofyear for i in df.index]
     #df['week_of_year'] = [i.weekofyear for i in df.index]
-    df.tail(20)
+    #df.tail(20)
 
     #%%
     # Split into train and test
     X_train, X_test = temporal_train_test_split(df.iloc[:,1:], test_size=test_size)
-    X_train
 
     #%%
     exogenous_features = ["month", "day"]
-    exogenous_features
 
     # %%
     ##### FORECASTING #####
@@ -207,7 +205,7 @@ def main():
     from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_absolute_error, r2_score
 
     #Set parameters
-    arimax_differencing = 0
+    arimax_differencing = 1
     arimax_trace = True
     arimax_error_action = "ignore"
     arimax_suppress_warnings = True
@@ -220,7 +218,7 @@ def main():
     arimax_model = AutoARIMA(d=arimax_differencing, trace=arimax_trace, n_fits=arimax_n_fits, stepwise=arimax_stepwise, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
     
     logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(y_train.lpg_c3, X=X_train) #exogenous=train_exog
+    arimax_model.fit(y_train.lpg_c4, X=X_train) #exogenous=train_exog
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_model.summary())
 
@@ -236,7 +234,7 @@ def main():
     y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
 
     # Calculate model performance
-    arimax_mape = mean_absolute_percentage_error(y_test.lpg_c3, arimax_forecast)
+    arimax_mape = mean_absolute_percentage_error(y_test.lpg_c4, arimax_forecast)
     arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
     logMessage("ARIMAX Model "+arimax_mape_str)
 
@@ -249,8 +247,8 @@ def main():
     ##### SARIMAX MODEL #####
 
     #Set parameters
-    sarimax_differencing = 0
-    sarimax_seasonal_differencing = 1
+    sarimax_differencing = 1
+    sarimax_seasonal_differencing = 0
     sarimax_seasonal = True
     sarimax_m = 12
     sarimax_trace = True
@@ -262,9 +260,9 @@ def main():
 
     # Create SARIMA Model
     #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
-    sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, sp=sarimax_m, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+    sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_m, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
-    sarimax_model.fit(y_train.lpg_c3, X=X_train) #exogenous=train_exog
+    sarimax_model.fit(y_train.lpg_c4, X=X_train) #exogenous=train_exog
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_model.summary())
 
@@ -281,7 +279,7 @@ def main():
 
     #%%
     # Calculate model performance
-    sarimax_mape = mean_absolute_percentage_error(y_test.lpg_c3, sarimax_forecast)
+    sarimax_mape = mean_absolute_percentage_error(y_test.lpg_c4, sarimax_forecast)
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
     logMessage("SARIMAX Model "+sarimax_mape_str)
 
@@ -298,13 +296,13 @@ def main():
 
     #Set parameters
     prophet_seasonality_mode = 'multiplicative'
-    prophet_n_changepoints = 1
-    prophet_seasonality_prior_scale = 10
-    prophet_changepoint_prior_scale = 0.001
+    prophet_n_changepoints = 4
+    prophet_seasonality_prior_scale = 8
+    prophet_changepoint_prior_scale = 0.002
     prophet_holidays_prior_scale = 2
     prophet_daily_seasonality = 3
     prophet_weekly_seasonality = 10
-    prophet_yearly_seasonality = 7
+    prophet_yearly_seasonality = 13
 
     #Create Forecaster
     prophet_forecaster = Prophet(
@@ -319,7 +317,7 @@ def main():
             yearly_seasonality=prophet_yearly_seasonality)
 
     logMessage("Creating Prophet Model ...")
-    prophet_forecaster.fit(y_train.lpg_c3, X=X_train) #, X_train
+    prophet_forecaster.fit(y_train.lpg_c4, X=X_train) #, X_train
     logMessage(prophet_forecaster._get_fitted_params)
     
     logMessage("Prophet Model Prediction ...")
@@ -334,7 +332,7 @@ def main():
     y_pred_prophet.rename(columns={0:'forecast_c'}, inplace=True)
 
     # Calculate model performance
-    prophet_mape = mean_absolute_percentage_error(y_test.lpg_c3, prophet_forecast)
+    prophet_mape = mean_absolute_percentage_error(y_test.lpg_c4, prophet_forecast)
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
 
@@ -355,7 +353,7 @@ def main():
     from sklearn.ensemble import RandomForestRegressor
 
     #Set parameters
-    ranfor_lags = 0.33
+    ranfor_lags = 0.9
     ranfor_n_estimators = 100
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
@@ -366,7 +364,7 @@ def main():
     ranfor_forecaster = make_reduction(ranfor_regressor, window_length=ranfor_lags, strategy=ranfor_strategy)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_forecaster.fit(y_train.lpg_c3, X=X_train) #, X_train
+    ranfor_forecaster.fit(y_train.lpg_c4, X=X_train) #, X_train
     
     logMessage("Random Forest Model Prediction ...")
     ranfor_forecast = ranfor_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -380,7 +378,7 @@ def main():
     y_pred_ranfor.rename(columns={0:'forecast_d'}, inplace=True)
 
     # Calculate model performance
-    ranfor_mape = mean_absolute_percentage_error(y_test.lpg_c3, ranfor_forecast)
+    ranfor_mape = mean_absolute_percentage_error(y_test.lpg_c4, ranfor_forecast)
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
 
@@ -396,7 +394,7 @@ def main():
     from xgboost import XGBRegressor
 
     #Set parameters
-    xgb_lags = 0.4
+    xgb_lags = 0.81
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
@@ -405,7 +403,7 @@ def main():
     xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
 
     logMessage("Creating XGBoost Model ....")
-    xgb_forecaster.fit(y_train.lpg_c3, X=X_train) #, X_train
+    xgb_forecaster.fit(y_train.lpg_c4, X=X_train) #, X_train
     
     logMessage("XGBoost Model Prediction ...")
     xgb_forecast = xgb_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -420,7 +418,7 @@ def main():
     y_pred_xgb.rename(columns={0:'forecast_e'}, inplace=True)
 
     # Calculate model performance
-    xgb_mape = mean_absolute_percentage_error(y_test.lpg_c3, xgb_forecast)
+    xgb_mape = mean_absolute_percentage_error(y_test.lpg_c4, xgb_forecast)
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
 
@@ -436,7 +434,7 @@ def main():
     from sklearn.linear_model import LinearRegression
 
     #Set parameters
-    linreg_lags = 50
+    linreg_lags = 0.93
     linreg_normalize = True
     linreg_strategy = "recursive"
 
@@ -445,7 +443,7 @@ def main():
     linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
     
     logMessage("Creating Linear Regression Model ...")
-    linreg_forecaster.fit(y_train.lpg_c3, X=X_train)
+    linreg_forecaster.fit(y_train.lpg_c4, X=X_train)
 
     logMessage("Linear Regression Model Prediction ...")
     linreg_forecast = linreg_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -460,7 +458,7 @@ def main():
     y_pred_linreg.rename(columns={0:'forecast_f'}, inplace=True)
 
     # Calculate model performance
-    linreg_mape = mean_absolute_percentage_error(y_test.lpg_c3, linreg_forecast)
+    linreg_mape = mean_absolute_percentage_error(y_test.lpg_c4, linreg_forecast)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
 
@@ -475,7 +473,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set parameters
-    poly2_lags = 63
+    poly2_lags = 0.92
     poly2_regularization = None
     poly2_interactions = False
     poly2_strategy = "recursive"
@@ -485,7 +483,7 @@ def main():
     poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy) #WL=0.9 (degree 2), WL=0.7 (degree 3)
     
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_forecaster.fit(y_train.lpg_c3, X=X_train) #, X=X_train
+    poly2_forecaster.fit(y_train.lpg_c4, X=X_train) #, X=X_train
 
     logMessage("Polynomial Regression Orde 2 Model Prediction ...")
     poly2_forecast = poly2_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -500,7 +498,7 @@ def main():
     y_pred_poly2.rename(columns={0:'forecast_g'}, inplace=True)
 
     # Calculate model performance
-    poly2_mape = mean_absolute_percentage_error(y_test.lpg_c3, poly2_forecast)
+    poly2_mape = mean_absolute_percentage_error(y_test.lpg_c4, poly2_forecast)
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Orde 2 Model "+poly2_mape_str)
 
@@ -515,7 +513,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set parameters
-    poly3_lags = 32
+    poly3_lags = 0.9
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"
@@ -525,7 +523,7 @@ def main():
     poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy) #WL=0.9 (degree 2), WL=0.7 (degree 3)
     
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_forecaster.fit(y_train.lpg_c3, X=X_train) #, X=X_train
+    poly3_forecaster.fit(y_train.lpg_c4, X=X_train) #, X=X_train
 
     logMessage("Polynomial Regression Orde 3 Model Prediction ...")
     poly3_forecast = poly3_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -540,7 +538,7 @@ def main():
     y_pred_poly3.rename(columns={0:'forecast_h'}, inplace=True)
 
     # Calculate model performance
-    poly3_mape = mean_absolute_percentage_error(y_test.lpg_c3, poly3_forecast)
+    poly3_mape = mean_absolute_percentage_error(y_test.lpg_c4, poly3_forecast)
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Orde 3 Model "+poly3_mape_str)
 
@@ -563,7 +561,7 @@ def main():
     ax.plot(linreg_forecast, label='pred_linreg')
     ax.plot(poly2_forecast, label='pred_poly2')
     ax.plot(poly3_forecast, label='pred_poly3')
-    title = 'LPG C3 PT Badak Forecasting (Insample) with Exogenous Date-Month'
+    title = 'LPG C4 PT Badak Forecasting (Insample) with Exogenous Date-Month'
     ax.set_title(title)
     ax.set_ylabel("Feed Gas")
     ax.set_xlabel("Datestamp")
@@ -596,7 +594,7 @@ def main():
                     'mape_forecast_g': [poly2_mape],
                     'mape_forecast_h': [poly3_mape],
                     'lng_plant' : 'PT Badak',
-                    'product' : 'LPG C3'}
+                    'product' : 'LPG C4'}
 
     all_mape_pred = pd.DataFrame(all_mape_pred)
 
@@ -612,7 +610,7 @@ def main():
                         'model_param_g': [poly2_param],
                         'model_param_h': [poly3_param],
                         'lng_plant' : 'PT Badak',
-                        'product' : 'LPG C3'}
+                        'product' : 'LPG C4'}
 
     all_model_param = pd.DataFrame(all_model_param)
     all_model_param
@@ -681,7 +679,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
     created_by = 'PYTHON'
     
     """ insert forecasting result after last row in table """
-    sql = """ UPDATE lng_lpg_c3_daily
+    sql = """ UPDATE lng_lpg_c4_daily
                 SET forecast_a = %s, 
                     forecast_b = %s, 
                     forecast_c = %s, 
