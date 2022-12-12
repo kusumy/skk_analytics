@@ -274,6 +274,11 @@ def main():
     arimax_mape = mean_absolute_percentage_error(y_test.condensate, arimax_forecast)
     arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
     logMessage("ARIMAX Model "+arimax_mape_str)
+    
+    #Get parameter
+    arimax_param = str(arimax_model.get_fitted_params()['order'])
+    logMessage("Arimax Model Parameters "+arimax_param)
+    
 
     ##### SARIMAX MODEL #####
 
@@ -314,7 +319,12 @@ def main():
     sarimax_mape = mean_absolute_percentage_error(y_test.condensate, sarimax_forecast)
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
     logMessage("SARIMAX Model "+sarimax_mape_str)
-    sarimax_param = ""
+    
+    #Get parameters
+    sarimax_param_order = str(sarimax_model.get_fitted_params()['order'])
+    sarimax_param_order_seasonal = str(sarimax_model.get_fitted_params()['seasonal_order'])
+    sarimax_param = sarimax_param_order + sarimax_param_order_seasonal
+    logMessage("Sarimax Model Parameters "+sarimax_param)
 
 
     #%%
@@ -363,7 +373,19 @@ def main():
     prophet_mape = mean_absolute_percentage_error(y_test.condensate, prophet_forecast)
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
-    prophet_param = ""
+    
+    #Get parameters
+    prophet_param_seasonality_mode = str(prophet_forecaster.get_params()['seasonality_mode'])
+    prophet_param_n_changepoints = str(prophet_forecaster.get_params()['n_changepoints'])
+    prophet_param_seasonality_prior_scale = str(prophet_forecaster.get_params()['seasonality_prior_scale'])
+    prophet_param_changepoint_prior_scale = str(prophet_forecaster.get_params()['changepoint_prior_scale'])
+    prophet_param_holidays_prior_scale = str(prophet_forecaster.get_params()['holidays_prior_scale'])
+    prophet_param_daily_seasonality = str(prophet_forecaster.get_params()['daily_seasonality'])
+    prophet_param_weekly_seasonality = str(prophet_forecaster.get_params()['weekly_seasonality'])
+    prophet_param_yearly_seasonality = str(prophet_forecaster.get_params()['yearly_seasonality'])
+    prophet_param = prophet_param_seasonality_mode + ', ' + prophet_param_n_changepoints + ', ' + prophet_param_seasonality_prior_scale + ', ' + prophet_param_changepoint_prior_scale + ', ' + prophet_param_holidays_prior_scale + ', ' + prophet_param_daily_seasonality + ', ' + prophet_param_weekly_seasonality + ', ' + prophet_param_yearly_seasonality
+    logMessage("Prophet Model Parameters "+prophet_param)
+
 
 
     ##### RANDOM FOREST MODEL #####
@@ -398,7 +420,12 @@ def main():
     ranfor_mape = mean_absolute_percentage_error(y_test.condensate, ranfor_forecast)
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
-    ranfor_param = ""
+    
+    #Get Parameters
+    ranfor_param_estimator = str(ranfor_forecaster.get_fitted_params()['estimator'])
+    ranfor_param_lags = str(ranfor_forecaster.get_fitted_params()['window_length'])
+    ranfor_param = ranfor_param_estimator + ', ' + ranfor_param_lags
+    logMessage("Random Forest Model Parameters "+ranfor_param)
 
 
     ##### XGBOOST MODEL #####
@@ -431,7 +458,12 @@ def main():
     xgb_mape = mean_absolute_percentage_error(y_test.condensate, xgb_forecast)
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
-    xgb_param = ""
+    
+    #Get Parameters
+    xgb_param_lags = str(xgb_forecaster.get_params()['window_length'])
+    xgb_param_objective = str(xgb_forecaster.get_params()['estimator__objective'])
+    xgb_param = xgb_param_lags + ', ' + xgb_param_objective
+    logMessage("XGBoost Model Parameters "+xgb_param)
 
 
     ##### LINEAR REGRESSION MODEL #####
@@ -464,7 +496,12 @@ def main():
     linreg_mape = mean_absolute_percentage_error(y_test.condensate, linreg_forecast)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
-    linreg_param = ""
+    
+    #Get parameters
+    linreg_param_estimator = str(linreg_forecaster.get_fitted_params()['estimator'])
+    linreg_param_lags = str(linreg_forecaster.get_fitted_params()['window_length'])
+    linreg_param = linreg_param_estimator + ', ' + linreg_param_lags
+    logMessage("Linear Regression Model Parameters "+linreg_param)
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 #####
@@ -498,7 +535,12 @@ def main():
     poly2_mape = mean_absolute_percentage_error(y_test.condensate, poly2_forecast)
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Orde 2 Model "+poly2_mape_str)
-    poly2_param = ""
+    
+    #Get parameters
+    poly2_param_estimator = str(poly2_forecaster.get_fitted_params()['estimator'])
+    poly2_param_lags = str(poly2_forecaster.get_fitted_params()['window_length'])
+    poly2_param = poly2_param_estimator + ', ' + poly2_param_lags
+    logMessage("Polynomial Regression Orde 2 Model Parameters "+poly2_param)
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 #####
@@ -532,8 +574,12 @@ def main():
     poly3_mape = mean_absolute_percentage_error(y_test.condensate, poly3_forecast)
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Orde 3 Model "+poly3_mape_str)
-    poly3_param = ""
-
+    
+    #Get parameters
+    poly3_param_estimator = str(poly3_forecaster.get_fitted_params()['estimator'])
+    poly3_param_lags = str(poly3_forecaster.get_fitted_params()['window_length'])
+    poly3_param = poly3_param_estimator + ', ' + poly3_param_lags
+    logMessage("Polynomial Regression Orde 3 Model Parameters "+poly3_param)
 
     #%%
     ##### JOIN PREDICTION RESULT TO DATAFRAME #####
