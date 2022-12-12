@@ -113,7 +113,8 @@ def main():
     if conn == None:
         exit()
 
-    query_1 = open("c3_badak_data_query.sql", mode="rt").read()
+    #Load data from database
+    query_1 = open(os.path.join('gas_prod/sql', 'c3_badak_data_query.sql'), mode="rt").read()
     data = get_sql_data(query_1, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
