@@ -173,12 +173,12 @@ def main():
     fh = ForecastingHorizon(y_test.index, is_relative=False)
 
     #%%
-    import chart_studio.plotly
-    import cufflinks as cf
+    #import chart_studio.plotly
+    #import cufflinks as cf
 
-    from plotly.offline import iplot
-    cf.go_offline()
-    cf.set_config_file(offline = False, world_readable = True)
+    #from plotly.offline import iplot
+    #cf.go_offline()
+    #cf.set_config_file(offline = False, world_readable = True)
 
     #%%
     #df_smoothed.iplot(title="Feed Gas PT Badak")
