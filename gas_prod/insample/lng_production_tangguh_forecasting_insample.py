@@ -5,7 +5,7 @@ import os
 import sys
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import mlflow
+#import mlflow
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -28,7 +28,6 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 import pmdarima as pm
 from pmdarima import model_selection 
 from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_absolute_error, r2_score
-import mlflow
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from adtk.data import validate_series

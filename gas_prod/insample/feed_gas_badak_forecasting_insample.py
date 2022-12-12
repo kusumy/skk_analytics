@@ -30,7 +30,7 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
-import mlflow
+#import mlflow
 
 def stationarity_check(ts):
             
