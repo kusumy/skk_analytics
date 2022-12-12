@@ -158,11 +158,11 @@ def main():
     # Replace original with smoothed data
     df_smoothed[y] = smoother.smooth_data[0]
 
-    import chart_studio.plotly
-    import cufflinks as cf
-    from plotly.offline import iplot
-    cf.go_offline()
-    cf.set_config_file(offline = False, world_readable = True)
+    #import chart_studio.plotly
+    #import cufflinks as cf
+    #from plotly.offline import iplot
+    #cf.go_offline()
+    #cf.set_config_file(offline = False, world_readable = True)
     #df_smoothed.iplot(title="Condensate PT Badak")
 
     #%%
