@@ -105,7 +105,7 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 # %%
 def main():
     # Configure logging
-    configLogging("feed_gas_badak_forecasting.log")
+    #configLogging("feed_gas_badak_forecasting.log")
     
     # Connect to database
     # Exit program if not connected to database

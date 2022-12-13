@@ -12,11 +12,11 @@ from utils import configLogging, logMessage, ad_test
 import warnings
 warnings.filterwarnings('ignore')
 
-#import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
+import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
 #import gas_prod.insample.condensate_tangguh_forecasting_insample as condensate_tangguh_insample
-#import gas_prod.insample.feed_gas_badak_forecasting_insample as feed_gas_badak_insample
+import gas_prod.insample.feed_gas_badak_forecasting_insample as feed_gas_badak_insample
 #import gas_prod.insample.lng_production_tangguh_forecasting_insample as lng_production_tangguh_insample
-import gas_prod.insample.lng_production_badak_forecasting_insample as lng_production_badak_insample
+#import gas_prod.insample.lng_production_badak_forecasting_insample as lng_production_badak_insample
 #import gas_prod.insample.condensate_badak_forecasting_insample as condensate_badak_insample
 #import gas_prod.insample.c3_badak_forecasting_insample as c3_badak_insample
 #import gas_prod.insample.c4_badak_forecasting_insample as c4_badak_insample
@@ -39,13 +39,13 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 # Configure logging
 configLogging("main_lng_insample.log")
 
-#t0 = time.process_time()
-#feed_gas_tangguh_insample.main()
-#t1 = time.process_time()
-#exec_time = format_timespan(t1-t0, max_units=3)
-#print("Forecasting Feed Gas BP Tangguh : " + exec_time)
+t0 = time.process_time()
+feed_gas_tangguh_insample.main()
+t1 = time.process_time()
+exec_time = format_timespan(t1-t0, max_units=3)
+print("Forecasting Feed Gas BP Tangguh : " + exec_time)
 
-#print('\n')
+print('\n')
 
 #t2 = time.process_time()
 #condensate_tangguh_insample.main()
@@ -55,11 +55,11 @@ configLogging("main_lng_insample.log")
 
 #print('\n')
 
-#t4 = time.process_time()
-#feed_gas_badak_insample.main()
-#t5 = time.process_time()
-#exec_time = format_timespan(t5-t4, max_units=3)
-#print("Forecasting Feed gas PT Badak : " + exec_time)
+t4 = time.process_time()
+feed_gas_badak_insample.main()
+t5 = time.process_time()
+exec_time = format_timespan(t5-t4, max_units=3)
+print("Forecasting Feed gas PT Badak : " + exec_time)
 
 #print('\n')
 
@@ -95,11 +95,11 @@ configLogging("main_lng_insample.log")
 
 #print('\n')
 
-t14 = time.process_time()
-lng_production_badak_insample.main()
-t15 = time.process_time()
-exec_time = format_timespan(t15-t14, max_units=3)
-print("Forecasting LPG C4 Badak : " + exec_time)
+#t14 = time.process_time()
+#lng_production_badak_insample.main()
+#t15 = time.process_time()
+#exec_time = format_timespan(t15-t14, max_units=3)
+#print("Forecasting LPG C4 Badak : " + exec_time)
 
 #print('\n')
 

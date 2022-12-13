@@ -104,7 +104,7 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 #%%
 def main():
     # Configure logging
-    configLogging("lpg_c4_badak.log")
+    #configLogging("lpg_c4_badak.log")
     
     # Connect to database
     # Exit program if not connected to database
