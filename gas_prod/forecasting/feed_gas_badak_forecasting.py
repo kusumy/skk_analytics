@@ -170,7 +170,7 @@ def main():
         #ARIMA(4,1,5)
         #arimax_model = auto_arima(train_df, exogenous=future_exog, d=arimax_differencing, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
         logMessage("Creating ARIMAX Model ...")
-        arimax_model = ARIMA(order=(4, 1, 5), suppress_warnings=arimax_suppress_warnings)
+        arimax_model = ARIMA(order=(3, 1, 2), suppress_warnings=arimax_suppress_warnings)
         arimax_model.fit(train_df, X=train_exog)
         logMessage("ARIMAX Model Summary")
         logMessage(arimax_model.summary())
@@ -191,7 +191,7 @@ def main():
 
         #Set parameters
         sarimax_differencing = 1
-        sarimax_seasonal_differencing = 0
+        sarimax_seasonal_differencing = 1
         sarimax_seasonal = True
         sarimax_m = 12
         sarimax_trace = True
@@ -202,7 +202,7 @@ def main():
         #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, 
         #                            m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
         logMessage("Creating SARIMAX Model ...")
-        sarimax_model = ARIMA(order=(4, 1, 5), seasonal_order=(2, 0, 2, 12), suppress_warnings=sarimax_suppress_warnings)
+        sarimax_model = ARIMA(order=(3, 1, 2), seasonal_order=(1, 1, 1, 12), suppress_warnings=sarimax_suppress_warnings)
         sarimax_model.fit(train_df, X=train_exog)
         logMessage("SARIMAX Model Summary")
         logMessage(sarimax_model.summary())
@@ -225,7 +225,7 @@ def main():
 
         #Set parameters
         prophet_seasonality_mode = 'additive'
-        prophet_n_changepoints = 7
+        prophet_n_changepoints = 9
         prophet_seasonality_prior_scale = 10
         prophet_changepoint_prior_scale = 0.5
         prophet_holidays_prior_scale = 2

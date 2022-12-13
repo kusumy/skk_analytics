@@ -161,8 +161,8 @@ def main():
 
         #Set parameters
         sarimax_differencing = 1
-        sarimax_seasonal_differencing = 1
-        sarimax_sp = 12
+        sarimax_seasonal_differencing = 0
+        sarimax_sp = 4
         sarimax_stationary = False
         sarimax_seasonal = True
         sarimax_trace = True
@@ -174,7 +174,7 @@ def main():
         #ARIMA(2,1,3)(0,0,0)[12] 
         #sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, sp=sarimax_sp, stationary=sarimax_stationary,
         #                seasonal=sarimax_seasonal, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
-        sarimax_model = ARIMA(order=(1, 1, 3), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
+        sarimax_model = ARIMA(order=(2, 1, 2), seasonal_order=(0, 0, 0, 4), suppress_warnings=sarimax_suppress_warnings)
         sarimax_model.fit(train_df, X=train_exog)
         logMessage("SARIMAX Model Summary")
         logMessage(sarimax_model.summary())

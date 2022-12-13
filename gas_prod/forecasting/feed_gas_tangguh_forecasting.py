@@ -332,7 +332,7 @@ def main():
         # Create ARIMA Model
         logMessage("Creating ARIMAX Model ...")
         #arimax_model = AutoARIMA(d=arimax_differencing, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
-        arimax_model = ARIMA(order=(2, 0, 2), suppress_warnings=arimax_suppress_warnings)
+        arimax_model = ARIMA(order=(2, 0, 1), suppress_warnings=arimax_suppress_warnings)
         arimax_model.fit(train_df, X=train_exog)
         logMessage("ARIMAX Model Summary")
         logMessage(arimax_model.summary())
@@ -388,11 +388,11 @@ def main():
 
         #Set parameters
         prophet_seasonality_mode = 'multiplicative'
-        prophet_n_changepoints = 40
+        prophet_n_changepoints = 30
         prophet_seasonality_prior_scale = 0.1
         prophet_changepoint_prior_scale = 0.1
         prophet_holidays_prior_scale = 8
-        prophet_daily_seasonality = 8
+        prophet_daily_seasonality = 10
         prophet_weekly_seasonality = 1
         prophet_yearly_seasonality = 10
 
@@ -453,7 +453,7 @@ def main():
 
         #Set parameters
         xgb_objective = 'reg:squarederror'
-        xgb_lags = 38
+        xgb_lags = 46
         xgb_strategy = "recursive"
 
         #Create regressor object
@@ -507,7 +507,7 @@ def main():
         #Set parameters
         poly2_regularization = None
         poly2_interactions = False
-        poly2_lags = 9
+        poly2_lags = 16
         poly2_strategy = "recursive"
 
         # Create regressor object
