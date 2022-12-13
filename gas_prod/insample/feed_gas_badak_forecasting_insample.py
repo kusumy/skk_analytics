@@ -685,27 +685,30 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
     created_by = 'PYTHON'
     
     """ insert mape result after last row in table """
-    sql = """ UPDATE lng_analytics_mape
-                SET mape_forecast_a = %s, 
-                    mape_forecast_b = %s, 
-                    mape_forecast_c = %s, 
-                    mape_forecast_d = %s, 
-                    mape_forecast_e = %s, 
-                    mape_forecast_f = %s,
-                    mape_forecast_g = %s,
-                    mape_forecast_h = %s,
-                    updated_at = %s, 
-                    updated_by = %s
-                WHERE lng_plant = %s
-                AND product = %s"""
+    sql = """ INSERT INTO lng_analytics_mape
+                    (lng_plant,
+                    product,
+                    running_date,
+                    mape_forecast_a,
+                    mape_forecast_b,
+                    mape_forecast_c,
+                    mape_forecast_d,
+                    mape_forecast_e,
+                    mape_forecast_f,
+                    mape_forecast_g,
+                    mape_forecast_h,
+                    created_by)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+          """
+                
     #conn = None
     updated_rows = 0
     try:
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
-                          date_now, created_by, lng_plant, product))
+        cur.execute(sql, (lng_plant, product, date_now, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
+                          created_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
@@ -716,7 +719,6 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         logMessage(error)
 
     return updated_rows
-
 
 def update_param_value(conn, model_param_a, model_param_b, model_param_c, 
                         model_param_d, model_param_e, model_param_f, model_param_g, model_param_h,
