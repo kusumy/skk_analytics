@@ -491,7 +491,7 @@ def main():
     y_pred_sarimax['date'] = y_pred_sarimax['year_num'].astype(str) + '-' + y_pred_sarimax['month_num'].astype(str) + '-' + y_pred_sarimax['day_num'].astype(str)
     y_pred_sarimax['date'] = pd.DatetimeIndex(y_pred_sarimax['date'], freq='D')
     # Rename column to forecast_a
-    y_pred_sarimax.rename(columns={'lng_production':'forecast_b'}, inplace=True)
+    y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
 
     #Create MAPE
     sarimax_mape = mean_absolute_percentage_error(y_test.lng_production, sarimax_forecast)
@@ -786,13 +786,13 @@ def main():
     ##### JOIN PREDICTION RESULT TO DATAFRAME #####
     logMessage("Creating all model prediction result data frame ...")
     y_all_pred = pd.concat([y_pred_arimax[['forecast_a']],
-                                y_pred_sarimax[['forecast_b']],
-                                y_pred_prophet[['forecast_c']],
-                                y_pred_ranfor[['forecast_d']],
-                                y_pred_xgb[['forecast_e']],
-                                y_pred_linreg[['forecast_f']],
-                                y_pred_poly2[['forecast_g']],
-                                y_pred_poly3[['forecast_h']]], axis=1)
+                            y_pred_sarimax[['forecast_b']],
+                            y_pred_prophet[['forecast_c']],
+                            y_pred_ranfor[['forecast_d']],
+                            y_pred_xgb[['forecast_e']],
+                            y_pred_linreg[['forecast_f']],
+                            y_pred_poly2[['forecast_g']],
+                            y_pred_poly3[['forecast_h']]], axis=1)
     y_all_pred['date'] = y_test.index.values
 
     #CREATE MAPE TO DATAFRAME
