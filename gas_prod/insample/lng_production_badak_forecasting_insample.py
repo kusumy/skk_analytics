@@ -1,3 +1,11 @@
+##### LNG PRODUCTION PT BADAK FORECASTING INSAMPLE #####
+# This python script is used to perform forecasting on testing data from each method
+# Data source from the SKK Migas (188.166.239.112) database in the lng_production_daily table with lng_plant = 'PT Badak'
+
+# Methods for time series forecasting
+# There are many methods that we can use for this forecasting, such
+
+
 # %%
 import logging
 import configparser

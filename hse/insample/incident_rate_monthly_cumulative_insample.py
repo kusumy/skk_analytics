@@ -106,7 +106,7 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 #%%
 def main():
     # Configure logging
-    configLogging("ir_monthly_cum_insample.log")
+    #configLogging("ir_monthly_cum_insample.log")
     
     # Connect to database
     # Exit program if not connected to database
@@ -207,8 +207,10 @@ def main():
 
     ##### ARIMAX MODEL #####
     import pmdarima as pm
+    from sktime.forecasting.arima import AutoARIMA
 
     #Set parameters
+    arimax_differencing = 1
     arimax_seasonal = False
     arimax_error_action = 'warn'
     arimax_trace = True
@@ -217,18 +219,19 @@ def main():
     arimax_stationary = False
 
     # Create ARIMAX Model
-    arimax_model = pm.auto_arima(y=y_train, X=X_train, start_p=0, d=1, start_q=0, 
-                                max_p=10, max_d=0, max_q=10,
-                                m=0, seasonal=False, error_action='warn',trace=True,
-                                supress_warnings=True,stepwise=True, stationary=False)
+    #arimax_model = pm.auto_arima(y=y_train, X=X_train, start_p=0, d=1, start_q=0, 
+    #                            max_p=10, max_d=0, max_q=10,
+    #                            m=0, seasonal=False, error_action='warn',trace=True,
+    #                            supress_warnings=True,stepwise=True, stationary=False)
+    arimax_model = AutoARIMA(d=arimax_differencing, start_p=0, start_q=0, max_p=10, max_q=10, suppress_warnings=arimax_supress_warnings, error_action=arimax_error_action, trace=arimax_trace, stationary=arimax_stationary) #If using SKTime AutoArima
     logMessage("Creating ARIMAX Model ...")
+
+    arimax_model.fit(y_train, X=X_train)
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_model.summary())
-    #print("arimax order is : ", arimax_model.order)
 
     logMessage("ARIMAX Model Prediction ..")
-    arimax_model.fit(y_train, X=X_train)
-    arimax_forecast = arimax_model.predict(n_periods=len(fh), X=X_test)
+    arimax_forecast = arimax_model.predict(fh, X=X_test) #n_periods=len(fh)
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:,.2f}'.format)
     y_pred_arimax['month_num'] = [i.month for i in arimax_forecast.index]
     y_pred_arimax['year_num'] = [i.year for i in arimax_forecast.index]
@@ -238,6 +241,10 @@ def main():
     mape_arimax = mean_absolute_percentage_error(y_test, arimax_forecast)
     mape_arimax_str = str('MAPE: %.4f' % mape_arimax)
     logMessage("ARIMAX Model "+mape_arimax_str)
+    
+    #Get parameter
+    arimax_param = str(arimax_model.get_fitted_params()['order'])
+    logMessage("Arimax Model Parameters "+arimax_param)
 
 
     ##### XGBOOST MODEL #####
@@ -245,7 +252,7 @@ def main():
 
     #Set parameters
     xgb_objective = 'reg:squarederror'
-    xgb_lags = 19
+    xgb_lags = 8 #6 8 10
     xgb_strategy = "recursive"
 
     # Create regressor object
@@ -266,7 +273,13 @@ def main():
     # Calculate model performance
     mape_xgb = mean_absolute_percentage_error(y_test, xgb_forecast)
     mape_xgb_str = str('MAPE: %.4f' % mape_xgb)
-    logMessage("XGBOOST Model "+mape_xgb_str)
+    logMessage("XGBoost Model "+mape_xgb_str)
+    
+    #Get Parameters
+    xgb_param_lags = str(xgb_forecaster.get_params()['window_length'])
+    xgb_param_objective = str(xgb_forecaster.get_params()['estimator__objective'])
+    xgb_param = xgb_param_lags + ', ' + xgb_param_objective
+    logMessage("XGBoost Model Parameters "+xgb_param)
 
 
     ##### RANDOM FOREST MODEL #####
@@ -276,7 +289,7 @@ def main():
     ranfor_n_estimators = 100
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
-    ranfor_lags = 19
+    ranfor_lags = 19 #9 17 19
     ranfor_strategy = "recursive"
 
     # create regressor object
@@ -297,6 +310,12 @@ def main():
     mape_ranfor = mean_absolute_percentage_error(y_test, ranfor_forecast)
     mape_ranfor_str = str('MAPE: %.4f' % mape_ranfor)
     logMessage("Random Forest Model "+mape_ranfor_str)
+    
+    #Get Parameters
+    ranfor_param_estimator = str(ranfor_forecaster.get_fitted_params()['estimator'])
+    ranfor_param_lags = str(ranfor_forecaster.get_fitted_params()['window_length'])
+    ranfor_param = ranfor_param_estimator + ', ' + ranfor_param_lags
+    logMessage("Random Forest Model Parameters "+ranfor_param)
 
 
     ##### LINEAR REGRESSION MODEL #####
@@ -304,7 +323,7 @@ def main():
 
     #Set parameters
     linreg_normalize = True
-    linreg_lags = 0.9
+    linreg_lags = 1 #1 2
     linreg_strategy = "recursive"
 
     #Create regressor object
@@ -325,6 +344,12 @@ def main():
     mape_linreg = mean_absolute_percentage_error(y_test, linreg_forecast)
     mape_linreg_str = str('MAPE: %.4f' % mape_linreg)
     logMessage("Linear Regression Model "+mape_linreg_str)
+    
+    #Get parameters
+    linreg_param_estimator = str(linreg_forecaster.get_fitted_params()['estimator'])
+    linreg_param_lags = str(linreg_forecaster.get_fitted_params()['window_length'])
+    linreg_param = linreg_param_estimator + ', ' + linreg_param_lags
+    logMessage("Linear Regression Model Parameters "+linreg_param)
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
@@ -333,7 +358,7 @@ def main():
     #Set parameters
     poly2_regularization = None
     poly2_interactions = False
-    poly2_lags = 0.95
+    poly2_lags = 1 #0.95 1 2
     poly2_strategy = "recursive"
 
     #Create regressor object
@@ -354,6 +379,13 @@ def main():
     mape_poly2 = mean_absolute_percentage_error(y_test, poly2_forecast)
     mape_poly2_str = str('MAPE: %.4f' % mape_poly2)
     logMessage("Polynomial Regression Orde 2 Model "+mape_poly2_str)
+    
+    #Get parameters
+    poly2_param_estimator = str(poly2_forecaster.get_fitted_params()['estimator'])
+    poly2_param_lags = str(poly2_forecaster.get_fitted_params()['window_length'])
+    poly2_param = poly2_param_estimator + ', ' + poly2_param_lags
+    logMessage("Polynomial Regression Orde 2 Model Parameters "+poly2_param)
+    
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
     from polyfit import PolynomRegressor, Constraints
@@ -361,7 +393,7 @@ def main():
     #Set parameters
     poly3_regularization = None
     poly3_interactions = False
-    poly3_lags = 0.94
+    poly3_lags = 1 #0.94, 1
     poly3_strategy = "recursive"
 
     #Create regressor object
@@ -382,53 +414,51 @@ def main():
     mape_poly3 = mean_absolute_percentage_error(y_test, poly3_forecast)
     mape_poly3_str = str('MAPE: %.4f' % mape_poly3)
     logMessage("Polynomial Regression Orde 3 Model "+mape_poly3_str)
-
-
-    # %%
-    #logMessage("Creating all model prediction result data frame ...")
-    y_all_pred = pd.concat([y_pred_arimax[['forecast_a']], 
-                            y_pred_xgb[['forecast_b']], 
-                            y_pred_ranfor[['forecast_c']], 
-                            y_pred_linreg[['forecast_d']], 
-                            y_pred_poly2[['forecast_e']], 
-                            y_pred_poly3[['forecast_f']]], axis=1)
+    
+    #Get parameters
+    poly3_param_estimator = str(poly3_forecaster.get_fitted_params()['estimator'])
+    poly3_param_lags = str(poly3_forecaster.get_fitted_params()['window_length'])
+    poly3_param = poly3_param_estimator + ', ' + poly3_param_lags
+    logMessage("Polynomial Regression Orde 3 Model Parameters "+poly3_param)
 
     # %%
     #Create Dataframe Mape All Method
-    dict_mape_pred = {'mape_forecast_a' : [mape_arimax],
+    all_mape_pred = {'mape_forecast_a' : [mape_arimax],
                     'mape_forecast_b' : [mape_xgb],
                     'mape_forecast_c' : [mape_ranfor],
                     'mape_forecast_d' : [mape_linreg],
                     'mape_forecast_e' : [mape_poly2],
                     'mape_forecast_f' : [mape_poly3],
                     'type_id' : 1}
-    all_mape_pred = pd.DataFrame(dict_mape_pred)
-    #all_mape_pred
     
-    # Save forecast result to database
-    logMessage("Updating forecast result to database ...")
-    total_updated_rows = insert_forecast(conn, y_all_pred)
-    logMessage("Updated rows: {}".format(total_updated_rows))
+    all_mape_pred = pd.DataFrame(all_mape_pred)
+    
+    #CREATE PARAMETERS TO DATAFRAME
+    logMessage("Creating all model params result data frame ...")
+    all_model_param =  {'model_param_a': [arimax_param],
+                            'model_param_b': [xgb_param],
+                            'model_param_c': [ranfor_param],
+                            'model_param_d': [linreg_param],
+                            'model_param_e': [poly2_param],
+                            'model_param_f': [poly3_param],
+                            'ir_type' : 'ir monthly cumulative'}
+
+    all_model_param = pd.DataFrame(all_model_param)
+
     
     # Save mape result to database
     logMessage("Updating MAPE result to database ...")
     total_updated_rows = insert_mape(conn, all_mape_pred)
     logMessage("Updated rows: {}".format(total_updated_rows))
     
+    # Save param result to database
+    logMessage("Updating Model Parameter result to database ...")
+    total_updated_rows = insert_param(conn, all_model_param)
+    logMessage("Updated rows: {}".format(total_updated_rows))
+    
     logMessage("Done")
     
 # %%
-def insert_forecast(conn, y_all_pred):
-    total_updated_rows = 0
-    for index, row in y_all_pred.iterrows():
-        year_num = index.year #row['date']
-        month_num = index.month
-        forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f = row[0], row[1], row[2], row[3], row[4], row[5]
-        
-        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, year_num, month_num)
-        total_updated_rows = total_updated_rows + updated_rows 
-
 def insert_mape(conn, all_mape_pred):
     total_updated_rows = 0
     for index, row in all_mape_pred.iterrows():
@@ -441,69 +471,46 @@ def insert_mape(conn, all_mape_pred):
         
     return total_updated_rows
 
-def update_value(conn, forecast_a, forecast_b, forecast_c, 
-                        forecast_d, forecast_e, forecast_f, year_num, month_num):
-    
-    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    updated_by = 'PYTHON'
-    
-    """ insert forecasting result after last row in table """
-    sql =  """ UPDATE hse_analytics_trir_monthly_cum
-                SET forecast_a = %s, 
-                    forecast_b = %s, 
-                    forecast_c = %s, 
-                    forecast_d = %s, 
-                    forecast_e = %s, 
-                    forecast_f = %s,
-                    updated_at = %s, 
-                    updated_by = %s
-                WHERE year_num = %s
-                AND month_num = %s"""
-    #conn = None
-    updated_rows = 0
-    try:
-        # create a new cursor
-        cur = conn.cursor()
-        # execute the UPDATE  statement
-        cur.execute(sql, (forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, 
-                          date_now, updated_by, year_num, month_num))
-        # get the number of updated rows
-        updated_rows = cur.rowcount
-        # Commit the changes to the database
-        conn.commit()
-        # Close cursor
-        cur.close()
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        #logging.error(error)
-
-    return updated_rows
+def insert_param(conn, all_model_param):
+    total_updated_rows = 0
+    for index, row in all_model_param.iterrows():
+        ir_type = row['ir_type']
+        model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f = row[0], row[1], row[2], row[3], row[4], row[5]
+        
+        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
+        updated_rows = update_param_value(conn, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, ir_type)
+        total_updated_rows = total_updated_rows + updated_rows 
+        
+    return total_updated_rows
 
 def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, 
-                        mape_forecast_d, mape_forecast_e, mape_forecast_f, type):
+                        mape_forecast_d, mape_forecast_e, mape_forecast_f, type_id):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     created_by = 'PYTHON'
     
     """ insert mape result after last row in table """
-    sql = """ UPDATE hse_analytics_mape
-                SET mape_forecast_a = %s, 
-                    mape_forecast_b = %s, 
-                    mape_forecast_c = %s, 
-                    mape_forecast_d = %s, 
-                    mape_forecast_e = %s, 
-                    mape_forecast_f = %s,
-                    updated_at = %s, 
-                    updated_by = %s
-                WHERE type_id = %s"""
+    sql = """ INSERT INTO hse_analytics_mape
+                    (type_id,
+                    running_date,
+                    mape_forecast_a,
+                    mape_forecast_b,
+                    mape_forecast_c,
+                    mape_forecast_d,
+                    mape_forecast_e,
+                    mape_forecast_f,
+                    created_by)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)
+          """
+                
     #conn = None
     updated_rows = 0
     try:
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f,
-                          date_now, created_by, type))
+        cur.execute(sql, (type_id, date_now, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f,
+                          created_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
@@ -514,4 +521,42 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         logMessage(error)
 
     return updated_rows
-# %%
+
+def update_param_value(conn, model_param_a, model_param_b, model_param_c, 
+                        model_param_d, model_param_e, model_param_f, ir_type):
+    
+    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    created_by = 'PYTHON'
+    
+    """ insert mape result after last row in table """
+    sql = """ INSERT INTO hse_analytics_param
+                    (ir_type,
+                    running_date,
+                    best_param_a,
+                    best_param_b,
+                    best_param_c,
+                    best_param_d,
+                    best_param_e,
+                    best_param_f,
+                    created_by)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)
+          """
+    
+    #conn = None
+    updated_rows = 0
+    try:
+        # create a new cursor
+        cur = conn.cursor()
+        # execute the UPDATE  statement
+        cur.execute(sql, (ir_type, date_now, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f,
+                          created_by))
+        # get the number of updated rows
+        updated_rows = cur.rowcount
+        # Commit the changes to the database
+        conn.commit()
+        # Close cursor
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        logMessage(error)
+
+    return updated_rows
