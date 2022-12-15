@@ -16,10 +16,10 @@ warnings.filterwarnings('ignore')
 #import gas_prod.insample.condensate_tangguh_forecasting_insample as condensate_tangguh_insample
 #import gas_prod.insample.feed_gas_badak_forecasting_insample as feed_gas_badak_insample
 #import gas_prod.insample.lng_production_tangguh_forecasting_insample as lng_production_tangguh_insample
-#import gas_prod.insample.lng_production_badak_forecasting_insample as lng_production_badak_insample
+import gas_prod.insample.lng_production_badak_forecasting_insample as lng_production_badak_insample
 #import gas_prod.insample.condensate_badak_forecasting_insample as condensate_badak_insample
-import gas_prod.insample.c3_badak_forecasting_insample as c3_badak_insample
-import gas_prod.insample.c4_badak_forecasting_insample as c4_badak_insample
+#import gas_prod.insample.c3_badak_forecasting_insample as c3_badak_insample
+#import gas_prod.insample.c4_badak_forecasting_insample as c4_badak_insample
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -79,27 +79,27 @@ configLogging("main_lng_insample.log")
 
 #print('\n')
 
-t10 = time.process_time()
-c3_badak_insample.main()
-t11 = time.process_time()
-exec_time = format_timespan(t11-t10, max_units=3)
-print("Forecasting LPG C3 Badak : " + exec_time)
-
-print('\n')
-
-t12 = time.process_time()
-c4_badak_insample.main()
-t13 = time.process_time()
-exec_time = format_timespan(t13-t12, max_units=3)
-print("Forecasting LPG C4 Badak : " + exec_time)
+#t10 = time.process_time()
+#c3_badak_insample.main()
+#t11 = time.process_time()
+#exec_time = format_timespan(t11-t10, max_units=3)
+#print("Forecasting LPG C3 Badak : " + exec_time)
 
 #print('\n')
 
-#t14 = time.process_time()
-#lng_production_badak_insample.main()
-#t15 = time.process_time()
-#exec_time = format_timespan(t15-t14, max_units=3)
+#t12 = time.process_time()
+#c4_badak_insample.main()
+#t13 = time.process_time()
+#exec_time = format_timespan(t13-t12, max_units=3)
 #print("Forecasting LPG C4 Badak : " + exec_time)
+
+#print('\n')
+
+t14 = time.process_time()
+lng_production_badak_insample.main()
+t15 = time.process_time()
+exec_time = format_timespan(t15-t14, max_units=3)
+print("Forecasting LNG Production Badak : " + exec_time)
 
 #print('\n')
 
