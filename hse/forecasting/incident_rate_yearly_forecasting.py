@@ -5,13 +5,13 @@ import os
 import sys
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import mlflow
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import pmdarima as pm
 import psycopg2
 import seaborn as sns
+#import mlflow
 
 plt.style.use('fivethirtyeight')
 from datetime import datetime

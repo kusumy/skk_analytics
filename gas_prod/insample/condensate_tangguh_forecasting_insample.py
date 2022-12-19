@@ -33,7 +33,10 @@ from dateutil.relativedelta import *
 def main():
     # Configure logging
     #configLogging("condensate_tangguh.log")
+<<<<<<< HEAD
     logMessage("Creating Condensate Tangguh Model ...")
+=======
+>>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     
     # Connect to database
     # Exit program if not connected to database
@@ -372,12 +375,29 @@ def main():
 
     # Rename column to forecast_a
     y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
+    
+    #Get parameter
+    arimax_param = str(arimax_model.get_fitted_params()['order'])
+    logMessage("Arimax Model Parameters "+arimax_param)
 
     ##### SARIMAX MODEL (forecast_b) #####
     #%%
     from pmdarima.arima import auto_arima, ARIMA
     
-    sarimax_model = auto_arima(y=y_train.condensate, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
+    #Set parameters
+    sarimax_differencing = 0
+    sarimax_seasonal_differencing = 1
+    sarimax_sp = 12
+    sarimax_stationary = False
+    sarimax_seasonal = True
+    sarimax_trace = True
+    sarimax_error_action = "ignore"
+    sarimax_suppress_warnings = True
+    sarimax_n_fits = 50
+    sarimax_stepwise = True
+    
+    #sarimax_model = auto_arima(y=y_train.condensate, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
+    sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     #sarimax_model = ARIMA(order=(2,0,2), seasonal_order=(2,1,0,12),  suppress_warnings=True)
     logMessage("Creating SARIMAX Model ...")
     sarimax_model.fit(y_train.condensate, X=X_train[exogenous_features])
@@ -385,7 +405,7 @@ def main():
     logMessage(sarimax_model.summary())
 
     logMessage("SARIMAX Model Prediction ..")
-    sarimax_forecast = sarimax_model.predict(len(fh), X=X_test[exogenous_features])
+    sarimax_forecast = sarimax_model.predict(fh, X=X_test[exogenous_features])
     y_test["Forecast_SARIMAX"] = sarimax_forecast
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
@@ -401,6 +421,12 @@ def main():
     
     # Rename column to forecast_b
     y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
+    
+    #Get parameters
+    sarimax_param_order = str(sarimax_model.get_fitted_params()['order'])
+    sarimax_param_order_seasonal = str(sarimax_model.get_fitted_params()['seasonal_order'])
+    sarimax_param = sarimax_param_order + sarimax_param_order_seasonal
+    logMessage("Sarimax Model Parameters "+sarimax_param)
 
     ##### PROPHET MODEL (forecast_c) #####
     #%%
@@ -451,6 +477,18 @@ def main():
     # Rename column to forecast_c
     y_pred_prophet.rename(columns={'condensate':'forecast_c'}, inplace=True)
     
+    #Get parameters
+    prophet_param_seasonality_mode = str(prophet_forecaster.get_params()['seasonality_mode'])
+    prophet_param_n_changepoints = str(prophet_forecaster.get_params()['n_changepoints'])
+    prophet_param_seasonality_prior_scale = str(prophet_forecaster.get_params()['seasonality_prior_scale'])
+    prophet_param_changepoint_prior_scale = str(prophet_forecaster.get_params()['changepoint_prior_scale'])
+    prophet_param_holidays_prior_scale = str(prophet_forecaster.get_params()['holidays_prior_scale'])
+    prophet_param_daily_seasonality = str(prophet_forecaster.get_params()['daily_seasonality'])
+    prophet_param_weekly_seasonality = str(prophet_forecaster.get_params()['weekly_seasonality'])
+    prophet_param_yearly_seasonality = str(prophet_forecaster.get_params()['yearly_seasonality'])
+    prophet_param = prophet_param_seasonality_mode + ', ' + prophet_param_n_changepoints + ', ' + prophet_param_seasonality_prior_scale + ', ' + prophet_param_changepoint_prior_scale + ', ' + prophet_param_holidays_prior_scale + ', ' + prophet_param_daily_seasonality + ', ' + prophet_param_weekly_seasonality + ', ' + prophet_param_yearly_seasonality
+    logMessage("Prophet Model Parameters "+prophet_param)
+    
     ##### RANDOM FOREST MODEL (forecast_d) #####
     #%%
     from sklearn.ensemble import RandomForestRegressor
@@ -485,6 +523,12 @@ def main():
 
     # Rename column to forecast_e
     y_pred_ranfor.rename(columns={'condensate':'forecast_d'}, inplace=True)    
+    
+    #Get Parameters
+    ranfor_param_estimator = str(ranfor_forecaster.get_fitted_params()['estimator'])
+    ranfor_param_lags = str(ranfor_forecaster.get_fitted_params()['window_length'])
+    ranfor_param = ranfor_param_estimator + ', ' + ranfor_param_lags
+    logMessage("Random Forest Model Parameters "+ranfor_param)
 
     ##### XGBOOST MODEL (forecast_e) #####
     #%%
@@ -518,6 +562,12 @@ def main():
     
     # Rename column to forecast_e
     y_pred_xgb.rename(columns={'condensate':'forecast_e'}, inplace=True)
+    
+    #Get Parameters
+    xgb_param_lags = str(xgb_forecaster.get_params()['window_length'])
+    xgb_param_objective = str(xgb_forecaster.get_params()['estimator__objective'])
+    xgb_param = xgb_param_lags + ', ' + xgb_param_objective
+    logMessage("XGBoost Model Parameters "+xgb_param)
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
     #%%
@@ -550,6 +600,13 @@ def main():
 
     # Rename column to forecast_f
     y_pred_linreg.rename(columns={'condensate':'forecast_f'}, inplace=True)
+    
+    #Get parameters
+    linreg_param_estimator = str(linreg_forecaster.get_fitted_params()['estimator'])
+    linreg_param_lags = str(linreg_forecaster.get_fitted_params()['window_length'])
+    linreg_param = linreg_param_estimator + ', ' + linreg_param_lags
+    logMessage("Linear Regression Model Parameters "+linreg_param)
+    
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
     #%%
@@ -584,6 +641,13 @@ def main():
 
     # Rename column to forecast_g
     y_pred_poly2.rename(columns={'condensate':'forecast_g'}, inplace=True)
+    
+    #Get parameters
+    poly2_param_estimator = str(poly2_forecaster.get_fitted_params()['estimator'])
+    poly2_param_lags = str(poly2_forecaster.get_fitted_params()['window_length'])
+    poly2_param = poly2_param_estimator + ', ' + poly2_param_lags
+    logMessage("Polynomial Regression Orde 2 Model Parameters "+poly2_param)
+    
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
     #%%
@@ -614,11 +678,16 @@ def main():
     #Create MAPE
     poly3_mape = mean_absolute_percentage_error(y_test['condensate'], poly3_forecast)
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
-
     logMessage("Polynomial Regression Orde 3 Model "+poly3_mape_str)
 
     # Rename column to forecast_h
     y_pred_poly3.rename(columns={'condensate':'forecast_h'}, inplace=True)
+    
+    #Get parameters
+    poly3_param_estimator = str(poly3_forecaster.get_fitted_params()['estimator'])
+    poly3_param_lags = str(poly3_forecaster.get_fitted_params()['window_length'])
+    poly3_param = poly3_param_estimator + ', ' + poly3_param_lags
+    logMessage("Polynomial Regression Orde 3 Model Parameters "+poly3_param)
     
     # %%
     ##### JOIN PREDICTION RESULT TO DATAFRAME #####
@@ -630,8 +699,7 @@ def main():
                             y_pred_xgb[['forecast_e']], 
                             y_pred_linreg[['forecast_f']], 
                             y_pred_poly2[['forecast_g']], 
-                            y_pred_poly3[['forecast_h']]
-                           ], axis=1)
+                            y_pred_poly3[['forecast_h']]], axis=1)
     y_all_pred['date'] = y_test.index.values
     
     #CREATE DATAFRAME MAPE
@@ -648,6 +716,21 @@ def main():
                 'product' : 'Condensate'}
 
     all_mape_pred = pd.DataFrame(all_mape_pred)
+    
+    #CREATE PARAMETERS TO DATAFRAME
+    logMessage("Creating all model params result data frame ...")
+    all_model_param =  {'model_param_a': [arimax_param],
+                        'model_param_b': [sarimax_param],
+                        'model_param_c': [prophet_param],
+                        'model_param_d': [ranfor_param],
+                        'model_param_e': [xgb_param],
+                        'model_param_f': [linreg_param],
+                        'model_param_g': [poly2_param],
+                        'model_param_h': [poly3_param],
+                        'lng_plant' : 'PT Badak',
+                        'product' : 'Feed Gas'}
+
+    all_model_param = pd.DataFrame(all_model_param)
 
     #%%
     ##### PLOT PREDICTION #####
@@ -669,34 +752,20 @@ def main():
     ax.legend(loc='best')
     plt.close()
     #plt.show()
-
-    #all_mape_condensate
-    
-    # Save forecast result to database
-    logMessage("Updating forecast result to database ...")
-    total_updated_rows = insert_forecast(conn, y_all_pred)
-    logMessage("Updated rows: {}".format(total_updated_rows))
     
     # Save mape result to database
     logMessage("Updating MAPE result to database ...")
     total_updated_rows = insert_mape(conn, all_mape_pred)
     logMessage("Updated rows: {}".format(total_updated_rows))
     
+    # Save param result to database
+    logMessage("Updating Model Parameter result to database ...")
+    total_updated_rows = insert_param(conn, all_model_param)
+    logMessage("Updated rows: {}".format(total_updated_rows))
+    
     print("Done")
 
 # %%
-def insert_forecast(conn, y_pred):
-    total_updated_rows = 0
-    for index, row in y_pred.iterrows():
-        prod_date = str(index) #row['date']
-        forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
-        
-        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date)
-        total_updated_rows = total_updated_rows + updated_rows 
-        
-    return total_updated_rows
-
 def insert_mape(conn, all_mape_pred):
     total_updated_rows = 0
     for index, row in all_mape_pred.iterrows():
@@ -710,43 +779,18 @@ def insert_mape(conn, all_mape_pred):
         
     return total_updated_rows
 
-def update_value(conn, forecast_a, forecast_b, forecast_c, 
-                        forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date):
-    
-    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    created_by = 'python'
-    
-    """ insert forecasting result after last row in table """
-    sql = """ UPDATE lng_condensate_daily
-                SET forecast_a = %s, 
-                    forecast_b = %s, 
-                    forecast_c = %s, 
-                    forecast_d = %s, 
-                    forecast_e = %s, 
-                    forecast_f = %s, 
-                    forecast_g = %s, 
-                    forecast_h = %s, 
-                    updated_at = %s, 
-                    updated_by = %s
-                WHERE prod_date = %s
-                AND lng_plant = 'BP Tangguh'"""
-    #conn = None
-    updated_rows = 0
-    try:
-        # create a new cursor
-        cur = conn.cursor()
-        # execute the UPDATE  statement
-        cur.execute(sql, (forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, date_now, created_by, prod_date))
-        # get the number of updated rows
-        updated_rows = cur.rowcount
-        # Commit the changes to the database
-        conn.commit()
-        # Close cursor
-        cur.close()
-    except (Exception, psycopg2.DatabaseError) as error:
-        logging.error(error)
-
-    return updated_rows
+def insert_param(conn, all_model_param):
+    total_updated_rows = 0
+    for index, row in all_model_param.iterrows():
+        lng_plant = row['lng_plant']
+        product = row['product']
+        model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+        
+        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
+        updated_rows = update_param_value(conn, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h , lng_plant, product)
+        total_updated_rows = total_updated_rows + updated_rows 
+        
+    return total_updated_rows
 
 def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, 
                         mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
@@ -756,27 +800,73 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
     created_by = 'PYTHON'
     
     """ insert mape result after last row in table """
-    sql = """ UPDATE lng_analytics_mape
-                SET mape_forecast_a = %s, 
-                    mape_forecast_b = %s, 
-                    mape_forecast_c = %s, 
-                    mape_forecast_d = %s, 
-                    mape_forecast_e = %s, 
-                    mape_forecast_f = %s,
-                    mape_forecast_g = %s,
-                    mape_forecast_h = %s,
-                    updated_at = %s, 
-                    updated_by = %s
-                WHERE lng_plant = %s
-                AND product = %s"""
+    sql = """ INSERT INTO lng_analytics_mape
+                    (lng_plant,
+                    product,
+                    running_date,
+                    mape_forecast_a,
+                    mape_forecast_b,
+                    mape_forecast_c,
+                    mape_forecast_d,
+                    mape_forecast_e,
+                    mape_forecast_f,
+                    mape_forecast_g,
+                    mape_forecast_h,
+                    created_by)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+          """
+                
     #conn = None
     updated_rows = 0
     try:
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
-                          date_now, created_by, lng_plant, product))
+        cur.execute(sql, (lng_plant, product, date_now, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
+                          created_by))
+        # get the number of updated rows
+        updated_rows = cur.rowcount
+        # Commit the changes to the database
+        conn.commit()
+        # Close cursor
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        logMessage(error)
+
+    return updated_rows
+
+def update_param_value(conn, model_param_a, model_param_b, model_param_c, 
+                        model_param_d, model_param_e, model_param_f, model_param_g, model_param_h,
+                        lng_plant, product):
+    
+    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    created_by = 'PYTHON'
+    
+    """ insert mape result after last row in table """
+    sql = """ INSERT INTO lng_analytics_model_param
+                    (lng_plant,
+                    product,
+                    running_date,
+                    model_param_a,
+                    model_param_b,
+                    model_param_c,
+                    model_param_d,
+                    model_param_e,
+                    model_param_f,
+                    model_param_g,
+                    model_param_h,
+                    created_by)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+          """
+    
+    #conn = None
+    updated_rows = 0
+    try:
+        # create a new cursor
+        cur = conn.cursor()
+        # execute the UPDATE  statement
+        cur.execute(sql, (lng_plant, product, date_now, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h,
+                          created_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database

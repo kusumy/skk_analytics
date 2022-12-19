@@ -168,7 +168,7 @@ def main():
 
         #Set parameters
         sarimax_differencing = 1
-        sarimax_seasonal_differencing = 1
+        sarimax_seasonal_differencing = 0
         sarimax_seasonal = True
         sarimax_m = 12
         sarimax_trace = True

@@ -7,6 +7,7 @@ import arrow
 import sys
 import time
 from humanfriendly import format_timespan
+from utils import configLogging, logMessage, ad_test
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -30,6 +31,9 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #endDate = str(args['enddate'])
 # do whatever the script does
 
+# Configure logging
+configLogging("main_hse_insample.log")
+
 t0 = time.process_time()
 ir_monthly_cum_insample.main()
 t1 = time.process_time()
@@ -44,10 +48,10 @@ t3 = time.process_time()
 exec_time = format_timespan(t3-t2, max_units=3)
 print("Forecasting incident rate yearly : " + exec_time)
 
-#print('\n')
+print('\n')
 
-#total_exec_time = format_timespan(t3-t0, max_units=3)
-#print("Total execution time : " + total_exec_time)
+total_exec_time = format_timespan(t3-t0, max_units=3)
+print("Total execution time : " + total_exec_time)
 
 exit()
 
