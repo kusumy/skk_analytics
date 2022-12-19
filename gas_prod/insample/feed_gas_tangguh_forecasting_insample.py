@@ -1,11 +1,10 @@
 # %%
 import logging
-import configparser
 import os
 import sys
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import mlflow
+#import mlflow
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -18,16 +17,13 @@ from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
 
-from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import configLogging, logMessage, ad_test
+from connection import *
+from utils import *
 
 from pmdarima import model_selection
 from sklearn.metrics import (mean_absolute_error,
                              mean_absolute_percentage_error,
                              mean_squared_error, r2_score)
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.seasonal import seasonal_decompose
-from statsmodels.tsa.stattools import adfuller
 
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
@@ -35,84 +31,17 @@ from adtk.data import validate_series
 pd.options.plotting.backend = "plotly"
 from dateutil.relativedelta import *
 
-def stationarity_check(ts):
-            
-    # Calculate rolling statistics
-    roll_mean = ts.rolling(window=8, center=False).mean()
-    roll_std = ts.rolling(window=8, center=False).std()
-
-    # Perform the Dickey Fuller test
-    dftest = adfuller(ts) 
-    
-    # Plot rolling statistics:
-    fig = plt.figure(figsize=(12,6))
-    orig = plt.plot(ts, color='blue',label='Original')
-    mean = plt.plot(roll_mean, color='red', label='Rolling Mean')
-    std = plt.plot(roll_std, color='green', label = 'Rolling Std')
-    plt.legend(loc='best')
-    plt.title('Rolling Mean & Standard Deviation')
-    #plt.show(block=False)
-    
-    # Print Dickey-Fuller test results
-    print('\nResults of Dickey-Fuller Test: \n')
-
-    dfoutput = pd.Series(dftest[0:4], index=['Test Statistic', 'p-value', 
-                                             '#Lags Used', 'Number of Observations Used'])
-    for key, value in dftest[4].items():
-        dfoutput['Critical Value (%s)'%key] = value
-    print(dfoutput)
-
-def decomposition_plot(ts):
-    # Apply seasonal_decompose 
-    decomposition = seasonal_decompose(np.log(ts))
-    
-    # Get trend, seasonality, and residuals
-    trend = decomposition.trend
-    seasonal = decomposition.seasonal
-    residual = decomposition.resid
-
-    # Plotting
-    plt.figure(figsize=(12,8))
-    plt.subplot(411)
-    plt.plot(np.log(ts), label='Original', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(412)
-    plt.plot(trend, label='Trend', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(413)
-    plt.plot(seasonal,label='Seasonality', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(414)
-    plt.plot(residual, label='Residuals', color='blue')
-    plt.legend(loc='best')
-    plt.tight_layout()
-
-def plot_acf_pacf(ts, figsize=(10,8),lags=24):
-    
-    fig,ax = plt.subplots(nrows=3, figsize=figsize)
-    
-    # Plot ts
-    ts.plot(ax=ax[0])
-    
-    # Plot acf, pavf
-    plot_acf(ts, ax=ax[1], lags=lags)
-    plot_pacf(ts, ax=ax[2], lags=lags) 
-    #fig.tight_layout()
-    
-    for a in ax[1:]:
-        a.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=lags, integer=True))
-        a.xaxis.grid()
-    return fig,ax
 
 # %%
 def main():
     # Configure logging
-    configLogging("feed_gas_tangguh.log")
+    #configLogging("feed_gas_tangguh.log")
+    logMessage("Creating Feed Gas BP Tangguh Model ...")
     
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(section='postgresql_ml_lng_skk_dev')
     if conn == None:
         exit()
         
@@ -358,11 +287,11 @@ def main():
     #plot_acf_pacf(df_cleaned['feed_gas'])
 
     #%%
-    from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(train_df.values, model="additive", period=365)
-    fig = result.plot()
-    plt.close()
+    # from chart_studio.plotly import plot_mpl
+    # from statsmodels.tsa.seasonal import seasonal_decompose
+    # result = seasonal_decompose(train_df.values, model="additive", period=365)
+    # fig = result.plot()
+    # plt.close()
 
     #%%
     from statsmodels.tsa.stattools import adfuller

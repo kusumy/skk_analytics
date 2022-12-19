@@ -5,6 +5,9 @@ import matplotlib as mpl
 import numpy as np 
 import pandas as pd
 
+from datetime import date, datetime, timedelta
+from dateutil.relativedelta import *
+
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
@@ -21,6 +24,11 @@ def configLogging(filename="log.log"):
         #    logging.FileHandler("condensate_tangguh.log"),
         #    logging.StreamHandler(sys.stdout) ]
     ) 
+
+    logger = logging.getLogger('cmdstanpy')
+    logger.addHandler(logging.NullHandler())
+    logger.propagate = False
+    logger.setLevel(logging.CRITICAL)
 
 def logMessage(messages):
     import sys
@@ -85,15 +93,15 @@ def check_stationarity(df):
     return (kpssh, adfh)
 
 def decomposition_plot(ts):
-# Apply seasonal_decompose 
+    # Apply seasonal_decompose 
     decomposition = seasonal_decompose(np.log(ts))
     
-# Get trend, seasonality, and residuals
+    # Get trend, seasonality, and residuals
     trend = decomposition.trend
     seasonal = decomposition.seasonal
     residual = decomposition.resid
 
-# Plotting
+    # Plotting
     plt.figure(figsize=(12,8))
     plt.subplot(411)
     plt.plot(np.log(ts), label='Original', color='blue')
@@ -127,3 +135,69 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
         a.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=lags, integer=True))
         a.xaxis.grid()
     return fig,ax
+
+def get_first_date_of_current_month(year, month):
+    """Return the first date of the month.
+
+    Args:
+        year (int): Year
+        month (int): Month
+
+    Returns:
+        date (datetime): First date of the current month
+    """
+    first_date = datetime(year, month, 1)
+    return first_date.strftime("%Y-%m-%d")
+
+def get_last_date_of_month(year, month):
+    """Return the last date of the month.
+    
+    Args:
+        year (int): Year, i.e. 2022
+        month (int): Month, i.e. 1 for January
+
+    Returns:
+        date (datetime): Last date of the current month
+    """
+    
+    if month == 12:
+        last_date = datetime(year, month, 31)
+    else:
+        last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+    
+    return last_date.strftime("%Y-%m-%d")
+
+
+def get_first_date_of_prev_month(year, month, step=-1):
+    """Return the first date of the month.
+
+    Args:
+        year (int): Year
+        month (int): Month
+
+    Returns:
+        date (datetime): First date of the current month
+    """
+    first_date = datetime(year, month, 1)
+    first_date = first_date + relativedelta(months=step)
+    return first_date.strftime("%Y-%m-%d")
+
+def get_last_date_of_prev_month(year, month, step=-1):
+    """Return the last date of the month.
+    
+    Args:
+        year (int): Year, i.e. 2022
+        month (int): Month, i.e. 1 for January
+
+    Returns:
+        date (datetime): Last date of the current month
+    """
+    
+    if month == 12:
+        last_date = datetime(year, month, 31)
+    else:
+        last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+        
+    last_date = last_date + relativedelta(months=step)
+    
+    return last_date.strftime("%Y-%m-%d")
