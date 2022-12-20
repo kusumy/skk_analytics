@@ -23,10 +23,7 @@ from utils import *
 import pmdarima as pm
 from pmdarima import model_selection 
 from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_absolute_error, r2_score
-<<<<<<< HEAD
 #import mlflow
-=======
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from adtk.data import validate_series
@@ -37,11 +34,8 @@ from dateutil.relativedelta import *
 def main():
     # Configure logging
     #configLogging("lng_production_tangguh.log")
-<<<<<<< HEAD
     logMessage("Creating LNG Production Tangguh Model ...")
     
-=======
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     
     # Connect to database
     # Exit program if not connected to database
@@ -223,21 +217,12 @@ def main():
     #plot_acf_pacf(train_df)
 
     #%%
-<<<<<<< HEAD
     # from chart_studio.plotly import plot_mpl
     # from statsmodels.tsa.seasonal import seasonal_decompose
     # result = seasonal_decompose(train_df.values, model="additive", period=365)
     # fig = result.plot()
     # #plt.show()
     # plt.close()
-=======
-    #from chart_studio.plotly import plot_mpl
-    #from statsmodels.tsa.seasonal import seasonal_decompose
-    #result = seasonal_decompose(train_df.values, model="additive", period=365)
-    #fig = result.plot()
-    #plt.show()
-    #plt.close()
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
 
     #%%
     from statsmodels.tsa.stattools import adfuller
