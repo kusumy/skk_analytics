@@ -27,6 +27,11 @@ import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
 #import mlflow
+from adtk.detector import ThresholdAD
+from adtk.visualization import plot
+from adtk.data import validate_series
+pd.options.plotting.backend = "plotly"
+from dateutil.relativedelta import *
 
 
 # %%
@@ -38,7 +43,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk_dev')
+    conn = create_db_connection(section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
     
@@ -48,11 +53,139 @@ def main():
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
-    ds = 'date'
-    y = 'feed_gas' #Choose the column target
-    df = data[[ds,y]]
-    df = df.set_index(ds)
-    df.index = pd.DatetimeIndex(df.index, freq='D')
+    #%%
+    data_null_cleaning = data[['date', 'feed_gas']].copy()
+    data_null_cleaning['feed_gas_copy'] = data[['feed_gas']].copy()
+    ds_null_cleaning = 'date'
+    data_null_cleaning = data_null_cleaning.set_index(ds_null_cleaning)
+    s = validate_series(data_null_cleaning)
+
+    #%%
+    threshold_ad = ThresholdAD(data_null_cleaning['feed_gas_copy'].isnull())
+    anomalies = threshold_ad.detect(s)
+
+    anomalies = anomalies.drop('feed_gas', axis=1)
+
+    # Create anomaly detection model
+    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies =  threshold_ad.detect(s)
+
+    # Copy data frame of anomalies
+    copy_anomalies =  anomalies.copy()
+    # Rename columns
+    copy_anomalies.rename(columns={'feed_gas_copy':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s = pd.concat([s, copy_anomalies], axis=1)
+
+    # Get only anomalies data
+    anomalies_data = new_s[new_s['anomaly'].isnull()]
+    #anomalies_data.tail(100)
+
+    #%%
+    #REPLACE ANOMALY VALUES
+    from datetime import date, datetime, timedelta
+
+    def get_first_date_of_current_month(year, month):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_month(year, month):
+        """Return the last date of the month.
+            
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+            
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+            
+        return last_date.strftime("%Y-%m-%d")
+
+        
+    def get_first_date_of_prev_month(year, month, step=-1):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        first_date = first_date + relativedelta(months=step)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_prev_month(year, month, step=-1):
+        """Return the last date of the month.
+            
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+            
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+                
+        last_date = last_date + relativedelta(months=step)
+            
+        return last_date.strftime("%Y-%m-%d")
+
+    for index, row in anomalies_data.iterrows():
+        yr = index.year
+        mt = index.month
+            
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+            
+        # Get last year start date month
+        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+            
+        # Get last month last date
+        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+            
+        # Get mean fead gas data for the month
+        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        mean_month=new_s['feed_gas'].reset_index().query(sql).mean().values[0]
+            
+        # update value at specific location
+        new_s.at[index,'feed_gas'] = mean_month
+            
+        print(sql), print(mean_month)
+
+    # Check if updated
+    anomaly_upd = new_s[new_s['anomaly'].isnull()]
+    
+    #%%
+    data_cleaned = new_s[['feed_gas']].copy()
+    data_cleaned = data_cleaned.reset_index()
+
+    ds_cleaned = 'date'
+    y_cleaned = 'feed_gas'
+    df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
+    df_cleaned = df_cleaned.set_index(ds_cleaned)
+    df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
     from sktime.forecasting.model_selection import temporal_train_test_split
@@ -60,7 +193,7 @@ def main():
     # Test size
     test_size = 0.06
     # Split data
-    y_train, y_test = temporal_train_test_split(df, test_size=test_size)
+    y_train, y_test = temporal_train_test_split(df_cleaned, test_size=test_size)
     #y_train
 
     #%%
@@ -77,7 +210,7 @@ def main():
     # plotting for illustration
     plt.style.use('fivethirtyeight')
     fig1, ax = plt.subplots(figsize=(18,7))
-    ax.plot(y_train.index, y_train[y], label='original')
+    ax.plot(y_train.index, y_train[y_cleaned], label='original')
     ax.plot(y_train.index, smoother.smooth_data[0], linewidth=3, color='blue', label='smoothed')
     ax.fill_between(y_train.index, low[0], up[0], alpha=0.3)
     ax.set_ylabel("Feed Gas")
@@ -92,7 +225,7 @@ def main():
     # Copy data from original
     df_smoothed = y_train.copy()
     # Replace original with smoothed data
-    df_smoothed[y] = smoother.smooth_data[0]
+    df_smoothed[y_cleaned] = smoother.smooth_data[0]
 
     #%%
     from sktime.forecasting.base import ForecastingHorizon
@@ -107,6 +240,7 @@ def main():
     # from plotly.offline import iplot
     # cf.go_offline()
     # cf.set_config_file(offline = False, world_readable = True)
+    
     #%%
     #df_smoothed.iplot(title="Feed Gas PT Badak")
 
@@ -129,7 +263,7 @@ def main():
     #%%
     from statsmodels.tsa.stattools import adfuller
     def ad_test(dataset):
-        dftest = adfuller(df, autolag = 'AIC')
+        dftest = adfuller(df_smoothed, autolag = 'AIC')
         print("1. ADF : ",dftest[0])
         print("2. P-Value : ", dftest[1])
         print("3. Num Of Lags : ", dftest[2])
@@ -137,21 +271,21 @@ def main():
         print("5. Critical Values :")
         for key, val in dftest[4].items():
             print("\t",key, ": ", val)
-    ad_test(df_smoothed['feed_gas'])
+    ad_test(df_smoothed)
 
     #%%
     ## Create Exogenous Variable
     # create features from date
-    df['month'] = [i.month for i in df.index]
+    df_cleaned['month'] = [i.month for i in df_cleaned.index]
     #df['year'] = [i.year for i in df.index]
-    df['day'] = [i.day for i in df.index]
+    df_cleaned['day'] = [i.day for i in df_cleaned.index]
     #df['day_of_year'] = [i.dayofyear for i in df.index]
     #df['week_of_year'] = [i.weekofyear for i in df.index]
     #df.tail(20)
 
     #%%
     # Split into train and test
-    X_train, X_test = temporal_train_test_split(df.iloc[:,1:], test_size=test_size)
+    X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
     #X_train.tail()
 
     #%%
@@ -253,7 +387,7 @@ def main():
 
     #Set Parameters
     prophet_seasonality_mode = 'additive'
-    prophet_n_changepoints = 9
+    prophet_n_changepoints = 8 #8, 18, 28
     prophet_seasonality_prior_scale = 10
     prophet_changepoint_prior_scale = 0.5
     prophet_holidays_prior_scale = 2
@@ -311,7 +445,7 @@ def main():
 
     #Set Parameters
     ranfor_n_estimators = 80
-    ranfor_lags = 7
+    ranfor_lags = 8 #8, 18, 28
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
@@ -353,7 +487,7 @@ def main():
 
     #Set Parameters
     xgb_objective = 'reg:squarederror'
-    xgb_lags = 14
+    xgb_lags = 18 #8, 18, 28
     xgb_strategy = "recursive"
 
     xgb_regressor = XGBRegressor(objective=xgb_objective)
@@ -391,7 +525,7 @@ def main():
     from sklearn.linear_model import LinearRegression
 
     #Set Parameters
-    linreg_lags = 0.96
+    linreg_lags = 18 #8, 18, 28
     linreg_strategy = "recursive"
 
     linreg_regressor = LinearRegression(normalize=True)
@@ -429,7 +563,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly2_lags = 24
+    poly2_lags = 28 #8, 18, 28
     poly2_regularization = None
     poly2_interactions = False
     poly2_strategy = "recursive"
@@ -469,7 +603,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly3_lags = 27
+    poly3_lags = 18 #8, 18, 28
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"
