@@ -12,19 +12,12 @@ from utils import configLogging, logMessage, ad_test
 import warnings
 warnings.filterwarnings('ignore')
 
-<<<<<<< HEAD
-import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
-=======
-<<<<<<< HEAD
 import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
 import gas_prod.insample.condensate_tangguh_forecasting_insample as condensate_tangguh_insample
 import gas_prod.insample.lng_production_tangguh_forecasting_insample as lng_production_tangguh_insample
 import gas_prod.insample.feed_gas_badak_forecasting_insample as feed_gas_badak_insample
 import gas_prod.insample.lng_production_badak_forecasting_insample as lng_production_badak_insample
 import gas_prod.insample.condensate_badak_forecasting_insample as condensate_badak_insample
-=======
-#import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
->>>>>>> 6c3b45271faeb3826d83417cf6d00d30a88a1854
 #import gas_prod.insample.condensate_tangguh_forecasting_insample as condensate_tangguh_insample
 #import gas_prod.insample.feed_gas_badak_forecasting_insample as feed_gas_badak_insample
 #import gas_prod.insample.lng_production_tangguh_forecasting_insample as lng_production_tangguh_insample
@@ -32,7 +25,6 @@ import gas_prod.insample.condensate_badak_forecasting_insample as condensate_bad
 #import gas_prod.insample.condensate_badak_forecasting_insample as condensate_badak_insample
 #import gas_prod.insample.c3_badak_forecasting_insample as c3_badak_insample
 #import gas_prod.insample.c4_badak_forecasting_insample as c4_badak_insample
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -132,29 +124,11 @@ logMessage("Creating LNG Production PT Badak Model in: " + exec_time)
 
 #print('\n')
 
-<<<<<<< HEAD
 #t14 = time.process_time()
 #lng_production_badak_insample.main()
 #t15 = time.process_time()
 #exec_time = format_timespan(t15-t14, max_units=3)
 #print("Forecasting LNG Production Badak : " + exec_time)
-=======
-t14 = time.process_time()
-lng_production_badak_insample.main()
-t15 = time.process_time()
-exec_time = format_timespan(t15-t14, max_units=3)
-print("Forecasting LNG Production Badak : " + exec_time)
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
->>>>>>> 6c3b45271faeb3826d83417cf6d00d30a88a1854
-
-logMessage('\n')
-
-#configLogging("lng_production_tangguh.log")
-t10 = time.process_time()
-condensate_badak_insample.main()
-t11 = time.process_time()
-exec_time = format_timespan(t9-t8, max_units=3)
-logMessage("Creating Condensate Badak Model in: " + exec_time)
 
 logMessage('\n')
 
