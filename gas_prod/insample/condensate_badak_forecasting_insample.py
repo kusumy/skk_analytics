@@ -1,8 +1,6 @@
 # %%
 import logging
-import configparser
 import os
-import sys
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -19,97 +17,27 @@ from pmdarima.arima.auto import auto_arima
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import configLogging, logMessage, ad_test
-
-from statsmodels.tsa.seasonal import seasonal_decompose
-from statsmodels.tsa.stattools import adfuller
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-
+from connection import *
+from utils import *
 import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
 #import mlflow
 
-def stationarity_check(ts):
-            
-    # Calculate rolling statistics
-    roll_mean = ts.rolling(window=8, center=False).mean()
-    roll_std = ts.rolling(window=8, center=False).std()
-
-    # Perform the Dickey Fuller test
-    dftest = adfuller(ts) 
-    
-    # Plot rolling statistics:
-    fig = plt.figure(figsize=(12,6))
-    orig = plt.plot(ts, color='blue',label='Original')
-    mean = plt.plot(roll_mean, color='red', label='Rolling Mean')
-    std = plt.plot(roll_std, color='green', label = 'Rolling Std')
-    plt.legend(loc='best')
-    plt.title('Rolling Mean & Standard Deviation')
-    plt.show(block=False)
-    
-    # Print Dickey-Fuller test results
-
-    print('\nResults of Dickey-Fuller Test: \n')
-
-    dfoutput = pd.Series(dftest[0:4], index=['Test Statistic', 'p-value', 
-                                             '#Lags Used', 'Number of Observations Used'])
-    for key, value in dftest[4].items():
-        dfoutput['Critical Value (%s)'%key] = value
-    print(dfoutput)
-
-def decomposition_plot(ts):
-# Apply seasonal_decompose 
-    decomposition = seasonal_decompose(np.log(ts))
-    
-# Get trend, seasonality, and residuals
-    trend = decomposition.trend
-    seasonal = decomposition.seasonal
-    residual = decomposition.resid
-
-# Plotting
-    plt.figure(figsize=(12,8))
-    plt.subplot(411)
-    plt.plot(np.log(ts), label='Original', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(412)
-    plt.plot(trend, label='Trend', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(413)
-    plt.plot(seasonal,label='Seasonality', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(414)
-    plt.plot(residual, label='Residuals', color='blue')
-    plt.legend(loc='best')
-    plt.tight_layout()
-
-def plot_acf_pacf(ts, figsize=(10,8),lags=24):
-    
-    fig,ax = plt.subplots(nrows=3, figsize=figsize)
-    
-    # Plot ts
-    ts.plot(ax=ax[0])
-    
-    # Plot acf, pavf
-    plot_acf(ts, ax=ax[1], lags=lags)
-    plot_pacf(ts, ax=ax[2], lags=lags) 
-    fig.tight_layout()
-    
-    for a in ax[1:]:
-        a.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=lags, integer=True))
-        a.xaxis.grid()
-    return fig,ax
 
 #%%
 def main():
     # Configure logging
     #configLogging("condensate_badak.log")
+<<<<<<< HEAD
+    logMessage("Creating Condensate Badak Model ...")
+=======
+>>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(section='postgresql_ml_lng_skk_dev')
     if conn == None:
         exit()
 
@@ -149,7 +77,7 @@ def main():
     title = ("PT Badak Condensate Production")
     ax.set_title(title)
     #plt.savefig("ptbadak_smoothed.jpg")
-    plt.show()
+    #plt.show()
     #plt.close()
 
     #%%
@@ -158,11 +86,19 @@ def main():
     # Replace original with smoothed data
     df_smoothed[y] = smoother.smooth_data[0]
 
+<<<<<<< HEAD
+    # import chart_studio.plotly
+    # import cufflinks as cf
+    # from plotly.offline import iplot
+    # cf.go_offline()
+    # cf.set_config_file(offline = False, world_readable = True)
+=======
     #import chart_studio.plotly
     #import cufflinks as cf
     #from plotly.offline import iplot
     #cf.go_offline()
     #cf.set_config_file(offline = False, world_readable = True)
+>>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     #df_smoothed.iplot(title="Condensate PT Badak")
 
     #%%
@@ -175,12 +111,12 @@ def main():
     #plot_acf_pacf(df_smoothed)
 
     #%%
-    from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(df_smoothed.condensate.values, model="multiplicative", period=365)
-    fig = result.plot()
-    #plt.show()
-    plt.close()
+    # from chart_studio.plotly import plot_mpl
+    # from statsmodels.tsa.seasonal import seasonal_decompose
+    # result = seasonal_decompose(df_smoothed.condensate.values, model="multiplicative", period=365)
+    # fig = result.plot()
+    # #plt.show()
+    # plt.close()
 
     #%%
     from statsmodels.tsa.stattools import adfuller
