@@ -36,10 +36,7 @@ from dateutil.relativedelta import *
 def main():
     # Configure logging
     #configLogging("feed_gas_tangguh.log")
-<<<<<<< HEAD
     logMessage("Creating Feed Gas BP Tangguh Model ...")
-=======
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     
     # Connect to database
     # Exit program if not connected to database

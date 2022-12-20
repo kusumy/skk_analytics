@@ -29,10 +29,7 @@ from pmdarima.arima import auto_arima
 def main():
     # Configure logging
     #configLogging("condensate_badak.log")
-<<<<<<< HEAD
     logMessage("Creating Condensate Badak Model ...")
-=======
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     
     # Connect to database
     # Exit program if not connected to database

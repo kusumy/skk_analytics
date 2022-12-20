@@ -33,10 +33,7 @@ from dateutil.relativedelta import *
 def main():
     # Configure logging
     #configLogging("condensate_tangguh.log")
-<<<<<<< HEAD
     logMessage("Creating Condensate Tangguh Model ...")
-=======
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     
     # Connect to database
     # Exit program if not connected to database
