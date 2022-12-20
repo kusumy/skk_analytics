@@ -48,7 +48,7 @@ def main():
 
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
-    #data.head()
+    data['wpnb_oil'].fillna(method='ffill')
 
     #%%
     ds = 'date'
@@ -57,29 +57,20 @@ def main():
     df = data[[ds,y]]
     df = df.set_index(ds)
     df.index = pd.DatetimeIndex(df.index, freq='D')
-    #df
 
     #%%
-    data_cleaning = data[['date', 'condensate', 'wpnb_oil', 'unplanned_shutdown', 'planned_shutdown']].copy()
-    ds_cleaning = 'date'
-    data_cleaning = data_cleaning.set_index(ds_cleaning)
-    data_cleaning['unplanned_shutdown'] = data_cleaning['unplanned_shutdown'].astype('int')
-    s = validate_series(data_cleaning)
-
-    # plotting for illustration
-    plt.style.use('fivethirtyeight')
-
-    fig1, ax = plt.subplots(figsize=(20,8))
-    ax.plot(data_cleaning['condensate'], label='condensate')
-    ax.set_ylabel("condensate")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    plt.close()
+    logMessage("Null Value Cleaning ...")
+    data_null_cleaning = data[['date', 'condensate', 'wpnb_oil', 'unplanned_shutdown', 'planned_shutdown']].copy()
+    data_null_cleaning['condensate_copy'] = data[['condensate']].copy()
+    ds_null_cleaning = 'date'
+    data_null_cleaning = data_null_cleaning.set_index(ds_null_cleaning)
+    data_null_cleaning['unplanned_shutdown'] = data_null_cleaning['unplanned_shutdown'].astype('int')
+    s = validate_series(data_null_cleaning)
 
     #%%
     # Calculate standar deviation
-    fg_std = data_cleaning['condensate'].std()
-    fg_mean = data_cleaning['condensate'].mean()
+    fg_std = data_null_cleaning['condensate'].std()
+    fg_mean = data_null_cleaning['condensate'].mean()
 
     #Detect Anomaly Values
     # Create anomaly detection model
@@ -88,11 +79,12 @@ def main():
     high_limit2 = fg_mean+fg_std
     low_limit2 = fg_mean-fg_std
 
-    threshold_ad = ThresholdAD(data_cleaning['unplanned_shutdown']==0)
+    threshold_ad = ThresholdAD(data_null_cleaning['condensate_copy'].isnull())
     anomalies = threshold_ad.detect(s)
 
     anomalies = anomalies.drop('condensate', axis=1)
     anomalies = anomalies.drop('wpnb_oil', axis=1)
+    anomalies = anomalies.drop('unplanned_shutdown', axis=1)
     anomalies = anomalies.drop('planned_shutdown', axis=1)
     
     #%%
@@ -103,12 +95,12 @@ def main():
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
-    copy_anomalies.rename(columns={'unplanned_shutdown':'anomaly'}, inplace=True)
+    copy_anomalies.rename(columns={'condensate_copy':'anomaly'}, inplace=True)
     # Merge original dataframe with anomalies
     new_s = pd.concat([s, copy_anomalies], axis=1)
 
     # Get only anomalies data
-    anomalies_data = new_s[new_s['anomaly'] == False]
+    anomalies_data = new_s[new_s['anomaly'].isnull()]
     #anomalies_data.tail(100)
 
     #%%
@@ -225,9 +217,7 @@ def main():
         print(sql), print(mean_month)
 
     # Check if updated
-    new_s[new_s['anomaly'] == False]
-
-    anomaly_upd = new_s[new_s['anomaly'] == False]
+    anomaly_upd = new_s[new_s['anomaly'].isnull()]
 
     #%%
     # Plot data and its anomalies
@@ -256,10 +246,114 @@ def main():
 
     #fig.show()
     plt.close()
+    
+    #%%
+    logMessage("Unplanned Shutdown Cleaning ...")
+    # Detect Unplanned Shutdown Value
+    data2 = new_s[['condensate', 'wpnb_oil', 'unplanned_shutdown', 'planned_shutdown']].copy()
+    #data2 = data2.reset_index()
+    #data2['date'] = pd.DatetimeIndex(data2['date'], freq='D')
+    s2 = validate_series(data2)
 
+    threshold_ad2 = ThresholdAD(data2['unplanned_shutdown']==0)
+    anomalies2 = threshold_ad2.detect(s2)
+
+    anomalies2 = anomalies2.drop('condensate', axis=1)
+    anomalies2 = anomalies2.drop('wpnb_oil', axis=1)
+    anomalies2 = anomalies2.drop('planned_shutdown', axis=1)
+    
+    # Create anomaly detection model
+    #threshold_ad2 = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies2 =  threshold_ad2.detect(s2)
+
+    # Copy data frame of anomalies
+    copy_anomalies2 =  anomalies2.copy()
+    # Rename columns
+    copy_anomalies2.rename(columns={'unplanned_shutdown':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s2 = pd.concat([s2, copy_anomalies2], axis=1)
+
+    # Get only anomalies data
+    anomalies_data2 = new_s2[new_s2['anomaly'] == False]
+    
+    #%%
+    # Plot data and its anomalies
+    from cProfile import label
+    from imaplib import Time2Internaldate
+
+    fig = px.line(new_s2, y='condensate')
+
+    # Add horizontal line for 3 sigma
+    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean + std", 
+                annotation_position="top right")
+    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean - 3*std", 
+                annotation_position="bottom right")
+    fig.add_scatter(x=anomalies_data2.index, y=anomalies_data2['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    fig.update_layout(title_text='Condensate Tangguh', title_font_size=24)
+
+    #fig.show()
+    plt.close()
+    
+    #%%
+    for index, row in anomalies_data2.iterrows():
+        yr = index.year
+        mt = index.month
+        
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+        
+        # Get last year start date month
+        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        
+        # Get last month last date
+        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        
+        # Get mean fead gas data for the month
+        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        mean_month=new_s2['condensate'].reset_index().query(sql).mean().values[0]
+        
+        # update value at specific location
+        new_s2.at[index,'condensate'] = mean_month
+        
+        print(sql), print(mean_month)
+
+    # Check if updated
+    new_s2[new_s2['anomaly'] == False]
+
+    anomaly_upd2 = new_s2[new_s2['anomaly'] == False]
 
     #%%
-    data_cleaned = new_s[['condensate', 'wpnb_oil', 'planned_shutdown']].copy()
+    # Plot data and its anomalies
+    from cProfile import label
+    from imaplib import Time2Internaldate
+
+    fig = px.line(new_s2, y='condensate')
+
+    # Add horizontal line for 3 sigma
+    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean + std", 
+                annotation_position="top right")
+    fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean + 3*std", 
+                annotation_position="top right")
+    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean - 3*std", 
+                annotation_position="bottom right")
+    fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean - std", 
+                annotation_position="bottom right")
+    fig.add_scatter(x=anomalies_data2.index, y=anomalies_data2['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    fig.add_scatter(x=anomaly_upd2.index, y=anomaly_upd2['condensate'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
+    fig.update_layout(title_text='Condensate BP Tangguh', title_font_size=24)
+
+    #fig.show()
+    plt.close()
+
+    #%%
+    data_cleaned = new_s2[['condensate', 'wpnb_oil', 'planned_shutdown']].copy()
     data_cleaned = data_cleaned.reset_index()
 
     ds_cleaned = 'date'
@@ -725,7 +819,7 @@ def main():
                         'model_param_g': [poly2_param],
                         'model_param_h': [poly3_param],
                         'lng_plant' : 'PT Badak',
-                        'product' : 'Feed Gas'}
+                        'product' : 'Condensate'}
 
     all_model_param = pd.DataFrame(all_model_param)
 
