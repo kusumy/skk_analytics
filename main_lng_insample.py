@@ -45,7 +45,6 @@ configLogging("main_lng_insample.log")
 #t1 = time.process_time()
 #exec_time = format_timespan(t1-t0, max_units=3)
 #print("Forecasting Feed Gas BP Tangguh : " + exec_time)
-#t0 = time.process_time()
 
 #logMessage('\n')
 
