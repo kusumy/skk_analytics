@@ -38,7 +38,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk_dev')
+    conn = create_db_connection(section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
         
@@ -446,12 +446,12 @@ def main():
     #ARIMA(1,0,3)
     arimax_model = AutoARIMA(d=0, suppress_warnings=True, error_action='ignore')
     logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(y_train.condensate, X=X_train[exogenous_features])
+    arimax_model.fit(y_train_cleaned, X=X_train)
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_model.summary())
 
     logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(fh, X=X_test[exogenous_features])
+    arimax_forecast = arimax_model.predict(fh, X=X_test)
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
     y_pred_arimax['day_num'] = [i.day for i in arimax_forecast.index]
     y_pred_arimax['month_num'] = [i.month for i in arimax_forecast.index]
@@ -465,7 +465,7 @@ def main():
     logMessage("ARIMAX Model "+arimax_mape_str)
 
     # Rename column to forecast_a
-    y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
+    y_pred_arimax.rename(columns={'condensate':'forecast_a'}, inplace=True)
     
     #Get parameter
     arimax_param = str(arimax_model.get_fitted_params()['order'])
@@ -491,13 +491,12 @@ def main():
     sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     #sarimax_model = ARIMA(order=(2,0,2), seasonal_order=(2,1,0,12),  suppress_warnings=True)
     logMessage("Creating SARIMAX Model ...")
-    sarimax_model.fit(y_train.condensate, X=X_train[exogenous_features])
+    sarimax_model.fit(y_train_cleaned, X=X_train)
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_model.summary())
 
     logMessage("SARIMAX Model Prediction ..")
-    sarimax_forecast = sarimax_model.predict(fh, X=X_test[exogenous_features])
-    y_test["Forecast_SARIMAX"] = sarimax_forecast
+    sarimax_forecast = sarimax_model.predict(fh, X=X_test)
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
     y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]
@@ -506,12 +505,12 @@ def main():
     y_pred_sarimax['date'] = pd.DatetimeIndex(y_pred_sarimax['date'], freq='D')
 
     #Create MAPE
-    sarimax_mape = mean_absolute_percentage_error(y_test.condensate, y_test.Forecast_SARIMAX)
+    sarimax_mape = mean_absolute_percentage_error(y_test.condensate, sarimax_forecast)
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
     logMessage("SARIMAX Model "+sarimax_mape_str)
     
     # Rename column to forecast_b
-    y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
+    y_pred_sarimax.rename(columns={'condensate':'forecast_b'}, inplace=True)
     
     #Get parameters
     sarimax_param_order = str(sarimax_model.get_fitted_params()['order'])
@@ -527,7 +526,7 @@ def main():
 
     #Set Parameters
     seasonality_mode = 'multiplicative'
-    n_changepoints = 40
+    n_changepoints = 3 #3, 9, 18
     seasonality_prior_scale = 0.2
     changepoint_prior_scale = 0.1
     holidays_prior_scale = 8
@@ -548,7 +547,7 @@ def main():
         yearly_seasonality=yearly_seasonality)
 
     logMessage("Creating Prophet Model ...")
-    prophet_forecaster.fit(y_train, X_train) #, X_train
+    prophet_forecaster.fit(y_train_cleaned, X_train) #, X_train
     logMessage(prophet_forecaster._get_fitted_params)
     
     logMessage("Prophet Model Prediction ...")
@@ -561,7 +560,7 @@ def main():
     y_pred_prophet['date'] = pd.DatetimeIndex(y_pred_prophet['date'], freq='D')
 
     #Create MAPE
-    prophet_mape = mean_absolute_percentage_error(y_test['condensate'], prophet_forecast)
+    prophet_mape = mean_absolute_percentage_error(y_test.condensate, prophet_forecast)
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
 
@@ -586,7 +585,7 @@ def main():
 
     #Set Parameters
     ranfor_n_estimators = 150
-    ranfor_lags = 53
+    ranfor_lags = 3 #3, 9, 18
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
@@ -596,7 +595,7 @@ def main():
     ranfor_forecaster = make_reduction(ranfor_regressor, window_length = ranfor_lags, strategy = ranfor_strategy)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_forecaster.fit(y_train, X_train) #, X_train
+    ranfor_forecaster.fit(y_train_cleaned, X_train) #, X_train
     
     logMessage("Random Forest Model Prediction ...")
     ranfor_forecast = ranfor_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -608,7 +607,7 @@ def main():
     y_pred_ranfor['date'] = pd.DatetimeIndex(y_pred_ranfor['date'], freq='D')
 
     #Create MAPE
-    ranfor_mape = mean_absolute_percentage_error(y_test['condensate'], ranfor_forecast)
+    ranfor_mape = mean_absolute_percentage_error(y_test.condensate, ranfor_forecast)
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
 
@@ -628,14 +627,14 @@ def main():
 
     #Set Parameters
     xgb_objective = 'reg:squarederror'
-    xgb_lags = 13
+    xgb_lags = 18 #3, 9, 18
     xgb_strategy = "recursive"
 
     xgb_regressor = XGBRegressor(objective=xgb_objective)
     xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
 
     logMessage("Creating XGBoost Model ....")
-    xgb_forecaster.fit(y_train, X=X_train) #, X_train
+    xgb_forecaster.fit(y_train_cleaned, X=X_train) #, X_train
     
     logMessage("XGBoost Model Prediction ...")
     xgb_forecast = xgb_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -647,7 +646,7 @@ def main():
     y_pred_xgb['date'] = pd.DatetimeIndex(y_pred_xgb['date'], freq='D')
 
     #Create MAPE
-    xgb_mape = mean_absolute_percentage_error(y_test['condensate'], xgb_forecast)
+    xgb_mape = mean_absolute_percentage_error(y_test.condensate, xgb_forecast)
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
     
@@ -666,14 +665,14 @@ def main():
     from sklearn.linear_model import LinearRegression
 
     #Set Parameters
-    linreg_lags = 12
+    linreg_lags = 3 #3, 9, 18
     linreg_strategy = "recursive"
 
     linreg_regressor = LinearRegression(normalize=True)
     linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
 
     logMessage("Creating Linear Regression Model ...")
-    linreg_forecaster.fit(y_train, X=X_train) #, X=X_train
+    linreg_forecaster.fit(y_train_cleaned, X=X_train) #, X=X_train
     
     logMessage("Linear Regression Model Prediction ...")
     linreg_forecast = linreg_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -685,7 +684,7 @@ def main():
     y_pred_linreg['date'] = pd.DatetimeIndex(y_pred_linreg['date'], freq='D')
 
     #Create MAPE
-    linreg_mape = mean_absolute_percentage_error(y_test['condensate'], linreg_forecast)
+    linreg_mape = mean_absolute_percentage_error(y_test.condensate, linreg_forecast)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
 
@@ -705,7 +704,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly2_lags = 5
+    poly2_lags = 3 #3, 9, 18
     poly2_regularization = None
     poly2_interactions = False
     poly2_strategy = "recursive"
@@ -714,7 +713,7 @@ def main():
     poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy)
 
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_forecaster.fit(y_train, X=X_train) #, X=X_train
+    poly2_forecaster.fit(y_train_cleaned, X=X_train) #, X=X_train
     
     logMessage("Polynomial Regression Orde 2 Model Prediction ...")
     poly2_forecast = poly2_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -726,7 +725,7 @@ def main():
     y_pred_poly2['date'] = pd.DatetimeIndex(y_pred_poly2['date'], freq='D')
 
     #Create MAPE
-    poly2_mape = mean_absolute_percentage_error(y_test['condensate'], poly2_forecast)
+    poly2_mape = mean_absolute_percentage_error(y_test.condensate, poly2_forecast)
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Orde 2 Model "+poly2_mape_str)
 
@@ -746,7 +745,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly3_lags = 0.59
+    poly3_lags = 1 #1, 3, 5
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"
@@ -755,7 +754,7 @@ def main():
     poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy)
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_forecaster.fit(y_train, X=X_train) #, X=X_train
+    poly3_forecaster.fit(y_train_cleaned, X=X_train) #, X=X_train
     
     logMessage("Polynomial Regression Orde 3 Model Prediction ...")
     poly3_forecast = poly3_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -767,7 +766,7 @@ def main():
     y_pred_poly3['date'] = pd.DatetimeIndex(y_pred_poly3['date'], freq='D')
 
     #Create MAPE
-    poly3_mape = mean_absolute_percentage_error(y_test['condensate'], poly3_forecast)
+    poly3_mape = mean_absolute_percentage_error(y_test.condensate, poly3_forecast)
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Orde 3 Model "+poly3_mape_str)
 
@@ -818,7 +817,7 @@ def main():
                         'model_param_f': [linreg_param],
                         'model_param_g': [poly2_param],
                         'model_param_h': [poly3_param],
-                        'lng_plant' : 'PT Badak',
+                        'lng_plant' : 'PT Tangguh',
                         'product' : 'Condensate'}
 
     all_model_param = pd.DataFrame(all_model_param)
