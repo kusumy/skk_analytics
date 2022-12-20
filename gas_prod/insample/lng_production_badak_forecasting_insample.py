@@ -2,8 +2,13 @@
 # This python script is used to perform forecasting on testing data from each method
 # Data source from the SKK Migas (188.166.239.112) database in the lng_production_daily table with lng_plant = 'PT Badak'
 
-# Methods for time series forecasting
-# There are many methods that we can use for this forecasting, such
+#### Methods for time series forecasting ####
+# There are many methods that we can use for this forecasting, such as ARIMAX, SARIMAX, PROPHET, RANDOM FOREST, XGBOOST, LINEAR REGRESSION, POLYNOMIAL REGRESSION DEGREE 2, POLYNOMIAL REGRESSION DEGREE 3
+
+#### Flow process of this algorithm ####
+# 1. Import the required packages
+# 2. Import data from database
+# 3. EDA process (Stationary Check, Decomposition Plot, ACF-PACF Plot)
 
 
 # %%
@@ -148,7 +153,7 @@ def main():
     #%%
     from chart_studio.plotly import plot_mpl
     from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(df.lng_production.values, model="multiplicative", period=365)
+    result = seasonal_decompose(df, model="multiplicative", period=365)
     fig = result.plot()
     plt.close()
 
