@@ -33,10 +33,7 @@ from pmdarima.arima import auto_arima
 def main():
     # Configure logging
     #configLogging("feed_gas_badak_forecasting.log")
-<<<<<<< HEAD
     logMessage("Creating Feed Gas PT Badak Model ....")
-=======
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     
     # Connect to database
     # Exit program if not connected to database
@@ -104,22 +101,12 @@ def main():
     fh = ForecastingHorizon(y_test.index, is_relative=False)
 
     #%%
-<<<<<<< HEAD
     # import chart_studio.plotly
     # import cufflinks as cf
 
     # from plotly.offline import iplot
     # cf.go_offline()
     # cf.set_config_file(offline = False, world_readable = True)
-=======
-    #import chart_studio.plotly
-    #import cufflinks as cf
-
-    #from plotly.offline import iplot
-    #cf.go_offline()
-    #cf.set_config_file(offline = False, world_readable = True)
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
-
     #%%
     #df_smoothed.iplot(title="Feed Gas PT Badak")
 
