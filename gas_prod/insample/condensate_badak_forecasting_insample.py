@@ -264,7 +264,7 @@ def main():
     from sktime.forecasting.base import ForecastingHorizon
 
     # Create forecasting Horizon
-    fh = ForecastingHorizon(df_smoothed.index, is_relative=False)
+    fh = ForecastingHorizon(y_test_smoothed.index, is_relative=False)
 
     #%%
     ## Create Exogenous Variable

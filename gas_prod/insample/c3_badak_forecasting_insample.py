@@ -30,6 +30,11 @@ import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
 #import mlflow
+from adtk.detector import ThresholdAD
+from adtk.visualization import plot
+from adtk.data import validate_series
+pd.options.plotting.backend = "plotly"
+from dateutil.relativedelta import *
 
 def stationarity_check(ts):
             
@@ -119,15 +124,143 @@ def main():
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
-    #%%
-    ds = 'date'
-    y = 'lpg_c3' #Choose the column target
-    df = data[[ds,y]]
-    df = df.set_index(ds)
-    df.index = pd.DatetimeIndex(df.index, freq='D')
+    data_null_cleaning = data[['date', 'lpg_c3']].copy()
+    data_null_cleaning['lpg_c3_copy'] = data[['lpg_c3']].copy()
+    ds_null_cleaning = 'date'
+    data_null_cleaning = data_null_cleaning.set_index(ds_null_cleaning)
+    s = validate_series(data_null_cleaning)
 
+    #%%
+    threshold_ad = ThresholdAD(data_null_cleaning['lpg_c3_copy'].isnull())
+    anomalies = threshold_ad.detect(s)
+
+    anomalies = anomalies.drop('lpg_c3', axis=1)
+
+    # Create anomaly detection model
+    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies =  threshold_ad.detect(s)
+
+    # Copy data frame of anomalies
+    copy_anomalies =  anomalies.copy()
+    # Rename columns
+    copy_anomalies.rename(columns={'lpg_c3_copy':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s = pd.concat([s, copy_anomalies], axis=1)
+
+    # Get only anomalies data
+    anomalies_data = new_s[new_s['anomaly'].isnull()]
+    #anomalies_data.tail(100)
+
+    #%%
+    #REPLACE ANOMALY VALUES
+    from datetime import date, datetime, timedelta
+
+    def get_first_date_of_current_month(year, month):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_month(year, month):
+        """Return the last date of the month.
+            
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+            
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+            
+        return last_date.strftime("%Y-%m-%d")
+
+        
+    def get_first_date_of_prev_month(year, month, step=-1):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        first_date = first_date + relativedelta(months=step)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_prev_month(year, month, step=-1):
+        """Return the last date of the month.
+            
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+            
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+                
+        last_date = last_date + relativedelta(months=step)
+            
+        return last_date.strftime("%Y-%m-%d")
+
+    for index, row in anomalies_data.iterrows():
+        yr = index.year
+        mt = index.month
+            
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+            
+        # Get last year start date month
+        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+            
+        # Get last month last date
+        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+            
+        # Get mean fead gas data for the month
+        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        mean_month=new_s['lpg_c3'].reset_index().query(sql).mean().values[0]
+            
+        # update value at specific location
+        new_s.at[index,'lpg_c3'] = mean_month
+            
+        print(sql), print(mean_month)
+
+    # Check if updated
+    anomaly_upd = new_s[new_s['anomaly'].isnull()]
+
+    #%%
+    df_cleaned = new_s[['lpg_c3']].copy()
+    #df_cleaned = df_cleaned.reset_index()
+    #df_cleaned['date'] = pd.to_datetime(df_cleaned.date)
+    #df_cleaned.index = pd.DatetimeIndex(df_cleaned.date)
+
+    #ds_cleaned = 'date'
+    #y_cleaned = 'lpg_c3'
+    #df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
+    #df_cleaned = df_cleaned.set_index(ds_cleaned)
+    #df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
+    #df_cleaned
     #Select column target
-    train_df = df['lpg_c3']
+    #train_df = data_cleaned['lpg_c3']
 
     #%%
     #import chart_studio.plotly
@@ -151,14 +284,14 @@ def main():
     #%%
     from chart_studio.plotly import plot_mpl
     from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(data_cleaned['lpg_c3'], model="additive", period=365)
+    result = seasonal_decompose(df_cleaned['lpg_c3'], model="additive", period=365)
     fig = result.plot()
     plt.close()
 
     #%%
     from statsmodels.tsa.stattools import adfuller
     def ad_test(dataset):
-        dftest = adfuller(data_cleaned['lpg_c3'], autolag = 'AIC')
+        dftest = adfuller(df_cleaned['lpg_c3'], autolag = 'AIC')
         print("1. ADF : ",dftest[0])
         print("2. P-Value : ", dftest[1])
         print("3. Num Of Lags : ", dftest[2])
@@ -166,7 +299,7 @@ def main():
         print("5. Critical Values :")
         for key, val in dftest[4].items():
             print("\t",key, ": ", val)
-    ad_test(data_cleaned['lpg_c3'])
+    ad_test(df_cleaned['lpg_c3'])
 
     #%%
     from sktime.forecasting.model_selection import temporal_train_test_split
@@ -175,21 +308,18 @@ def main():
     # Test size
     test_size = 0.2
     # Split data
-    y_train, y_test = temporal_train_test_split(data_cleaned, test_size=test_size)
+    y_train, y_test = temporal_train_test_split(df_cleaned, test_size=test_size)
     # Horizon
     fh = ForecastingHorizon(y_test.index, is_relative=False)
 
     #%%
     # create features (exog) from date
-    data_cleaned['month'] = [i.month for i in data_cleaned.index]
-    data_cleaned['day'] = [i.day for i in data_cleaned.index]
-    #df['day_of_year'] = [i.dayofyear for i in df.index]
-    #df['week_of_year'] = [i.weekofyear for i in df.index]
-    data_cleaned.tail(20)
+    df_cleaned['month'] = [i.month for i in df_cleaned.index]
+    df_cleaned['day'] = [i.day for i in df_cleaned.index]
 
     #%%
     # Split into train and test
-    X_train, X_test = temporal_train_test_split(data_cleaned.iloc[:,1:], test_size=test_size)
+    X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
     X_train
 
     #%%
@@ -298,7 +428,7 @@ def main():
 
     #Set parameters
     prophet_seasonality_mode = 'multiplicative'
-    prophet_n_changepoints = 1
+    prophet_n_changepoints = 2 #2, 5, 14
     prophet_seasonality_prior_scale = 10
     prophet_changepoint_prior_scale = 0.001
     prophet_holidays_prior_scale = 2
@@ -355,7 +485,7 @@ def main():
     from sklearn.ensemble import RandomForestRegressor
 
     #Set parameters
-    ranfor_lags = 0.33
+    ranfor_lags = 2 #2, 5, 14
     ranfor_n_estimators = 100
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
@@ -396,7 +526,7 @@ def main():
     from xgboost import XGBRegressor
 
     #Set parameters
-    xgb_lags = 0.4
+    xgb_lags = 5 #2, 5, 14
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
@@ -436,7 +566,7 @@ def main():
     from sklearn.linear_model import LinearRegression
 
     #Set parameters
-    linreg_lags = 50
+    linreg_lags = 42 #14, 28, 42
     linreg_normalize = True
     linreg_strategy = "recursive"
 
@@ -475,7 +605,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set parameters
-    poly2_lags = 63
+    poly2_lags = 28 #14, 28, 42
     poly2_regularization = None
     poly2_interactions = False
     poly2_strategy = "recursive"
@@ -515,7 +645,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set parameters
-    poly3_lags = 32
+    poly3_lags = 28 #14, 28, 42
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"
