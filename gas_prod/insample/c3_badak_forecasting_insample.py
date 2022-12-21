@@ -151,14 +151,14 @@ def main():
     #%%
     from chart_studio.plotly import plot_mpl
     from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(train_df.values, model="additive", period=365)
+    result = seasonal_decompose(data_cleaned['lpg_c3'], model="additive", period=365)
     fig = result.plot()
     plt.close()
 
     #%%
     from statsmodels.tsa.stattools import adfuller
     def ad_test(dataset):
-        dftest = adfuller(df, autolag = 'AIC')
+        dftest = adfuller(data_cleaned['lpg_c3'], autolag = 'AIC')
         print("1. ADF : ",dftest[0])
         print("2. P-Value : ", dftest[1])
         print("3. Num Of Lags : ", dftest[2])
@@ -166,7 +166,7 @@ def main():
         print("5. Critical Values :")
         for key, val in dftest[4].items():
             print("\t",key, ": ", val)
-    ad_test(train_df)
+    ad_test(data_cleaned['lpg_c3'])
 
     #%%
     from sktime.forecasting.model_selection import temporal_train_test_split
@@ -175,21 +175,21 @@ def main():
     # Test size
     test_size = 0.2
     # Split data
-    y_train, y_test = temporal_train_test_split(df, test_size=test_size)
+    y_train, y_test = temporal_train_test_split(data_cleaned, test_size=test_size)
     # Horizon
     fh = ForecastingHorizon(y_test.index, is_relative=False)
 
     #%%
     # create features (exog) from date
-    df['month'] = [i.month for i in df.index]
-    df['day'] = [i.day for i in df.index]
+    data_cleaned['month'] = [i.month for i in data_cleaned.index]
+    data_cleaned['day'] = [i.day for i in data_cleaned.index]
     #df['day_of_year'] = [i.dayofyear for i in df.index]
     #df['week_of_year'] = [i.weekofyear for i in df.index]
-    df.tail(20)
+    data_cleaned.tail(20)
 
     #%%
     # Split into train and test
-    X_train, X_test = temporal_train_test_split(df.iloc[:,1:], test_size=test_size)
+    X_train, X_test = temporal_train_test_split(data_cleaned.iloc[:,1:], test_size=test_size)
     X_train
 
     #%%
