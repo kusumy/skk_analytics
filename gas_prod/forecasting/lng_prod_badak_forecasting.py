@@ -29,6 +29,12 @@ import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
 
+from adtk.detector import ThresholdAD
+from adtk.visualization import plot
+from adtk.data import validate_series
+pd.options.plotting.backend = "plotly"
+from dateutil.relativedelta import *
+
 # %%
 def main():
     # Configure logging
@@ -48,15 +54,148 @@ def main():
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
     
-    ds = 'date'
-    y = 'lng_production' 
+    #%%
+    data_null_cleaning = data[['date', 'lng_production']].copy()
+    data_null_cleaning['lng_production_copy'] = data[['lng_production']].copy()
+    ds_null_cleaning = 'date'
+    data_null_cleaning = data_null_cleaning.set_index(ds_null_cleaning)
+    s = validate_series(data_null_cleaning)  
+    
+    threshold_ad = ThresholdAD(data_null_cleaning['lng_production_copy'].isnull())
+    anomalies =  threshold_ad.detect(s)
+    anomalies = anomalies.drop('lng_production', axis=1)
 
-    df = data[[ds,y]]
-    df = df.set_index(ds)
-    df.index = pd.DatetimeIndex(df.index, freq='D')
+    # Create anomaly detection model
+    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies =  threshold_ad.detect(s)
 
+    # Copy data frame of anomalies
+    copy_anomalies =  anomalies.copy()
+    # Rename columns
+    copy_anomalies.rename(columns={'lng_production_copy':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s = pd.concat([s, copy_anomalies], axis=1)
+
+    # Get only anomalies data
+    anomalies_data = new_s[new_s['anomaly'].isnull()]
+
+    # Create anomaly detection model
+    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies =  threshold_ad.detect(s)
+
+    # Copy data frame of anomalies
+    copy_anomalies =  anomalies.copy()
+    # Rename columns
+    copy_anomalies.rename(columns={'lng_production_copy':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s = pd.concat([s, copy_anomalies], axis=1)
+
+    # Get only anomalies data
+    #anomalies_data = new_s[new_s['anomaly'].isnull()]
+    
+    #%%
+    from datetime import date, datetime, timedelta
+    def get_first_date_of_current_month(year, month):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_month(year, month):
+        """Return the last date of the month.
+        
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+        
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+        
+        return last_date.strftime("%Y-%m-%d")
+
+    def get_first_date_of_prev_month(year, month, step=-1):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        first_date = first_date + relativedelta(months=step)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_prev_month(year, month, step=-1):
+        """Return the last date of the month.
+        
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+        
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+            
+        last_date = last_date + relativedelta(months=step)
+        
+        return last_date.strftime("%Y-%m-%d")
+    
+    for index, row in anomalies_data.iterrows():
+        yr = index.year
+        mt = index.month
+        
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+        
+        # Get last year start date month
+        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        
+        # Get last month last date
+        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        
+        # Get mean fead gas data for the month
+        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        mean_month=new_s['lng_production'].reset_index().query(sql).mean(skipna = True).values[0]
+        
+        # update value at specific location
+        new_s.at[index,'lng_production'] = mean_month
+        
+        print(index), print(sql), print(mean_month)
+    
+    #%%
+    #prepare data
+    data_cleaned = new_s[['lng_production']].copy()
+    data_cleaned = data_cleaned.reset_index()
+
+    ds_cleaned = 'date'
+    y_cleaned = 'lng_production'
+    df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
+    df_cleaned = df_cleaned.set_index(ds_cleaned)
+    df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
+    
     #Create column target
-    train_df = df['lng_production']
+    train_df = df_cleaned['lng_production']
 
     #%%
     #stationarity_check(train_df)
@@ -80,13 +219,13 @@ def main():
 
     #%%
     #CREATE EXOGENOUS VARIABLES
-    df['fg_exog'] = data['fg_exog'].values
-    df['month'] = [i.month for i in df.index]
-    df['day'] = [i.day for i in df.index]
-    train_exog = df.iloc[:,1:]
+    df_cleaned['fg_exog'] = data['fg_exog'].values
+    df_cleaned['month'] = [i.month for i in df_cleaned.index]
+    df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    train_exog = df_cleaned.iloc[:,1:]
 
     from sktime.forecasting.base import ForecastingHorizon
-    time_predict = pd.period_range('2022-11-11', periods=51, freq='D')
+    #time_predict = pd.period_range('2022-11-11', periods=51, freq='D')
 
     #%%
     query_exog = os.path.join('gas_prod/sql','lng_prod_badak_exog_query.sql')

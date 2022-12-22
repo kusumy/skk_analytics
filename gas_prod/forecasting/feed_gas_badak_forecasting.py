@@ -54,23 +54,145 @@ def main():
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
+    #%%
+    data_null_cleaning = data[['date', 'feed_gas']].copy()
+    data_null_cleaning['feed_gas_copy'] = data[['feed_gas']].copy()
+    ds_null_cleaning = 'date'
+    data_null_cleaning = data_null_cleaning.set_index(ds_null_cleaning)
+    s = validate_series(data_null_cleaning)  
     
+    threshold_ad = ThresholdAD(data_null_cleaning['feed_gas_copy'].isnull())
+    anomalies =  threshold_ad.detect(s)
+    anomalies = anomalies.drop('feed_gas', axis=1)
+
+    # Create anomaly detection model
+    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies =  threshold_ad.detect(s)
+
+    # Copy data frame of anomalies
+    copy_anomalies =  anomalies.copy()
+    # Rename columns
+    copy_anomalies.rename(columns={'feed_gas_copy':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s = pd.concat([s, copy_anomalies], axis=1)
+
+    # Get only anomalies data
+    anomalies_data = new_s[new_s['anomaly'].isnull()]
+
+    # Create anomaly detection model
+    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies =  threshold_ad.detect(s)
+
+    # Copy data frame of anomalies
+    copy_anomalies =  anomalies.copy()
+    # Rename columns
+    copy_anomalies.rename(columns={'feed_gas_copy':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s = pd.concat([s, copy_anomalies], axis=1)
+
+    # Get only anomalies data
+    #anomalies_data = new_s[new_s['anomaly'].isnull()]
     
+    #%%
+    from datetime import date, datetime, timedelta
+    def get_first_date_of_current_month(year, month):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_month(year, month):
+        """Return the last date of the month.
+        
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+        
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+        
+        return last_date.strftime("%Y-%m-%d")
+
+    def get_first_date_of_prev_month(year, month, step=-1):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        first_date = first_date + relativedelta(months=step)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_prev_month(year, month, step=-1):
+        """Return the last date of the month.
+        
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+        
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+            
+        last_date = last_date + relativedelta(months=step)
+        
+        return last_date.strftime("%Y-%m-%d")
     
+    for index, row in anomalies_data.iterrows():
+        yr = index.year
+        mt = index.month
+        
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+        
+        # Get last year start date month
+        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        
+        # Get last month last date
+        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        
+        # Get mean fead gas data for the month
+        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        mean_month=new_s['feed_gas'].reset_index().query(sql).mean(skipna = True).values[0]
+        
+        # update value at specific location
+        new_s.at[index,'feed_gas'] = mean_month
+        
+        print(index), print(sql), print(mean_month)
     
-    
-    
-    
-    
-    
-    
-    
-    
-    ds = 'date'
-    y = 'feed_gas' #Choose the column target
-    df = data[[ds,y]]
-    df = df.set_index(ds)
-    df.index = pd.DatetimeIndex(df.index, freq='D')
+    #%%
+    #prepare data
+    data_cleaned = new_s[['feed_gas']].copy()
+    data_cleaned = data_cleaned.reset_index()
+
+    ds_cleaned = 'date'
+    y_cleaned = 'feed_gas'
+    df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
+    df_cleaned = df_cleaned.set_index(ds_cleaned)
+    df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
     # Smooth time series signal using polynomial smoothing
@@ -78,7 +200,7 @@ def main():
 
     #smoother = PolynomialSmoother(degree=1, copy=True)
     smoother = LowessSmoother(smooth_fraction=0.01, iterations=1)
-    smoother.smooth(df)
+    smoother.smooth(df_cleaned)
 
     # generate intervals
     low, up = smoother.get_intervals('prediction_interval')
@@ -86,23 +208,23 @@ def main():
     # plotting for illustration
     # plt.style.use('fivethirtyeight')
     # fig1, ax = plt.subplots(figsize=(18,7))
-    # ax.plot(df.index, df[y], label='original')
-    # ax.plot(df.index, smoother.smooth_data[0], linewidth=3, color='blue', label='smoothed')
-    # ax.fill_between(df.index, low[0], up[0], alpha=0.3)
+    # ax.plot(df_cleaned.index, df_cleaned[y_cleaned], label='original')
+    # ax.plot(df_cleaned.index, smoother.smooth_data[0], linewidth=3, color='blue', label='smoothed')
+    # ax.fill_between(df_cleaned.index, low[0], up[0], alpha=0.3)
     # ax.set_ylabel("Feed Gas")
     # ax.set_xlabel("Datestamp")
     # ax.legend(loc='best')
     # title = ("PT Badak Feed Gas Production")
     # ax.set_title(title)
-    # #plt.savefig("ptbadak_smoothed.jpg")
-    # #plt.show()
+    # plt.savefig("ptbadak_smoothed.jpg")
+    # plt.show()
     # plt.close()
 
     #%%
     # Copy data from original
-    df_smoothed = df.copy()
+    df_smoothed = df_cleaned.copy()
     # Replace original with smoothed data
-    df_smoothed[y] = smoother.smooth_data[0]
+    df_smoothed[y_cleaned] = smoother.smooth_data[0]
 
     #%%
     #import chart_studio.plotly
@@ -142,9 +264,9 @@ def main():
 
     #%%
     # create features from date
-    df['month'] = [i.month for i in df.index]
-    df['day'] = [i.day for i in df.index]
-    train_exog = df.iloc[:,1:]
+    df_cleaned['month'] = [i.month for i in df_cleaned.index]
+    df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    train_exog = df_cleaned.iloc[:,1:]
 
     #%%
     query_exog = os.path.join('gas_prod/sql','feed_gas_badak_exog_query.sql')
