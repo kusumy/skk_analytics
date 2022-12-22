@@ -49,33 +49,35 @@ def main():
     #Load Data from Database
     query = os.path.join('gas_prod/sql','fg_tangguh_data_query.sql')
     query_1 = open(query, mode="rt").read()
-    #real_data = retrieve_data(query_1)
-    real_data = get_sql_data(query_1, conn)
-    real_data['date'] = pd.DatetimeIndex(real_data['date'], freq='D')
-    ds = 'date'
-    real_data = real_data.set_index(ds)
-    real_data['unplanned_shutdown'] = real_data['unplanned_shutdown'].astype('int')
-    s = validate_series(real_data)
-    #real_data.head(60)
-
+    data = get_sql_data(query_1, conn)
+    data['date'] = pd.DatetimeIndex(data['date'], freq='D')
+    data['wpnb_gas'].fillna(method='ffill')
+    data = data.reset_index()
+    
+    #%%
+    data_null_cleaning = data[['date', 'feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
+    data_null_cleaning['feed_gas_copy'] = data[['feed_gas']].copy()
+    ds_null_cleaning = 'date'
+    data_null_cleaning = data_null_cleaning.set_index(ds_null_cleaning)
+    s = validate_series(data_null_cleaning)    
+    
     # Calculate standar deviation
-    fg_std = real_data['feed_gas'].std()
-    fg_mean = real_data['feed_gas'].mean()
+    fg_std = data_null_cleaning['feed_gas'].std()
+    fg_mean = data_null_cleaning['feed_gas'].mean()
 
     # Create anomaly detection model
     high_limit1 = fg_mean+3*fg_std
     low_limit1 = fg_mean-3*fg_std
     high_limit2 = fg_mean+fg_std
     low_limit2 = fg_mean-fg_std
-
-    #Detect Anomaly Values
-    threshold_ad = ThresholdAD(real_data['unplanned_shutdown']==0)
-    anomalies = threshold_ad.detect(s)
+    
+    threshold_ad = ThresholdAD(data_null_cleaning['feed_gas_copy'].isnull())
+    anomalies =  threshold_ad.detect(s)
 
     anomalies = anomalies.drop('feed_gas', axis=1)
     anomalies = anomalies.drop('wpnb_gas', axis=1)
     anomalies = anomalies.drop('planned_shutdown', axis=1)
-    #anomalies.head(60)
+    anomalies = anomalies.drop('unplanned_shutdown', axis=1)
 
     # Create anomaly detection model
     #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
@@ -84,35 +86,29 @@ def main():
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
-    copy_anomalies.rename(columns={'unplanned_shutdown':'anomaly'}, inplace=True)
+    copy_anomalies.rename(columns={'feed_gas_copy':'anomaly'}, inplace=True)
     # Merge original dataframe with anomalies
     new_s = pd.concat([s, copy_anomalies], axis=1)
 
     # Get only anomalies data
-    anomalies_data = new_s[new_s['anomaly'] == False]
-    #anomalies_data.tail(100)
+    anomalies_data = new_s[new_s['anomaly'].isnull()]
 
-    # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
+    # Create anomaly detection model
+    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies =  threshold_ad.detect(s)
 
-    # fig = px.line(new_s, y='feed_gas')
-    # # Add horizontal line for 3 sigma
-    # fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
-    #             annotation_text="Mean + std", 
-    #             annotation_position="top right")
-    # fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
-    #             annotation_text="Mean - 3*std", 
-    #             annotation_position="bottom right")
-    # fig.add_scatter(x=anomalies_data.index, y=anomalies_data['feed_gas'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    # fig.update_layout(title_text='Feed Gas Tangguh', title_font_size=24)
-    # #fig.show()
-    # plt.close()
+    # Copy data frame of anomalies
+    copy_anomalies =  anomalies.copy()
+    # Rename columns
+    copy_anomalies.rename(columns={'feed_gas_copy':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s = pd.concat([s, copy_anomalies], axis=1)
 
+    # Get only anomalies data
+    #anomalies_data = new_s[new_s['anomaly'].isnull()]
+    
     #%%
-    #Replace Anomaly Values
     from datetime import date, datetime, timedelta
-
     def get_first_date_of_current_month(year, month):
         """Return the first date of the month.
 
@@ -128,7 +124,7 @@ def main():
 
     def get_last_date_of_month(year, month):
         """Return the last date of the month.
-    
+        
         Args:
             year (int): Year, i.e. 2022
             month (int): Month, i.e. 1 for January
@@ -136,12 +132,12 @@ def main():
         Returns:
             date (datetime): Last date of the current month
         """
-    
+        
         if month == 12:
             last_date = datetime(year, month, 31)
         else:
             last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-    
+        
         return last_date.strftime("%Y-%m-%d")
 
     def get_first_date_of_prev_month(year, month, step=-1):
@@ -160,7 +156,7 @@ def main():
 
     def get_last_date_of_prev_month(year, month, step=-1):
         """Return the last date of the month.
-    
+        
         Args:
             year (int): Year, i.e. 2022
             month (int): Month, i.e. 1 for January
@@ -168,86 +164,130 @@ def main():
         Returns:
             date (datetime): Last date of the current month
         """
-    
+        
         if month == 12:
             last_date = datetime(year, month, 31)
         else:
             last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-        
+            
         last_date = last_date + relativedelta(months=step)
-    
+        
         return last_date.strftime("%Y-%m-%d")
-
-
+    
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month
-    
+        
         # Get start month and end month
         #start_month = str(get_first_date_of_current_month(yr, mt))
         #end_month = str(get_last_date_of_month(yr, mt))
-    
+        
         # Get last year start date month
         start_month = get_first_date_of_prev_month(yr,mt,step=-12)
-    
+        
         # Get last month last date
         end_month = get_last_date_of_prev_month(yr,mt,step=-1)
-    
+        
         # Get mean fead gas data for the month
         sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
-        mean_month=new_s['feed_gas'].reset_index().query(sql).mean().values[0]
-    
+        mean_month=new_s['feed_gas'].reset_index().query(sql).mean(skipna = True).values[0]
+        
         # update value at specific location
         new_s.at[index,'feed_gas'] = mean_month
+        
+        print(index), print(sql), print(mean_month)
     
-        print(sql), print(mean_month)
-
     # Check if updated
-    #new_s[new_s['anomaly'] == False]    
-
-    #Update data
-    anomaly_upd = new_s[new_s['anomaly'] == False]
+    #new_s[new_s['anomaly'].isnull()]
+    
+    #%%
+    data_unplanned_cleaning = new_s[['feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
+    #ds_cleaning2 = 'date'
+    #data_unplanned_cleaning = data_unplanned_cleaning.set_index(ds_cleaning2)
+    #data_unplanned_cleaning['unplanned_shutdown'] = data_unplanned_cleaning['unplanned_shutdown'].astype('int')
+    s2 = validate_series(data_unplanned_cleaning)
 
     #%%
-    #Display Cleaned Data
-    # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
+    #Detect Anomaly Values
+    threshold_ad2 = ThresholdAD(data_unplanned_cleaning['unplanned_shutdown']==0)
+    anomalies2 = threshold_ad2.detect(s2)
 
+    anomalies2 = anomalies2.drop('feed_gas', axis=1)
+    anomalies2 = anomalies2.drop('wpnb_gas', axis=1)
+    anomalies2 = anomalies2.drop('planned_shutdown', axis=1)
 
-    # fig = px.line(new_s, y='feed_gas')
+    # Create anomaly detection model
+    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies =  threshold_ad.detect(s)
 
-    # # Add horizontal line for 3 sigma
-    # fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
-    #             annotation_text="Mean + std", 
-    #             annotation_position="top right")
-    # fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
-    #             annotation_text="Mean + 3*std", 
-    #             annotation_position="top right")
-    # fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
-    #             annotation_text="Mean - 3*std", 
-    #             annotation_position="bottom right")
-    # fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
-    #             annotation_text="Mean - std", 
-    #             annotation_position="bottom right")
-    # fig.add_scatter(x=anomalies_data.index, y=anomalies_data['feed_gas'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    # fig.add_scatter(x=anomaly_upd.index, y=anomaly_upd['feed_gas'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
-    # fig.update_layout(title_text='Feed Gas BP Tangguh', title_font_size=24)
-    # #fig.show()
-    # plt.close()
+    # Copy data frame of anomalies
+    copy_anomalies2 =  anomalies2.copy()
+    # Rename columns
+    copy_anomalies2.rename(columns={'unplanned_shutdown':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s2 = pd.concat([s2, copy_anomalies2], axis=1)
 
-    # Prepare data to forecast
-    data = new_s[['feed_gas', 'wpnb_gas', 'planned_shutdown']].copy()
-    data = data.reset_index()
+    # Get only anomalies data
+    anomalies_data2 = new_s2[new_s2['anomaly'] == False]
+    
+    #%%
+    import datetime
+    yesterday_date = anomalies_data2.head(1).index - datetime.timedelta(days=1)
+    prev_date_year = yesterday_date - datetime.timedelta(days=364)
 
-    ds = 'date'
-    y = 'feed_gas' 
-    df = data[[ds,y]]
-    df = df.set_index(ds)
-    df.index = pd.DatetimeIndex(df.index, freq='D')
+    yesterday_date = str(yesterday_date[0])
+    prev_date_year = str(prev_date_year[0])
+
+    print(yesterday_date)
+    print(prev_date_year)
+
+    #%%
+    for index, row in anomalies_data2.iterrows():
+        yr = index.year
+        mt = index.month
+        
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+        
+        # Get last year start date month
+        #start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        
+        # Get last month last date
+        #end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        
+        # Get mean fead gas data for the month
+        #sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        yesterday_date = index - datetime.timedelta(days=1)
+        prev_date_year = yesterday_date - datetime.timedelta(days=364)
+        
+        yesterday_date = yesterday_date.strftime("%Y-%m-%d")
+        prev_date_year = prev_date_year.strftime("%Y-%m-%d")
+        sql = "date>='"+prev_date_year+ "' & "+ "date<='" +yesterday_date+"'"
+        mean_month=new_s2['feed_gas'].reset_index().query(sql).mean(skipna = True).values[0] 
+        
+        # update value at specific location
+        new_s2.at[index,'feed_gas'] = mean_month
+        
+        print(index), print(sql), print(mean_month)
+
+    # Check if updated
+    new_s2[new_s2['anomaly'] == False]
+    anomaly_upd2 = new_s2[new_s2['anomaly'] == False]
+
+    #%%
+    #prepare data
+    data_cleaned = new_s2[['feed_gas']].copy()
+    data_cleaned = data_cleaned.reset_index()
+
+    ds_cleaned = 'date'
+    y_cleaned = 'feed_gas'
+    df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
+    df_cleaned = df_cleaned.set_index(ds_cleaned)
+    df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #Select column target
-    train_df = df['feed_gas']
+    train_df = df_cleaned['feed_gas']
 
     #%%
     #stationarity_check(train_df)
@@ -272,14 +312,14 @@ def main():
 
     #%%
     #Create Exogenous Features for Training
-    df['planned_shutdown'] = data['planned_shutdown'].values
-    df['wpnb_gas'] = data['wpnb_gas'].values
-    df['month'] = [i.month for i in df.index]
-    df['day'] = [i.day for i in df.index]
-    train_exog = df.iloc[:,1:]
+    df_cleaned['planned_shutdown'] = data['planned_shutdown'].values
+    df_cleaned['wpnb_gas'] = data['wpnb_gas'].values
+    df_cleaned['month'] = [i.month for i in df_cleaned.index]
+    df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    train_exog = df_cleaned.iloc[:,1:]
 
     from sktime.forecasting.base import ForecastingHorizon
-    time_predict = pd.period_range('2022-11-21', periods=109, freq='D')
+    #time_predict = pd.period_range('2022-11-21', periods=109, freq='D')
 
     #Load Data from Database
     query_exog = os.path.join('gas_prod/sql','fg_tangguh_exog_query.sql')

@@ -28,6 +28,11 @@ import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
 #import mlflow
+from adtk.detector import ThresholdAD
+from adtk.visualization import plot
+from adtk.data import validate_series
+pd.options.plotting.backend = "plotly"
+from dateutil.relativedelta import *
 
 #%%
 def main():
@@ -49,6 +54,18 @@ def main():
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     ds = 'date'
     y = 'feed_gas' #Choose the column target
     df = data[[ds,y]]
