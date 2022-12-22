@@ -113,7 +113,6 @@ def main():
 
     #Replace Anomaly Values
     from datetime import date, datetime, timedelta
-
     def get_first_date_of_current_month(year, month):
         """Return the first date of the month.
 
