@@ -282,11 +282,11 @@ def main():
     #plot_acf_pacf(train_df)
 
     #%%
-    from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(df_cleaned['lpg_c3'], model="additive", period=365)
-    fig = result.plot()
-    plt.close()
+    #from chart_studio.plotly import plot_mpl
+    #from statsmodels.tsa.seasonal import seasonal_decompose
+    #result = seasonal_decompose(df_cleaned['lpg_c3'], model="additive", period=365)
+    #fig = result.plot()
+    #plt.close()
 
     #%%
     from statsmodels.tsa.stattools import adfuller
@@ -337,7 +337,7 @@ def main():
     from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_absolute_error, r2_score
 
     #Set parameters
-    arimax_differencing = 0
+    arimax_differencing = 1
     arimax_trace = True
     arimax_error_action = "ignore"
     arimax_suppress_warnings = True
@@ -350,12 +350,12 @@ def main():
     arimax_model = AutoARIMA(d=arimax_differencing, trace=arimax_trace, n_fits=arimax_n_fits, stepwise=arimax_stepwise, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
     
     logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(y_train.lpg_c3, X=X_train) #exogenous=train_exog
+    arimax_model.fit(y_train.lpg_c3) #, X=X_train
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_model.summary())
 
     logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(fh, X=X_test)
+    arimax_forecast = arimax_model.predict(fh) #, X=X_test
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
     y_pred_arimax['day_num'] = [i.day for i in arimax_forecast.index]
     y_pred_arimax['month_num'] = [i.month for i in arimax_forecast.index]
@@ -379,7 +379,7 @@ def main():
     ##### SARIMAX MODEL #####
 
     #Set parameters
-    sarimax_differencing = 0
+    sarimax_differencing = 1
     sarimax_seasonal_differencing = 1
     sarimax_seasonal = True
     sarimax_m = 12
@@ -394,12 +394,12 @@ def main():
     #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, sp=sarimax_m, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
-    sarimax_model.fit(y_train.lpg_c3, X=X_train) #exogenous=train_exog
+    sarimax_model.fit(y_train.lpg_c3) #, X=X_train
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_model.summary())
 
     logMessage("SARIMAX Model Prediction ..")
-    sarimax_forecast = sarimax_model.predict(fh, X=X_test)
+    sarimax_forecast = sarimax_model.predict(fh) #, X=X_test
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
     y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]
@@ -428,7 +428,7 @@ def main():
 
     #Set parameters
     prophet_seasonality_mode = 'multiplicative'
-    prophet_n_changepoints = 2 #2, 5, 14
+    prophet_n_changepoints = 2 #2, 5, 12
     prophet_seasonality_prior_scale = 10
     prophet_changepoint_prior_scale = 0.001
     prophet_holidays_prior_scale = 2
@@ -449,11 +449,11 @@ def main():
             yearly_seasonality=prophet_yearly_seasonality)
 
     logMessage("Creating Prophet Model ...")
-    prophet_forecaster.fit(y_train.lpg_c3, X=X_train) #, X_train
+    prophet_forecaster.fit(y_train.lpg_c3) #, X=X_train
     logMessage(prophet_forecaster._get_fitted_params)
     
     logMessage("Prophet Model Prediction ...")
-    prophet_forecast = prophet_forecaster.predict(fh, X=X_test) #, X=X_test
+    prophet_forecast = prophet_forecaster.predict(fh) #, X=X_test
     y_pred_prophet = pd.DataFrame(prophet_forecast).applymap('{:.2f}'.format)
     y_pred_prophet['day_num'] = [i.day for i in prophet_forecast.index]
     y_pred_prophet['month_num'] = [i.month for i in prophet_forecast.index]
@@ -485,7 +485,7 @@ def main():
     from sklearn.ensemble import RandomForestRegressor
 
     #Set parameters
-    ranfor_lags = 2 #2, 5, 14
+    ranfor_lags = 5 #2, 5, 12
     ranfor_n_estimators = 100
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
@@ -496,10 +496,10 @@ def main():
     ranfor_forecaster = make_reduction(ranfor_regressor, window_length=ranfor_lags, strategy=ranfor_strategy)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_forecaster.fit(y_train.lpg_c3, X=X_train) #, X_train
+    ranfor_forecaster.fit(y_train.lpg_c3) #, X=X_train
     
     logMessage("Random Forest Model Prediction ...")
-    ranfor_forecast = ranfor_forecaster.predict(fh, X=X_test) #, X=X_test
+    ranfor_forecast = ranfor_forecaster.predict(fh) #, X=X_test
     y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:.2f}'.format)
     y_pred_ranfor['day_num'] = [i.day for i in ranfor_forecast.index]
     y_pred_ranfor['month_num'] = [i.month for i in ranfor_forecast.index]
@@ -526,7 +526,7 @@ def main():
     from xgboost import XGBRegressor
 
     #Set parameters
-    xgb_lags = 5 #2, 5, 14
+    xgb_lags = 2 #2, 5, 12
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
@@ -535,10 +535,10 @@ def main():
     xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
 
     logMessage("Creating XGBoost Model ....")
-    xgb_forecaster.fit(y_train.lpg_c3, X=X_train) #, X_train
+    xgb_forecaster.fit(y_train.lpg_c3) #, X=X_train
     
     logMessage("XGBoost Model Prediction ...")
-    xgb_forecast = xgb_forecaster.predict(fh, X=X_test) #, X=X_test
+    xgb_forecast = xgb_forecaster.predict(fh) #, X=X_test
     y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:.2f}'.format)
     y_pred_xgb['day_num'] = [i.day for i in xgb_forecast.index]
     y_pred_xgb['month_num'] = [i.month for i in xgb_forecast.index]
@@ -566,7 +566,7 @@ def main():
     from sklearn.linear_model import LinearRegression
 
     #Set parameters
-    linreg_lags = 42 #14, 28, 42
+    linreg_lags = 5 #2, 5, 12
     linreg_normalize = True
     linreg_strategy = "recursive"
 
@@ -575,10 +575,10 @@ def main():
     linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
     
     logMessage("Creating Linear Regression Model ...")
-    linreg_forecaster.fit(y_train.lpg_c3, X=X_train)
+    linreg_forecaster.fit(y_train.lpg_c3) #, X=X_train
 
     logMessage("Linear Regression Model Prediction ...")
-    linreg_forecast = linreg_forecaster.predict(fh, X=X_test) #, X=X_test
+    linreg_forecast = linreg_forecaster.predict(fh) #, X=X_test
     y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:.2f}'.format)
     y_pred_linreg['day_num'] = [i.day for i in linreg_forecast.index]
     y_pred_linreg['month_num'] = [i.month for i in linreg_forecast.index]
@@ -605,7 +605,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set parameters
-    poly2_lags = 28 #14, 28, 42
+    poly2_lags = 7 #5, 6, 7
     poly2_regularization = None
     poly2_interactions = False
     poly2_strategy = "recursive"
@@ -615,10 +615,10 @@ def main():
     poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy) #WL=0.9 (degree 2), WL=0.7 (degree 3)
     
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_forecaster.fit(y_train.lpg_c3, X=X_train) #, X=X_train
+    poly2_forecaster.fit(y_train.lpg_c3) #, X=X_train
 
     logMessage("Polynomial Regression Orde 2 Model Prediction ...")
-    poly2_forecast = poly2_forecaster.predict(fh, X=X_test) #, X=X_test
+    poly2_forecast = poly2_forecaster.predict(fh) #, X=X_test
     y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:.2f}'.format)
     y_pred_poly2['day_num'] = [i.day for i in poly2_forecast.index]
     y_pred_poly2['month_num'] = [i.month for i in poly2_forecast.index]
@@ -645,7 +645,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set parameters
-    poly3_lags = 28 #14, 28, 42
+    poly3_lags = 1 #1, 2, 3
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"
@@ -761,18 +761,6 @@ def main():
     print("Done")
 
 # %%
-def insert_forecast(conn, y_pred):
-    total_updated_rows = 0
-    for index, row in y_pred.iterrows():
-        prod_date = str(index) #row['date']
-        forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
-        
-        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date)
-        total_updated_rows = total_updated_rows + updated_rows 
-        
-    return total_updated_rows
-
 def insert_mape(conn, all_mape_pred):
     total_updated_rows = 0
     for index, row in all_mape_pred.iterrows():

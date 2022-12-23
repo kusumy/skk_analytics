@@ -1,87 +1,168 @@
-2022-12-23 09:39:58,308 Forecasting Feed Gas BP Tangguh ...
-2022-12-23 09:39:58,308 Connecting to database ...
-2022-12-23 09:39:58,396 Cleaning data ...
-2022-12-23 09:39:59,365 Creating ARIMAX Model ...
-2022-12-23 09:40:00,981 ARIMAX Model Summary
-2022-12-23 09:40:00,990                                SARIMAX Results                                
+2022-12-23 15:56:23,007 Forecasting C3 PT Badak ...
+2022-12-23 15:56:23,007 Connecting to database ...
+2022-12-23 15:56:23,271 1. ADF : -1.703416707702902
+2022-12-23 15:56:23,272 2. P-Value : 0.42935295165320564
+2022-12-23 15:56:23,272 3. Num Of Lags 12: 
+2022-12-23 15:56:23,274 4. Num Of Observations Used For ADF Regression: 120
+2022-12-23 15:56:23,274 5. Critical Values : 
+2022-12-23 15:56:23,274 	 1%: -3.486055829282407
+2022-12-23 15:56:23,274 	 5%: -2.8859430324074076
+2022-12-23 15:56:23,275 	 10%: -2.5797850694444446
+2022-12-23 15:56:23,402 Creating ARIMAX Model ...
+2022-12-23 15:56:23,819 ARIMAX Model Summary
+2022-12-23 15:56:23,826                                SARIMAX Results                                
 ==============================================================================
-Dep. Variable:                      y   No. Observations:                 1055
-Model:               SARIMAX(2, 0, 1)   Log Likelihood               -5508.168
-Date:                Fri, 23 Dec 2022   AIC                          11034.337
-Time:                        09:40:00   BIC                          11078.989
-Sample:                    01-01-2020   HQIC                         11051.263
-                         - 11-20-2022                                         
+Dep. Variable:                      y   No. Observations:                  133
+Model:               SARIMAX(2, 1, 2)   Log Likelihood                -650.214
+Date:                Fri, 23 Dec 2022   AIC                           1312.428
+Time:                        15:56:23   BIC                           1329.725
+Sample:                    07-01-2022   HQIC                          1319.457
+                         - 11-10-2022                                         
 Covariance Type:                  opg                                         
-====================================================================================
-                       coef    std err          z      P>|z|      [0.025      0.975]
-------------------------------------------------------------------------------------
-intercept            7.3946      5.724      1.292      0.196      -3.824      18.613
-planned_shutdown  -344.9967      7.301    -47.254      0.000    -359.306    -330.687
-wpnb_gas             0.0094      0.070      0.135      0.892      -0.127       0.146
-month               -0.6937      3.726     -0.186      0.852      -7.997       6.610
-day                 -0.0972      0.289     -0.337      0.736      -0.663       0.468
-ar.L1                1.3341      0.032     41.873      0.000       1.272       1.397
-ar.L2               -0.3408      0.030    -11.341      0.000      -0.400      -0.282
-ma.L1               -0.8091      0.024    -33.111      0.000      -0.857      -0.761
-sigma2            1968.7250     29.890     65.865      0.000    1910.141    2027.309
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+intercept      2.0332     10.972      0.185      0.853     -19.471      23.537
+ar.L1         -1.7393      0.020    -87.257      0.000      -1.778      -1.700
+ar.L2         -0.9764      0.015    -66.105      0.000      -1.005      -0.947
+ma.L1          1.6370      0.075     21.767      0.000       1.490       1.784
+ma.L2          0.8143      0.070     11.643      0.000       0.677       0.951
+sigma2      1091.6933    127.956      8.532      0.000     840.903    1342.483
 ===================================================================================
-Ljung-Box (L1) (Q):                   0.00   Jarque-Bera (JB):             61267.54
-Prob(Q):                              0.98   Prob(JB):                         0.00
-Heteroskedasticity (H):               1.98   Skew:                            -1.03
-Prob(H) (two-sided):                  0.00   Kurtosis:                        40.28
+Ljung-Box (L1) (Q):                   4.69   Jarque-Bera (JB):                11.16
+Prob(Q):                              0.03   Prob(JB):                         0.00
+Heteroskedasticity (H):               0.28   Skew:                            -0.24
+Prob(H) (two-sided):                  0.00   Kurtosis:                         4.34
 ===================================================================================
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2022-12-23 09:40:01,007 ARIMAX Model Prediction ..
-2022-12-23 09:40:01,050 Creating SARIMAX Model ...
-2022-12-23 09:40:32,212 SARIMAX Model Summary
-2022-12-23 09:40:32,216                                      SARIMAX Results                                      
-==========================================================================================
-Dep. Variable:                                  y   No. Observations:                 1055
-Model:             SARIMAX(2, 0, 0)x(2, 1, 0, 12)   Log Likelihood               -5571.566
-Date:                            Fri, 23 Dec 2022   AIC                          11163.132
-Time:                                    09:40:32   BIC                          11212.631
-Sample:                                01-01-2020   HQIC                         11181.907
-                                     - 11-20-2022                                         
-Covariance Type:                              opg                                         
-====================================================================================
-                       coef    std err          z      P>|z|      [0.025      0.975]
-------------------------------------------------------------------------------------
-intercept            0.6357      1.640      0.388      0.698      -2.578       3.850
-planned_shutdown  -516.7623      5.756    -89.771      0.000    -528.045    -505.480
-wpnb_gas            -0.0143      0.024     -0.601      0.548      -0.061       0.032
-month                0.4769      1.520      0.314      0.754      -2.503       3.457
-day                 -0.1066      0.230     -0.464      0.643      -0.557       0.344
-ar.L1                0.3545      0.016     21.768      0.000       0.323       0.386
-ar.L2                0.0712      0.025      2.842      0.004       0.022       0.120
-ar.S.L12            -0.6759      0.016    -43.487      0.000      -0.706      -0.645
-ar.S.L24            -0.3201      0.017    -18.535      0.000      -0.354      -0.286
-sigma2            2480.5190     32.052     77.390      0.000    2417.698    2543.340
+2022-12-23 15:56:23,838 ARIMAX Model Prediction ..
+2022-12-23 15:56:23,880 Creating SARIMAX Model ...
+2022-12-23 15:56:25,783 SARIMAX Model Summary
+2022-12-23 15:56:25,789                                         SARIMAX Results                                        
+===============================================================================================
+Dep. Variable:                                       y   No. Observations:                  133
+Model:             SARIMAX(0, 1, 3)x(0, 1, [1, 2], 12)   Log Likelihood                -598.347
+Date:                                 Fri, 23 Dec 2022   AIC                           1210.695
+Time:                                         15:56:25   BIC                           1230.207
+Sample:                                     07-01-2022   HQIC                          1218.619
+                                          - 11-10-2022                                         
+Covariance Type:                                   opg                                         
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+intercept      0.1489      1.818      0.082      0.935      -3.415       3.713
+ma.L1         -0.2932      0.100     -2.943      0.003      -0.489      -0.098
+ma.L2          0.1174      0.083      1.417      0.157      -0.045       0.280
+ma.L3          0.2518      0.100      2.515      0.012       0.056       0.448
+ma.S.L12      -0.4965      0.127     -3.901      0.000      -0.746      -0.247
+ma.S.L24      -0.2021      0.117     -1.726      0.084      -0.431       0.027
+sigma2      1181.5821    147.248      8.024      0.000     892.981    1470.184
 ===================================================================================
-Ljung-Box (L1) (Q):                   0.01   Jarque-Bera (JB):             36049.55
-Prob(Q):                              0.93   Prob(JB):                         0.00
-Heteroskedasticity (H):               1.73   Skew:                            -1.22
-Prob(H) (two-sided):                  0.00   Kurtosis:                        31.70
+Ljung-Box (L1) (Q):                   0.03   Jarque-Bera (JB):                 9.57
+Prob(Q):                              0.87   Prob(JB):                         0.01
+Heteroskedasticity (H):               0.33   Skew:                            -0.23
+Prob(H) (two-sided):                  0.00   Kurtosis:                         4.30
 ===================================================================================
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2022-12-23 09:40:32,236 SARIMAX Model Prediction ..
-2022-12-23 09:40:32,333 Creating Prophet Model ....
-2022-12-23 09:40:32,601 Prophet Model Prediction ...
-2022-12-23 09:40:32,881 Creating Random Forest Model ...
-2022-12-23 09:40:33,516 Random Forest Model Prediction ...
-2022-12-23 09:40:35,199 Creating XGBoost Model ....
-2022-12-23 09:42:12,399 XGBoost Model Prediction ...
-2022-12-23 09:42:19,027 Creating Linear Regression Model ...
-2022-12-23 09:42:19,093 Linear Regression Model Prediction ...
-2022-12-23 09:42:19,186 Creating Polynomial Regression Orde 2 Model ...
-2022-12-23 09:42:19,224 Polynomial Regression Orde 2 Model Prediction ...
-2022-12-23 09:42:19,304 Creating Polynomial Regression Orde 3 Model ...
-2022-12-23 09:42:19,349 Polynomial Regression Orde 3 Model Prediction ...
-2022-12-23 09:42:19,387 Creating all model prediction result data frame ...
-2022-12-23 09:42:19,423 Updating forecast result to database ...
-2022-12-23 09:42:29,377 Updated rows: 161
-2022-12-23 09:42:29,377 Done
-2022-12-23 09:42:29,383 Forecasting Feed Gas BP Tangguh : 15 minutes and 0.04 seconds
+2022-12-23 15:56:25,803 SARIMAX Model Prediction ..
+2022-12-23 15:56:25,915 Creating Prophet Model ....
+2022-12-23 15:56:26,023 Prophet Model Prediction ...
+2022-12-23 15:56:26,512 Creating Random Forest Model ...
+2022-12-23 15:56:26,621 Random Forest Model Prediction
+2022-12-23 15:56:27,905 Creating XGBoost Model ...
+2022-12-23 15:57:28,913 XGBoost Model Prediction ...
+2022-12-23 15:57:36,026 Creating Linear Regression Model ...
+2022-12-23 15:57:36,029 Linear Regression Model Prediction ...
+2022-12-23 15:57:36,100 Creating Polynomial Regression Orde 2 Model ...
+2022-12-23 15:57:36,111 Polynomial Regression Orde 2 Model Prediction ...
+2022-12-23 15:57:36,140 Creating Polynomial Regression Orde 3 Model ...
+2022-12-23 15:57:36,149 Polynomial Regression Orde 3 Model Prediction ...
+2022-12-23 15:57:36,165 Creating all model prediction result data frame ...
+2022-12-23 15:57:36,193 Updating forecast result to database ...
+2022-12-23 15:57:48,255 Updated rows: 171
+2022-12-23 15:57:48,255 Done
+2022-12-23 15:57:48,257 Forecasting C3 PT Badak : 7 minutes and 24.83 seconds
+2022-12-23 15:57:48,257 
+
+2022-12-23 15:57:48,257 Forecasting C4 PT Badak ...
+2022-12-23 15:57:48,257 Connecting to database ...
+2022-12-23 15:57:48,420 Creating ARIMAX Model ...
+2022-12-23 15:57:48,614 ARIMAX Model Summary
+2022-12-23 15:57:48,618                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                  133
+Model:               SARIMAX(1, 1, 1)   Log Likelihood                -746.947
+Date:                Fri, 23 Dec 2022   AIC                           1501.894
+Time:                        15:57:48   BIC                           1513.425
+Sample:                    07-01-2022   HQIC                          1506.580
+                         - 11-10-2022                                         
+Covariance Type:                  opg                                         
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+intercept      0.8296      0.842      0.986      0.324      -0.820       2.479
+ar.L1          0.3947      0.068      5.835      0.000       0.262       0.527
+ma.L1         -0.8888      0.049    -17.977      0.000      -0.986      -0.792
+sigma2      4783.2441    407.532     11.737      0.000    3984.496    5581.992
+===================================================================================
+Ljung-Box (L1) (Q):                   0.03   Jarque-Bera (JB):               158.07
+Prob(Q):                              0.86   Prob(JB):                         0.00
+Heteroskedasticity (H):               0.11   Skew:                            -1.16
+Prob(H) (two-sided):                  0.00   Kurtosis:                         7.83
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-12-23 15:57:48,630 ARIMAX Model Prediction ..
+2022-12-23 15:57:48,655 Creating SARIMAX Model ...
+2022-12-23 15:57:50,711 SARIMAX Model Summary
+2022-12-23 15:57:50,714                                       SARIMAX Results                                       
+============================================================================================
+Dep. Variable:                                    y   No. Observations:                  133
+Model:             SARIMAX(2, 1, 0)x(1, 1, [1], 12)   Log Likelihood                -693.463
+Date:                              Fri, 23 Dec 2022   AIC                           1398.927
+Time:                                      15:57:50   BIC                           1415.652
+Sample:                                  07-01-2022   HQIC                          1405.719
+                                       - 11-10-2022                                         
+Covariance Type:                                opg                                         
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+intercept     -0.2831      3.522     -0.080      0.936      -7.185       6.619
+ar.L1         -0.3381      0.084     -4.035      0.000      -0.502      -0.174
+ar.L2         -0.2247      0.089     -2.533      0.011      -0.399      -0.051
+ar.S.L12      -0.3536      0.089     -3.964      0.000      -0.528      -0.179
+ma.S.L12      -0.8303      0.283     -2.930      0.003      -1.386      -0.275
+sigma2      5122.2923   1214.725      4.217      0.000    2741.474    7503.110
+===================================================================================
+Ljung-Box (L1) (Q):                   0.23   Jarque-Bera (JB):                32.74
+Prob(Q):                              0.63   Prob(JB):                         0.00
+Heteroskedasticity (H):               0.15   Skew:                            -0.61
+Prob(H) (two-sided):                  0.00   Kurtosis:                         5.25
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-12-23 15:57:50,751 Creating Prophet Model ....
+2022-12-23 15:57:50,793 Prophet Model Prediction ...
+2022-12-23 15:57:51,164 Creating Random Forest Model ...
+2022-12-23 15:57:51,283 Random Forest Model Prediction
+2022-12-23 15:57:52,410 Creating XGBoost Model ...
+2022-12-23 15:57:52,411 XGBoost Model Prediction ...
+2022-12-23 15:58:09,850 Creating Linear Regression Model ...
+2022-12-23 15:58:09,855 Linear Regression Model Prediction ...
+2022-12-23 15:58:09,872 Creating Polynomial Regression Orde 2 Model ...
+2022-12-23 15:58:09,879 Polynomial Regression Orde 2 Model Prediction ...
+2022-12-23 15:58:09,891 Creating Polynomial Regression Orde 3 Model ...
+2022-12-23 15:58:09,897 Polynomial Regression Orde 3 Model Prediction ...
+2022-12-23 15:58:09,927 Updating forecast result to database ...
+2022-12-23 15:58:21,291 Updated rows: 171
+2022-12-23 15:58:21,291 Done
+2022-12-23 15:58:21,292 Forecasting C4 PT Badak : 2 minutes and 27.51 seconds
+2022-12-23 15:58:21,293 
+
+2022-12-23 15:58:21,293 Total execution time : 9 minutes and 52.33 seconds
