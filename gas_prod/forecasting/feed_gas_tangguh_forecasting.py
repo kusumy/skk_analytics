@@ -428,7 +428,7 @@ def main():
 
         #Set parameters
         prophet_seasonality_mode = 'multiplicative'
-        prophet_n_changepoints = 30
+        prophet_n_changepoints = 2 #2, 11, 19
         prophet_seasonality_prior_scale = 0.1
         prophet_changepoint_prior_scale = 0.1
         prophet_holidays_prior_scale = 8
@@ -468,7 +468,7 @@ def main():
         ranfor_n_estimators = 150
         ranfor_random_state = 0
         ranfor_criterion =  "squared_error"
-        ranfor_lags = 41
+        ranfor_lags = 2 #2, 11, 19
         ranfor_strategy = "recursive"
 
         #Create regressor object
@@ -493,7 +493,7 @@ def main():
 
         #Set parameters
         xgb_objective = 'reg:squarederror'
-        xgb_lags = 46
+        xgb_lags = 11 #2, 11, 19
         xgb_strategy = "recursive"
 
         #Create regressor object
@@ -519,7 +519,7 @@ def main():
 
         #Set parameters
         linreg_normalize = True
-        linreg_lags = 33
+        linreg_lags = 2 #2, 11, 19
         linreg_strategy = "recursive"
 
         # Create regressor object
@@ -547,7 +547,7 @@ def main():
         #Set parameters
         poly2_regularization = None
         poly2_interactions = False
-        poly2_lags = 16
+        poly2_lags = 2 #2, 11, 19
         poly2_strategy = "recursive"
 
         # Create regressor object
@@ -574,7 +574,7 @@ def main():
         #Set parameters
         poly3_regularization = None
         poly3_interactions = False
-        poly3_lags = 0.6
+        poly3_lags = 2 #2, 9
         poly3_strategy = "recursive"
 
         # Create regressor object

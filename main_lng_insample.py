@@ -12,13 +12,13 @@ from utils import configLogging, logMessage, ad_test
 import warnings
 warnings.filterwarnings('ignore')
 
-#import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
+import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
 #import gas_prod.insample.condensate_tangguh_forecasting_insample as condensate_tangguh_insample
 #import gas_prod.insample.lng_production_tangguh_forecasting_insample as lng_production_tangguh_insample
 #import gas_prod.insample.feed_gas_badak_forecasting_insample as feed_gas_badak_insample
 #import gas_prod.insample.lng_production_badak_forecasting_insample as lng_production_badak_insample
 #import gas_prod.insample.condensate_badak_forecasting_insample as condensate_badak_insample
-import gas_prod.insample.c3_badak_forecasting_insample as c3_badak_insample
+#import gas_prod.insample.c3_badak_forecasting_insample as c3_badak_insample
 #import gas_prod.insample.c4_badak_forecasting_insample as c4_badak_insample
 
 # adding gas prod to the system path
@@ -40,11 +40,11 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 configLogging("main_lng_insample.log")
 
 
-#t0 = time.process_time()
-#feed_gas_tangguh_insample.main()
-#t1 = time.process_time()
-#exec_time = format_timespan(t1-t0, max_units=3)
-#print("Forecasting Feed Gas BP Tangguh : " + exec_time)
+t0 = time.process_time()
+feed_gas_tangguh_insample.main()
+t1 = time.process_time()
+exec_time = format_timespan(t1-t0, max_units=3)
+print("Forecasting Feed Gas BP Tangguh : " + exec_time)
 
 #logMessage('\n')
 
@@ -86,11 +86,11 @@ configLogging("main_lng_insample.log")
 
 #logMessage('\n')
 
-t12 = time.process_time()
-c3_badak_insample.main()
-t13 = time.process_time()
-exec_time = format_timespan(t13-t12, max_units=3)
-print("Forecasting LPG C3 Badak : " + exec_time)
+#t12 = time.process_time()
+#c3_badak_insample.main()
+#t13 = time.process_time()
+#exec_time = format_timespan(t13-t12, max_units=3)
+#print("Forecasting LPG C3 Badak : " + exec_time)
 
 #logMessage('\n')
 

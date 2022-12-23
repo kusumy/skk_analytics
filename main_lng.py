@@ -13,14 +13,14 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-#import gas_prod.forecasting.feed_gas_tangguh_forecasting as feed_gas_tangguh_forecasting
+import gas_prod.forecasting.feed_gas_tangguh_forecasting as feed_gas_tangguh_forecasting
 #import gas_prod.forecasting.lng_production_tangguh_forecasting as lng_tangguh_forecasting
 #import gas_prod.forecasting.condensate_tangguh_forecasting as condensate_tangguh_forecasting
 #import gas_prod.forecasting.lng_prod_badak_forecasting as lng_badak_forecasting
 #import gas_prod.forecasting.feed_gas_badak_forecasting as feed_gas_badak_forecasting
 #import gas_prod.forecasting.condensate_badak_forecasting as condensate_badak_forecasting
 #import gas_prod.forecasting.c3_badak_forecasting as c3_badak_forecasting
-import gas_prod.forecasting.c4_badak_forecasting as c4_badak_forecasting
+#import gas_prod.forecasting.c4_badak_forecasting as c4_badak_forecasting
 
 # adding gas prod to the system path
 sys.path.insert(0, './gas_prod')
@@ -41,11 +41,11 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 configLogging("main_lng.log")
     
 # Forecasting Feed Gas BP Tangguh ...
-#t0 = time.process_time()
-#feed_gas_tangguh_forecasting.main()
-#t1 = time.process_time()
-#exec_time = format_timespan(t1-t0, max_units=3)
-#logMessage("Forecasting Feed Gas BP Tangguh : " + exec_time)
+t0 = time.process_time()
+feed_gas_tangguh_forecasting.main()
+t1 = time.process_time()
+exec_time = format_timespan(t1-t0, max_units=3)
+logMessage("Forecasting Feed Gas BP Tangguh : " + exec_time)
 
 #logMessage('\n')
 
@@ -104,11 +104,11 @@ configLogging("main_lng.log")
 #logMessage('\n')
 
 # Forecasting C4 PT Badak ...
-t14 = time.process_time()
-c4_badak_forecasting.main()
-t15 = time.process_time()
-exec_time = format_timespan(t15-t14, max_units=3)
-logMessage("Forecasting C4 PT Badak : " + exec_time)
+#t14 = time.process_time()
+#c4_badak_forecasting.main()
+#t15 = time.process_time()
+#exec_time = format_timespan(t15-t14, max_units=3)
+#logMessage("Forecasting C4 PT Badak : " + exec_time)
 
 #logMessage('\n')
 

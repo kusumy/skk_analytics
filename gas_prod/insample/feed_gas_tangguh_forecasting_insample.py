@@ -41,7 +41,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk_dev')
+    conn = create_db_connection(section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
         
@@ -299,6 +299,14 @@ def main():
 
     #fig.show()
     plt.close()
+    
+    #%%
+    import datetime
+    yesterday_date = anomalies_data2.head(1).index - datetime.timedelta(days=1)
+    prev_date_year = yesterday_date - datetime.timedelta(days=364)
+
+    yesterday_date = str(yesterday_date[0])
+    prev_date_year = str(prev_date_year[0])
 
     #%%
     for index, row in anomalies_data2.iterrows():
@@ -310,19 +318,26 @@ def main():
         #end_month = str(get_last_date_of_month(yr, mt))
         
         # Get last year start date month
-        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        #start_month = get_first_date_of_prev_month(yr,mt,step=-12)
         
         # Get last month last date
-        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        #end_month = get_last_date_of_prev_month(yr,mt,step=-1)
         
         # Get mean fead gas data for the month
-        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
-        mean_month=new_s2['feed_gas'].reset_index().query(sql).mean().values[0]
+        yesterday_date = index - datetime.timedelta(days=1)
+        prev_date_year = yesterday_date - datetime.timedelta(days=364)
+        
+        yesterday_date = yesterday_date.strftime("%Y-%m-%d")
+        prev_date_year = prev_date_year.strftime("%Y-%m-%d")
+        #sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        
+        sql = "date>='"+prev_date_year+ "' & "+ "date<='" +yesterday_date+"'"
+        mean_month=new_s2['feed_gas'].reset_index().query(sql).mean(skipna = True).values[0] 
         
         # update value at specific location
         new_s2.at[index,'feed_gas'] = mean_month
         
-        print(sql), print(mean_month)
+        print(index), print(sql), print(mean_month)
 
     # Check if updated
     new_s2[new_s2['anomaly'] == False]
@@ -390,7 +405,7 @@ def main():
     logMessage("AD Fuller Test ...")
     from statsmodels.tsa.stattools import adfuller
     def ad_test(dataset):
-        dftest = adfuller(df, autolag = 'AIC')
+        dftest = adfuller(train_df, autolag = 'AIC')
         print("1. ADF : ",dftest[0])
         print("2. P-Value : ", dftest[1])
         print("3. Num Of Lags : ", dftest[2])
@@ -538,7 +553,7 @@ def main():
 
     #Set Parameters
     seasonality_mode = 'multiplicative'
-    n_changepoints = 30
+    n_changepoints = 2 #2, 11, 19
     seasonality_prior_scale = 0.1
     changepoint_prior_scale = 0.1
     holidays_prior_scale = 8
@@ -596,7 +611,7 @@ def main():
 
     #Set Parameters
     ranfor_n_estimators = 150
-    ranfor_lags = 41
+    ranfor_lags = 2 #2, 11, 19
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
@@ -638,7 +653,7 @@ def main():
 
     #Set Parameters
     xgb_objective = 'reg:squarederror'
-    xgb_lags = 46
+    xgb_lags = 11 #2, 11, 19
     xgb_strategy = "recursive"
 
     xgb_regressor = XGBRegressor(objective=xgb_objective)
@@ -676,7 +691,7 @@ def main():
     from sklearn.linear_model import LinearRegression
 
     #Set Parameters
-    linreg_lags = 33
+    linreg_lags = 2 #2, 11, 19
     linreg_strategy = "recursive"
 
     linreg_regressor = LinearRegression(normalize=True)
@@ -714,7 +729,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly2_lags = 16
+    poly2_lags = 2 #2, 9, 11
     poly2_regularization = None
     poly2_interactions = False
     poly2_strategy = "recursive"
@@ -754,7 +769,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly3_lags = 0.6
+    poly3_lags = 6 #2, 6, 9
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"
