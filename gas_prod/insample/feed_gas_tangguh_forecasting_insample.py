@@ -380,19 +380,11 @@ def main():
     #plot_acf_pacf(df_cleaned['feed_gas'])
 
     #%%
-<<<<<<< HEAD
     # from chart_studio.plotly import plot_mpl
     # from statsmodels.tsa.seasonal import seasonal_decompose
     # result = seasonal_decompose(train_df.values, model="additive", period=365)
     # fig = result.plot()
     # plt.close()
-=======
-    #from chart_studio.plotly import plot_mpl
-    #from statsmodels.tsa.seasonal import seasonal_decompose
-    #result = seasonal_decompose(train_df.values, model="additive", period=365)
-    #fig = result.plot()
-    #plt.close()
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
 
     #%%
     logMessage("AD Fuller Test ...")
