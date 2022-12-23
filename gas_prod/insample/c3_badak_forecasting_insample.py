@@ -748,11 +748,6 @@ def main():
     all_model_param
 
 #%%    
-    # Save forecast result to database
-    logMessage("Updating forecast result to database ...")
-    total_updated_rows = insert_forecast(conn, y_all_pred)
-    logMessage("Updated rows: {}".format(total_updated_rows))
-    
     # Save mape result to database
     logMessage("Updating MAPE result to database ...")
     total_updated_rows = insert_mape(conn, all_mape_pred)
@@ -803,43 +798,6 @@ def insert_param(conn, all_model_param):
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
-
-def update_value(conn, forecast_a, forecast_b, forecast_c, 
-                        forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date):
-    
-    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    created_by = 'PYTHON'
-    
-    """ insert forecasting result after last row in table """
-    sql = """ UPDATE lng_lpg_c3_daily
-                SET forecast_a = %s, 
-                    forecast_b = %s, 
-                    forecast_c = %s, 
-                    forecast_d = %s, 
-                    forecast_e = %s, 
-                    forecast_f = %s, 
-                    forecast_g = %s, 
-                    forecast_h = %s, 
-                    updated_at = %s, 
-                    updated_by = %s
-                WHERE prod_date = %s"""
-    #conn = None
-    updated_rows = 0
-    try:
-        # create a new cursor
-        cur = conn.cursor()
-        # execute the UPDATE  statement
-        cur.execute(sql, (forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, date_now, created_by, prod_date))
-        # get the number of updated rows
-        updated_rows = cur.rowcount
-        # Commit the changes to the database
-        conn.commit()
-        # Close cursor
-        cur.close()
-    except (Exception, psycopg2.DatabaseError) as error:
-        logging.error(error)
-
-    return updated_rows
 
 def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, 
                         mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
