@@ -28,7 +28,6 @@ import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
 #import mlflow
-from adtk.visualization import plot
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from adtk.data import validate_series
@@ -49,7 +48,11 @@ def main():
         exit()
     
     #Load data from database
-    #%%
+    query_data = os.path.join('gas_prod/sql','feed_gas_badak_data_query.sql')
+    query_1 = open(query_data, mode="rt").read()
+    data = get_sql_data(query_1, conn)
+    data['date'] = pd.DatetimeIndex(data['date'], freq='D')
+    data = data.reset_index()
 
     #%%
     data_null_cleaning = data[['date', 'feed_gas']].copy()
