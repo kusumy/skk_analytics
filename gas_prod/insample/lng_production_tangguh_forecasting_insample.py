@@ -2,6 +2,10 @@
 import logging
 import os
 import sys
+from datetime import datetime
+from tokenize import Ignore
+from tracemalloc import start
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 #import mlflow
@@ -11,37 +15,25 @@ import plotly.express as px
 import pmdarima as pm
 import psycopg2
 import seaborn as sns
+from adtk.data import validate_series
+from adtk.detector import ThresholdAD
+from adtk.visualization import plot
+from dateutil.relativedelta import *
+from pmdarima import model_selection
+from sklearn.metrics import (mean_absolute_error,
+                             mean_absolute_percentage_error,
+                             mean_squared_error, r2_score)
 
-from datetime import datetime
-from tokenize import Ignore
-from tracemalloc import start
-import plotly.express as px
-plt.style.use('fivethirtyeight')
 from connection import *
 from utils import *
 
-import pmdarima as pm
-from pmdarima import model_selection 
-from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_absolute_error, r2_score
-<<<<<<< HEAD
-#import mlflow
-=======
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
-from adtk.detector import ThresholdAD
-from adtk.visualization import plot
-from adtk.data import validate_series
+plt.style.use('fivethirtyeight')
 pd.options.plotting.backend = "plotly"
-from dateutil.relativedelta import *
-
 # %%
 def main():
     # Configure logging
     #configLogging("lng_production_tangguh.log")
-<<<<<<< HEAD
     logMessage("Creating LNG Production Tangguh Model ...")
-    
-=======
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     
     # Connect to database
     # Exit program if not connected to database
@@ -223,21 +215,12 @@ def main():
     #plot_acf_pacf(train_df)
 
     #%%
-<<<<<<< HEAD
     # from chart_studio.plotly import plot_mpl
     # from statsmodels.tsa.seasonal import seasonal_decompose
     # result = seasonal_decompose(train_df.values, model="additive", period=365)
     # fig = result.plot()
     # #plt.show()
     # plt.close()
-=======
-    #from chart_studio.plotly import plot_mpl
-    #from statsmodels.tsa.seasonal import seasonal_decompose
-    #result = seasonal_decompose(train_df.values, model="additive", period=365)
-    #fig = result.plot()
-    #plt.show()
-    #plt.close()
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
 
     #%%
     from statsmodels.tsa.stattools import adfuller
@@ -253,8 +236,8 @@ def main():
     ad_test(train_df)
 
     #%%
-    from sktime.forecasting.model_selection import temporal_train_test_split
     from sktime.forecasting.base import ForecastingHorizon
+    from sktime.forecasting.model_selection import temporal_train_test_split
 
     # Test size
     test_size = 0.2
@@ -294,12 +277,12 @@ def main():
     ##### ARIMAX MODEL (forecast_a) #####
     #ARIMA(1,1,1)
     # %%
+    import statsmodels.api as sm
+    from pmdarima import auto_arima
     from pmdarima.arima.utils import ndiffs, nsdiffs
     from sklearn.metrics import mean_squared_error
-    import statsmodels.api as sm
     from sktime.forecasting.arima import AutoARIMA
     from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
-    from pmdarima import auto_arima
 
     # Create ARIMAX (forecast_a) Model
     #ARIMA(1,1,1)
@@ -336,7 +319,7 @@ def main():
     ##### ARIMA(1,0,2)(0,1,1)[4] #####
     #%%
     from pmdarima.arima import auto_arima
-    
+
     #Set parameters
     sarimax_differencing = 0
     sarimax_seasonal_differencing = 1
@@ -382,8 +365,8 @@ def main():
     ##### PROPHET MODEL (forecast_c) #####
     #%%
     # Create model
-    from sktime.forecasting.fbprophet import Prophet
     from sktime.forecasting.compose import make_reduction
+    from sktime.forecasting.fbprophet import Prophet
 
     #Set Parameters
     seasonality_mode = 'additive'
@@ -560,7 +543,7 @@ def main():
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
     #%%
     #Create model
-    from polyfit import PolynomRegressor, Constraints
+    from polyfit import Constraints, PolynomRegressor
 
     #Set Parameters
     poly2_lags = 3
@@ -600,7 +583,7 @@ def main():
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
     #%%
     #Create model
-    from polyfit import PolynomRegressor, Constraints
+    from polyfit import Constraints, PolynomRegressor
 
     #Set Parameters
     poly3_lags = 0.59

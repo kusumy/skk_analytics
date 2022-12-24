@@ -56,7 +56,7 @@ def get_sql_data(sql, conn):
 #query = open("query_fg_tangguh.sql", mode="rt").read()
 #df = retrieve_data(query)
 
-def create_db_connection(filename='database.ini', section='postgresql_ml_hse_skk'):
+def create_db_connection(filename='database.ini', section='postgresql_ml_lng_skk'):
     # Read database configuration INI
     config = ConfigParser()
     config.read(filename)
