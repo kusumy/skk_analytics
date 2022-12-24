@@ -36,15 +36,12 @@ from dateutil.relativedelta import *
 def main():
     # Configure logging
     #configLogging("feed_gas_tangguh.log")
-<<<<<<< HEAD
     logMessage("Creating Feed Gas BP Tangguh Model ...")
-=======
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk_dev')
+    conn = create_db_connection(section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
         
@@ -56,7 +53,7 @@ def main():
 
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
-    data.head()
+    data['wpnb_gas'].fillna(method='ffill')
 
     #%%
     ds = 'date'
@@ -65,29 +62,20 @@ def main():
     df = data[[ds,y]]
     df = df.set_index(ds)
     df.index = pd.DatetimeIndex(df.index, freq='D')
-    #df
 
     #%%
-    data_cleaning = data[['date', 'feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
-    ds_cleaning = 'date'
-    data_cleaning = data_cleaning.set_index(ds_cleaning)
-    data_cleaning['unplanned_shutdown'] = data_cleaning['unplanned_shutdown'].astype('int')
-    s = validate_series(data_cleaning)
-
-    # plotting for illustration
-    plt.style.use('fivethirtyeight')
-
-    fig1, ax = plt.subplots(figsize=(20,8))
-    ax.plot(data_cleaning['feed_gas'], label='feed gas')
-    ax.set_ylabel("feed gas - condensate")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    plt.close()
+    logMessage("Null Value Cleaning ...")
+    data_null_cleaning = data[['date', 'feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
+    data_null_cleaning['feed_gas_copy'] = data[['feed_gas']].copy()
+    ds_null_cleaning = 'date'
+    data_null_cleaning = data_null_cleaning.set_index(ds_null_cleaning)
+    data_null_cleaning['unplanned_shutdown'] = data_null_cleaning['unplanned_shutdown'].astype('int')
+    s = validate_series(data_null_cleaning)
 
     #%%
     # Calculate standar deviation
-    fg_std = data_cleaning['feed_gas'].std()
-    fg_mean = data_cleaning['feed_gas'].mean()
+    fg_std = data_null_cleaning['feed_gas'].std()
+    fg_mean = data_null_cleaning['feed_gas'].mean()
 
     #Detect Anomaly Values
     # Create anomaly detection model
@@ -96,13 +84,13 @@ def main():
     high_limit2 = fg_mean+fg_std
     low_limit2 = fg_mean-fg_std
 
-    threshold_ad = ThresholdAD(data_cleaning['unplanned_shutdown']==0)
+    threshold_ad = ThresholdAD(data_null_cleaning['feed_gas_copy'].isnull())
     anomalies = threshold_ad.detect(s)
 
     anomalies = anomalies.drop('feed_gas', axis=1)
     anomalies = anomalies.drop('wpnb_gas', axis=1)
+    anomalies = anomalies.drop('unplanned_shutdown', axis=1)
     anomalies = anomalies.drop('planned_shutdown', axis=1)
-    #anomalies
 
     #%%
     # Create anomaly detection model
@@ -112,12 +100,12 @@ def main():
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
-    copy_anomalies.rename(columns={'unplanned_shutdown':'anomaly'}, inplace=True)
+    copy_anomalies.rename(columns={'feed_gas_copy':'anomaly'}, inplace=True)
     # Merge original dataframe with anomalies
     new_s = pd.concat([s, copy_anomalies], axis=1)
 
     # Get only anomalies data
-    anomalies_data = new_s[new_s['anomaly'] == False]
+    anomalies_data = new_s[new_s['anomaly'].isnull()]
     #anomalies_data.tail(100)
 
     #%%
@@ -135,7 +123,7 @@ def main():
                 annotation_text="Mean - 3*std", 
                 annotation_position="bottom right")
     fig.add_scatter(x=anomalies_data.index, y=anomalies_data['feed_gas'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    fig.update_layout(title_text='Feed Gas Tangguh', title_font_size=24)
+    fig.update_layout(title_text='Feed Gas Tangguh (Null Value Cleaning)', title_font_size=24)
 
     #fig.show()
     plt.close()
@@ -234,15 +222,12 @@ def main():
         print(sql), print(mean_month)
 
     # Check if updated
-    new_s[new_s['anomaly'] == False]
-
-    anomaly_upd = new_s[new_s['anomaly'] == False]
+    anomaly_upd = new_s[new_s['anomaly'].isnull()]
 
     #%%
     # Plot data and its anomalies
     from cProfile import label
     from imaplib import Time2Internaldate
-
 
     fig = px.line(new_s, y='feed_gas')
 
@@ -266,9 +251,129 @@ def main():
     #fig.show()
     plt.close()
 
+    #%%
+    logMessage("Unplanned Shutdown Cleaning ...")
+    # Detect Unplanned Shutdown Value
+    data2 = new_s[['feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
+    #data2 = data2.reset_index()
+    #data2['date'] = pd.DatetimeIndex(data2['date'], freq='D')
+    s2 = validate_series(data2)
+
+    threshold_ad2 = ThresholdAD(data2['unplanned_shutdown']==0)
+    anomalies2 = threshold_ad2.detect(s2)
+
+    anomalies2 = anomalies2.drop('feed_gas', axis=1)
+    anomalies2 = anomalies2.drop('wpnb_gas', axis=1)
+    anomalies2 = anomalies2.drop('planned_shutdown', axis=1)
+
+    # Create anomaly detection model
+    #threshold_ad2 = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies2 =  threshold_ad2.detect(s2)
+
+    # Copy data frame of anomalies
+    copy_anomalies2 =  anomalies2.copy()
+    # Rename columns
+    copy_anomalies2.rename(columns={'unplanned_shutdown':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s2 = pd.concat([s2, copy_anomalies2], axis=1)
+
+    # Get only anomalies data
+    anomalies_data2 = new_s2[new_s2['anomaly'] == False]
 
     #%%
-    data_cleaned = new_s[['feed_gas', 'wpnb_gas', 'planned_shutdown']].copy()
+    # Plot data and its anomalies
+    from cProfile import label
+    from imaplib import Time2Internaldate
+
+    fig = px.line(new_s2, y='feed_gas')
+
+    # Add horizontal line for 3 sigma
+    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean + std", 
+                annotation_position="top right")
+    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean - 3*std", 
+                annotation_position="bottom right")
+    fig.add_scatter(x=anomalies_data2.index, y=anomalies_data2['feed_gas'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    fig.update_layout(title_text='Feed Gas Tangguh', title_font_size=24)
+
+    #fig.show()
+    plt.close()
+    
+    #%%
+    import datetime
+    yesterday_date = anomalies_data2.head(1).index - datetime.timedelta(days=1)
+    prev_date_year = yesterday_date - datetime.timedelta(days=364)
+
+    yesterday_date = str(yesterday_date[0])
+    prev_date_year = str(prev_date_year[0])
+
+    #%%
+    for index, row in anomalies_data2.iterrows():
+        yr = index.year
+        mt = index.month
+        
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+        
+        # Get last year start date month
+        #start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        
+        # Get last month last date
+        #end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        
+        # Get mean fead gas data for the month
+        yesterday_date = index - datetime.timedelta(days=1)
+        prev_date_year = yesterday_date - datetime.timedelta(days=364)
+        
+        yesterday_date = yesterday_date.strftime("%Y-%m-%d")
+        prev_date_year = prev_date_year.strftime("%Y-%m-%d")
+        #sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        
+        sql = "date>='"+prev_date_year+ "' & "+ "date<='" +yesterday_date+"'"
+        mean_month=new_s2['feed_gas'].reset_index().query(sql).mean(skipna = True).values[0] 
+        
+        # update value at specific location
+        new_s2.at[index,'feed_gas'] = mean_month
+        
+        print(index), print(sql), print(mean_month)
+
+    # Check if updated
+    new_s2[new_s2['anomaly'] == False]
+
+    anomaly_upd2 = new_s2[new_s2['anomaly'] == False]
+
+    #%%
+    # Plot data and its anomalies
+    from cProfile import label
+    from imaplib import Time2Internaldate
+
+
+    fig = px.line(new_s2, y='feed_gas')
+
+    # Add horizontal line for 3 sigma
+    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean + std", 
+                annotation_position="top right")
+    fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean + 3*std", 
+                annotation_position="top right")
+    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean - 3*std", 
+                annotation_position="bottom right")
+    fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean - std", 
+                annotation_position="bottom right")
+    fig.add_scatter(x=anomalies_data2.index, y=anomalies_data2['feed_gas'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    fig.add_scatter(x=anomaly_upd2.index, y=anomaly_upd2['feed_gas'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
+    fig.update_layout(title_text='Feed Gas BP Tangguh', title_font_size=24)
+
+    #fig.show()
+    plt.close()
+
+    #%%
+    data_cleaned = new_s2[['feed_gas', 'wpnb_gas', 'planned_shutdown']].copy()
     data_cleaned = data_cleaned.reset_index()
 
     ds_cleaned = 'date'
@@ -290,24 +395,17 @@ def main():
     #plot_acf_pacf(df_cleaned['feed_gas'])
 
     #%%
-<<<<<<< HEAD
     # from chart_studio.plotly import plot_mpl
     # from statsmodels.tsa.seasonal import seasonal_decompose
     # result = seasonal_decompose(train_df.values, model="additive", period=365)
     # fig = result.plot()
     # plt.close()
-=======
-    #from chart_studio.plotly import plot_mpl
-    #from statsmodels.tsa.seasonal import seasonal_decompose
-    #result = seasonal_decompose(train_df.values, model="additive", period=365)
-    #fig = result.plot()
-    #plt.close()
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
 
     #%%
+    logMessage("AD Fuller Test ...")
     from statsmodels.tsa.stattools import adfuller
     def ad_test(dataset):
-        dftest = adfuller(df, autolag = 'AIC')
+        dftest = adfuller(train_df, autolag = 'AIC')
         print("1. ADF : ",dftest[0])
         print("2. P-Value : ", dftest[1])
         print("3. Num Of Lags : ", dftest[2])
@@ -455,7 +553,7 @@ def main():
 
     #Set Parameters
     seasonality_mode = 'multiplicative'
-    n_changepoints = 30
+    n_changepoints = 2 #2, 11, 19
     seasonality_prior_scale = 0.1
     changepoint_prior_scale = 0.1
     holidays_prior_scale = 8
@@ -513,7 +611,7 @@ def main():
 
     #Set Parameters
     ranfor_n_estimators = 150
-    ranfor_lags = 41
+    ranfor_lags = 2 #2, 11, 19
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
@@ -555,7 +653,7 @@ def main():
 
     #Set Parameters
     xgb_objective = 'reg:squarederror'
-    xgb_lags = 46
+    xgb_lags = 11 #2, 11, 19
     xgb_strategy = "recursive"
 
     xgb_regressor = XGBRegressor(objective=xgb_objective)
@@ -593,7 +691,7 @@ def main():
     from sklearn.linear_model import LinearRegression
 
     #Set Parameters
-    linreg_lags = 33
+    linreg_lags = 2 #2, 11, 19
     linreg_strategy = "recursive"
 
     linreg_regressor = LinearRegression(normalize=True)
@@ -631,7 +729,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly2_lags = 16
+    poly2_lags = 2 #2, 9, 11
     poly2_regularization = None
     poly2_interactions = False
     poly2_strategy = "recursive"
@@ -671,7 +769,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly3_lags = 0.6
+    poly3_lags = 6 #2, 6, 9
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"

@@ -33,15 +33,12 @@ from dateutil.relativedelta import *
 def main():
     # Configure logging
     #configLogging("condensate_tangguh.log")
-<<<<<<< HEAD
     logMessage("Creating Condensate Tangguh Model ...")
-=======
->>>>>>> 21af3625c9ee755c28de8726159af49de0c06b45
     
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk_dev')
+    conn = create_db_connection(section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
         
@@ -51,7 +48,7 @@ def main():
 
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
-    #data.head()
+    data['wpnb_oil'].fillna(method='ffill')
 
     #%%
     ds = 'date'
@@ -60,29 +57,20 @@ def main():
     df = data[[ds,y]]
     df = df.set_index(ds)
     df.index = pd.DatetimeIndex(df.index, freq='D')
-    #df
 
     #%%
-    data_cleaning = data[['date', 'condensate', 'wpnb_oil', 'unplanned_shutdown', 'planned_shutdown']].copy()
-    ds_cleaning = 'date'
-    data_cleaning = data_cleaning.set_index(ds_cleaning)
-    data_cleaning['unplanned_shutdown'] = data_cleaning['unplanned_shutdown'].astype('int')
-    s = validate_series(data_cleaning)
-
-    # plotting for illustration
-    plt.style.use('fivethirtyeight')
-
-    fig1, ax = plt.subplots(figsize=(20,8))
-    ax.plot(data_cleaning['condensate'], label='condensate')
-    ax.set_ylabel("condensate")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    plt.close()
+    logMessage("Null Value Cleaning ...")
+    data_null_cleaning = data[['date', 'condensate', 'wpnb_oil', 'unplanned_shutdown', 'planned_shutdown']].copy()
+    data_null_cleaning['condensate_copy'] = data[['condensate']].copy()
+    ds_null_cleaning = 'date'
+    data_null_cleaning = data_null_cleaning.set_index(ds_null_cleaning)
+    data_null_cleaning['unplanned_shutdown'] = data_null_cleaning['unplanned_shutdown'].astype('int')
+    s = validate_series(data_null_cleaning)
 
     #%%
     # Calculate standar deviation
-    fg_std = data_cleaning['condensate'].std()
-    fg_mean = data_cleaning['condensate'].mean()
+    fg_std = data_null_cleaning['condensate'].std()
+    fg_mean = data_null_cleaning['condensate'].mean()
 
     #Detect Anomaly Values
     # Create anomaly detection model
@@ -91,11 +79,12 @@ def main():
     high_limit2 = fg_mean+fg_std
     low_limit2 = fg_mean-fg_std
 
-    threshold_ad = ThresholdAD(data_cleaning['unplanned_shutdown']==0)
+    threshold_ad = ThresholdAD(data_null_cleaning['condensate_copy'].isnull())
     anomalies = threshold_ad.detect(s)
 
     anomalies = anomalies.drop('condensate', axis=1)
     anomalies = anomalies.drop('wpnb_oil', axis=1)
+    anomalies = anomalies.drop('unplanned_shutdown', axis=1)
     anomalies = anomalies.drop('planned_shutdown', axis=1)
     
     #%%
@@ -106,12 +95,12 @@ def main():
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
-    copy_anomalies.rename(columns={'unplanned_shutdown':'anomaly'}, inplace=True)
+    copy_anomalies.rename(columns={'condensate_copy':'anomaly'}, inplace=True)
     # Merge original dataframe with anomalies
     new_s = pd.concat([s, copy_anomalies], axis=1)
 
     # Get only anomalies data
-    anomalies_data = new_s[new_s['anomaly'] == False]
+    anomalies_data = new_s[new_s['anomaly'].isnull()]
     #anomalies_data.tail(100)
 
     #%%
@@ -228,9 +217,7 @@ def main():
         print(sql), print(mean_month)
 
     # Check if updated
-    new_s[new_s['anomaly'] == False]
-
-    anomaly_upd = new_s[new_s['anomaly'] == False]
+    anomaly_upd = new_s[new_s['anomaly'].isnull()]
 
     #%%
     # Plot data and its anomalies
@@ -259,10 +246,114 @@ def main():
 
     #fig.show()
     plt.close()
+    
+    #%%
+    logMessage("Unplanned Shutdown Cleaning ...")
+    # Detect Unplanned Shutdown Value
+    data2 = new_s[['condensate', 'wpnb_oil', 'unplanned_shutdown', 'planned_shutdown']].copy()
+    #data2 = data2.reset_index()
+    #data2['date'] = pd.DatetimeIndex(data2['date'], freq='D')
+    s2 = validate_series(data2)
 
+    threshold_ad2 = ThresholdAD(data2['unplanned_shutdown']==0)
+    anomalies2 = threshold_ad2.detect(s2)
+
+    anomalies2 = anomalies2.drop('condensate', axis=1)
+    anomalies2 = anomalies2.drop('wpnb_oil', axis=1)
+    anomalies2 = anomalies2.drop('planned_shutdown', axis=1)
+    
+    # Create anomaly detection model
+    #threshold_ad2 = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies2 =  threshold_ad2.detect(s2)
+
+    # Copy data frame of anomalies
+    copy_anomalies2 =  anomalies2.copy()
+    # Rename columns
+    copy_anomalies2.rename(columns={'unplanned_shutdown':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s2 = pd.concat([s2, copy_anomalies2], axis=1)
+
+    # Get only anomalies data
+    anomalies_data2 = new_s2[new_s2['anomaly'] == False]
+    
+    #%%
+    # Plot data and its anomalies
+    from cProfile import label
+    from imaplib import Time2Internaldate
+
+    fig = px.line(new_s2, y='condensate')
+
+    # Add horizontal line for 3 sigma
+    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean + std", 
+                annotation_position="top right")
+    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean - 3*std", 
+                annotation_position="bottom right")
+    fig.add_scatter(x=anomalies_data2.index, y=anomalies_data2['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    fig.update_layout(title_text='Condensate Tangguh', title_font_size=24)
+
+    #fig.show()
+    plt.close()
+    
+    #%%
+    for index, row in anomalies_data2.iterrows():
+        yr = index.year
+        mt = index.month
+        
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+        
+        # Get last year start date month
+        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        
+        # Get last month last date
+        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        
+        # Get mean fead gas data for the month
+        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        mean_month=new_s2['condensate'].reset_index().query(sql).mean().values[0]
+        
+        # update value at specific location
+        new_s2.at[index,'condensate'] = mean_month
+        
+        print(sql), print(mean_month)
+
+    # Check if updated
+    new_s2[new_s2['anomaly'] == False]
+
+    anomaly_upd2 = new_s2[new_s2['anomaly'] == False]
 
     #%%
-    data_cleaned = new_s[['condensate', 'wpnb_oil', 'planned_shutdown']].copy()
+    # Plot data and its anomalies
+    from cProfile import label
+    from imaplib import Time2Internaldate
+
+    fig = px.line(new_s2, y='condensate')
+
+    # Add horizontal line for 3 sigma
+    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean + std", 
+                annotation_position="top right")
+    fig.add_hline(y=high_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean + 3*std", 
+                annotation_position="top right")
+    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
+                annotation_text="Mean - 3*std", 
+                annotation_position="bottom right")
+    fig.add_hline(y=low_limit2, line_color='red', line_dash="dot",
+                annotation_text="Mean - std", 
+                annotation_position="bottom right")
+    fig.add_scatter(x=anomalies_data2.index, y=anomalies_data2['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
+    fig.add_scatter(x=anomaly_upd2.index, y=anomaly_upd2['condensate'], mode='markers', marker=dict(color='green'), name="Unplanned Cleaned", showlegend=True)
+    fig.update_layout(title_text='Condensate BP Tangguh', title_font_size=24)
+
+    #fig.show()
+    plt.close()
+
+    #%%
+    data_cleaned = new_s2[['condensate', 'wpnb_oil', 'planned_shutdown']].copy()
     data_cleaned = data_cleaned.reset_index()
 
     ds_cleaned = 'date'
@@ -355,12 +446,12 @@ def main():
     #ARIMA(1,0,3)
     arimax_model = AutoARIMA(d=0, suppress_warnings=True, error_action='ignore')
     logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(y_train.condensate, X=X_train[exogenous_features])
+    arimax_model.fit(y_train_cleaned, X=X_train)
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_model.summary())
 
     logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(fh, X=X_test[exogenous_features])
+    arimax_forecast = arimax_model.predict(fh, X=X_test)
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
     y_pred_arimax['day_num'] = [i.day for i in arimax_forecast.index]
     y_pred_arimax['month_num'] = [i.month for i in arimax_forecast.index]
@@ -374,7 +465,7 @@ def main():
     logMessage("ARIMAX Model "+arimax_mape_str)
 
     # Rename column to forecast_a
-    y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
+    y_pred_arimax.rename(columns={'condensate':'forecast_a'}, inplace=True)
     
     #Get parameter
     arimax_param = str(arimax_model.get_fitted_params()['order'])
@@ -400,13 +491,12 @@ def main():
     sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     #sarimax_model = ARIMA(order=(2,0,2), seasonal_order=(2,1,0,12),  suppress_warnings=True)
     logMessage("Creating SARIMAX Model ...")
-    sarimax_model.fit(y_train.condensate, X=X_train[exogenous_features])
+    sarimax_model.fit(y_train_cleaned, X=X_train)
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_model.summary())
 
     logMessage("SARIMAX Model Prediction ..")
-    sarimax_forecast = sarimax_model.predict(fh, X=X_test[exogenous_features])
-    y_test["Forecast_SARIMAX"] = sarimax_forecast
+    sarimax_forecast = sarimax_model.predict(fh, X=X_test)
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
     y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]
@@ -415,12 +505,12 @@ def main():
     y_pred_sarimax['date'] = pd.DatetimeIndex(y_pred_sarimax['date'], freq='D')
 
     #Create MAPE
-    sarimax_mape = mean_absolute_percentage_error(y_test.condensate, y_test.Forecast_SARIMAX)
+    sarimax_mape = mean_absolute_percentage_error(y_test.condensate, sarimax_forecast)
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
     logMessage("SARIMAX Model "+sarimax_mape_str)
     
     # Rename column to forecast_b
-    y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
+    y_pred_sarimax.rename(columns={'condensate':'forecast_b'}, inplace=True)
     
     #Get parameters
     sarimax_param_order = str(sarimax_model.get_fitted_params()['order'])
@@ -436,7 +526,7 @@ def main():
 
     #Set Parameters
     seasonality_mode = 'multiplicative'
-    n_changepoints = 40
+    n_changepoints = 3 #3, 9, 18
     seasonality_prior_scale = 0.2
     changepoint_prior_scale = 0.1
     holidays_prior_scale = 8
@@ -457,7 +547,7 @@ def main():
         yearly_seasonality=yearly_seasonality)
 
     logMessage("Creating Prophet Model ...")
-    prophet_forecaster.fit(y_train, X_train) #, X_train
+    prophet_forecaster.fit(y_train_cleaned, X_train) #, X_train
     logMessage(prophet_forecaster._get_fitted_params)
     
     logMessage("Prophet Model Prediction ...")
@@ -470,7 +560,7 @@ def main():
     y_pred_prophet['date'] = pd.DatetimeIndex(y_pred_prophet['date'], freq='D')
 
     #Create MAPE
-    prophet_mape = mean_absolute_percentage_error(y_test['condensate'], prophet_forecast)
+    prophet_mape = mean_absolute_percentage_error(y_test.condensate, prophet_forecast)
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
 
@@ -495,7 +585,7 @@ def main():
 
     #Set Parameters
     ranfor_n_estimators = 150
-    ranfor_lags = 53
+    ranfor_lags = 3 #3, 9, 18
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
@@ -505,7 +595,7 @@ def main():
     ranfor_forecaster = make_reduction(ranfor_regressor, window_length = ranfor_lags, strategy = ranfor_strategy)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_forecaster.fit(y_train, X_train) #, X_train
+    ranfor_forecaster.fit(y_train_cleaned, X_train) #, X_train
     
     logMessage("Random Forest Model Prediction ...")
     ranfor_forecast = ranfor_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -517,7 +607,7 @@ def main():
     y_pred_ranfor['date'] = pd.DatetimeIndex(y_pred_ranfor['date'], freq='D')
 
     #Create MAPE
-    ranfor_mape = mean_absolute_percentage_error(y_test['condensate'], ranfor_forecast)
+    ranfor_mape = mean_absolute_percentage_error(y_test.condensate, ranfor_forecast)
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
 
@@ -537,14 +627,14 @@ def main():
 
     #Set Parameters
     xgb_objective = 'reg:squarederror'
-    xgb_lags = 13
+    xgb_lags = 18 #3, 9, 18
     xgb_strategy = "recursive"
 
     xgb_regressor = XGBRegressor(objective=xgb_objective)
     xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
 
     logMessage("Creating XGBoost Model ....")
-    xgb_forecaster.fit(y_train, X=X_train) #, X_train
+    xgb_forecaster.fit(y_train_cleaned, X=X_train) #, X_train
     
     logMessage("XGBoost Model Prediction ...")
     xgb_forecast = xgb_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -556,7 +646,7 @@ def main():
     y_pred_xgb['date'] = pd.DatetimeIndex(y_pred_xgb['date'], freq='D')
 
     #Create MAPE
-    xgb_mape = mean_absolute_percentage_error(y_test['condensate'], xgb_forecast)
+    xgb_mape = mean_absolute_percentage_error(y_test.condensate, xgb_forecast)
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
     
@@ -575,14 +665,14 @@ def main():
     from sklearn.linear_model import LinearRegression
 
     #Set Parameters
-    linreg_lags = 12
+    linreg_lags = 3 #3, 9, 18
     linreg_strategy = "recursive"
 
     linreg_regressor = LinearRegression(normalize=True)
     linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
 
     logMessage("Creating Linear Regression Model ...")
-    linreg_forecaster.fit(y_train, X=X_train) #, X=X_train
+    linreg_forecaster.fit(y_train_cleaned, X=X_train) #, X=X_train
     
     logMessage("Linear Regression Model Prediction ...")
     linreg_forecast = linreg_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -594,7 +684,7 @@ def main():
     y_pred_linreg['date'] = pd.DatetimeIndex(y_pred_linreg['date'], freq='D')
 
     #Create MAPE
-    linreg_mape = mean_absolute_percentage_error(y_test['condensate'], linreg_forecast)
+    linreg_mape = mean_absolute_percentage_error(y_test.condensate, linreg_forecast)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
 
@@ -614,7 +704,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly2_lags = 5
+    poly2_lags = 3 #3, 9, 18
     poly2_regularization = None
     poly2_interactions = False
     poly2_strategy = "recursive"
@@ -623,7 +713,7 @@ def main():
     poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy)
 
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_forecaster.fit(y_train, X=X_train) #, X=X_train
+    poly2_forecaster.fit(y_train_cleaned, X=X_train) #, X=X_train
     
     logMessage("Polynomial Regression Orde 2 Model Prediction ...")
     poly2_forecast = poly2_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -635,7 +725,7 @@ def main():
     y_pred_poly2['date'] = pd.DatetimeIndex(y_pred_poly2['date'], freq='D')
 
     #Create MAPE
-    poly2_mape = mean_absolute_percentage_error(y_test['condensate'], poly2_forecast)
+    poly2_mape = mean_absolute_percentage_error(y_test.condensate, poly2_forecast)
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Orde 2 Model "+poly2_mape_str)
 
@@ -655,7 +745,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set Parameters
-    poly3_lags = 0.59
+    poly3_lags = 1 #1, 3, 5
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"
@@ -664,7 +754,7 @@ def main():
     poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy)
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_forecaster.fit(y_train, X=X_train) #, X=X_train
+    poly3_forecaster.fit(y_train_cleaned, X=X_train) #, X=X_train
     
     logMessage("Polynomial Regression Orde 3 Model Prediction ...")
     poly3_forecast = poly3_forecaster.predict(fh, X=X_test) #, X=X_test
@@ -676,7 +766,7 @@ def main():
     y_pred_poly3['date'] = pd.DatetimeIndex(y_pred_poly3['date'], freq='D')
 
     #Create MAPE
-    poly3_mape = mean_absolute_percentage_error(y_test['condensate'], poly3_forecast)
+    poly3_mape = mean_absolute_percentage_error(y_test.condensate, poly3_forecast)
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Orde 3 Model "+poly3_mape_str)
 
@@ -727,8 +817,8 @@ def main():
                         'model_param_f': [linreg_param],
                         'model_param_g': [poly2_param],
                         'model_param_h': [poly3_param],
-                        'lng_plant' : 'PT Badak',
-                        'product' : 'Feed Gas'}
+                        'lng_plant' : 'PT Tangguh',
+                        'product' : 'Condensate'}
 
     all_model_param = pd.DataFrame(all_model_param)
 

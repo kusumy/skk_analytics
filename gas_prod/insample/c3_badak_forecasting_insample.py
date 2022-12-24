@@ -30,6 +30,11 @@ import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
 #import mlflow
+from adtk.detector import ThresholdAD
+from adtk.visualization import plot
+from adtk.data import validate_series
+pd.options.plotting.backend = "plotly"
+from dateutil.relativedelta import *
 
 def stationarity_check(ts):
             
@@ -119,15 +124,143 @@ def main():
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
-    #%%
-    ds = 'date'
-    y = 'lpg_c3' #Choose the column target
-    df = data[[ds,y]]
-    df = df.set_index(ds)
-    df.index = pd.DatetimeIndex(df.index, freq='D')
+    data_null_cleaning = data[['date', 'lpg_c3']].copy()
+    data_null_cleaning['lpg_c3_copy'] = data[['lpg_c3']].copy()
+    ds_null_cleaning = 'date'
+    data_null_cleaning = data_null_cleaning.set_index(ds_null_cleaning)
+    s = validate_series(data_null_cleaning)
 
+    #%%
+    threshold_ad = ThresholdAD(data_null_cleaning['lpg_c3_copy'].isnull())
+    anomalies = threshold_ad.detect(s)
+
+    anomalies = anomalies.drop('lpg_c3', axis=1)
+
+    # Create anomaly detection model
+    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
+    #anomalies =  threshold_ad.detect(s)
+
+    # Copy data frame of anomalies
+    copy_anomalies =  anomalies.copy()
+    # Rename columns
+    copy_anomalies.rename(columns={'lpg_c3_copy':'anomaly'}, inplace=True)
+    # Merge original dataframe with anomalies
+    new_s = pd.concat([s, copy_anomalies], axis=1)
+
+    # Get only anomalies data
+    anomalies_data = new_s[new_s['anomaly'].isnull()]
+    #anomalies_data.tail(100)
+
+    #%%
+    #REPLACE ANOMALY VALUES
+    from datetime import date, datetime, timedelta
+
+    def get_first_date_of_current_month(year, month):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_month(year, month):
+        """Return the last date of the month.
+            
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+            
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+            
+        return last_date.strftime("%Y-%m-%d")
+
+        
+    def get_first_date_of_prev_month(year, month, step=-1):
+        """Return the first date of the month.
+
+        Args:
+            year (int): Year
+            month (int): Month
+
+        Returns:
+            date (datetime): First date of the current month
+        """
+        first_date = datetime(year, month, 1)
+        first_date = first_date + relativedelta(months=step)
+        return first_date.strftime("%Y-%m-%d")
+
+    def get_last_date_of_prev_month(year, month, step=-1):
+        """Return the last date of the month.
+            
+        Args:
+            year (int): Year, i.e. 2022
+            month (int): Month, i.e. 1 for January
+
+        Returns:
+            date (datetime): Last date of the current month
+        """
+            
+        if month == 12:
+            last_date = datetime(year, month, 31)
+        else:
+            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
+                
+        last_date = last_date + relativedelta(months=step)
+            
+        return last_date.strftime("%Y-%m-%d")
+
+    for index, row in anomalies_data.iterrows():
+        yr = index.year
+        mt = index.month
+            
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+            
+        # Get last year start date month
+        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+            
+        # Get last month last date
+        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+            
+        # Get mean fead gas data for the month
+        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        mean_month=new_s['lpg_c3'].reset_index().query(sql).mean().values[0]
+            
+        # update value at specific location
+        new_s.at[index,'lpg_c3'] = mean_month
+            
+        print(sql), print(mean_month)
+
+    # Check if updated
+    anomaly_upd = new_s[new_s['anomaly'].isnull()]
+
+    #%%
+    df_cleaned = new_s[['lpg_c3']].copy()
+    #df_cleaned = df_cleaned.reset_index()
+    #df_cleaned['date'] = pd.to_datetime(df_cleaned.date)
+    #df_cleaned.index = pd.DatetimeIndex(df_cleaned.date)
+
+    #ds_cleaned = 'date'
+    #y_cleaned = 'lpg_c3'
+    #df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
+    #df_cleaned = df_cleaned.set_index(ds_cleaned)
+    #df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
+    #df_cleaned
     #Select column target
-    train_df = df['lpg_c3']
+    #train_df = data_cleaned['lpg_c3']
 
     #%%
     #import chart_studio.plotly
@@ -149,16 +282,16 @@ def main():
     #plot_acf_pacf(train_df)
 
     #%%
-    from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(train_df.values, model="additive", period=365)
-    fig = result.plot()
-    plt.close()
+    #from chart_studio.plotly import plot_mpl
+    #from statsmodels.tsa.seasonal import seasonal_decompose
+    #result = seasonal_decompose(df_cleaned['lpg_c3'], model="additive", period=365)
+    #fig = result.plot()
+    #plt.close()
 
     #%%
     from statsmodels.tsa.stattools import adfuller
     def ad_test(dataset):
-        dftest = adfuller(df, autolag = 'AIC')
+        dftest = adfuller(df_cleaned['lpg_c3'], autolag = 'AIC')
         print("1. ADF : ",dftest[0])
         print("2. P-Value : ", dftest[1])
         print("3. Num Of Lags : ", dftest[2])
@@ -166,7 +299,7 @@ def main():
         print("5. Critical Values :")
         for key, val in dftest[4].items():
             print("\t",key, ": ", val)
-    ad_test(train_df)
+    ad_test(df_cleaned['lpg_c3'])
 
     #%%
     from sktime.forecasting.model_selection import temporal_train_test_split
@@ -175,21 +308,18 @@ def main():
     # Test size
     test_size = 0.2
     # Split data
-    y_train, y_test = temporal_train_test_split(df, test_size=test_size)
+    y_train, y_test = temporal_train_test_split(df_cleaned, test_size=test_size)
     # Horizon
     fh = ForecastingHorizon(y_test.index, is_relative=False)
 
     #%%
     # create features (exog) from date
-    df['month'] = [i.month for i in df.index]
-    df['day'] = [i.day for i in df.index]
-    #df['day_of_year'] = [i.dayofyear for i in df.index]
-    #df['week_of_year'] = [i.weekofyear for i in df.index]
-    df.tail(20)
+    df_cleaned['month'] = [i.month for i in df_cleaned.index]
+    df_cleaned['day'] = [i.day for i in df_cleaned.index]
 
     #%%
     # Split into train and test
-    X_train, X_test = temporal_train_test_split(df.iloc[:,1:], test_size=test_size)
+    X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
     X_train
 
     #%%
@@ -207,7 +337,7 @@ def main():
     from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_absolute_error, r2_score
 
     #Set parameters
-    arimax_differencing = 0
+    arimax_differencing = 1
     arimax_trace = True
     arimax_error_action = "ignore"
     arimax_suppress_warnings = True
@@ -220,12 +350,12 @@ def main():
     arimax_model = AutoARIMA(d=arimax_differencing, trace=arimax_trace, n_fits=arimax_n_fits, stepwise=arimax_stepwise, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
     
     logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(y_train.lpg_c3, X=X_train) #exogenous=train_exog
+    arimax_model.fit(y_train.lpg_c3) #, X=X_train
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_model.summary())
 
     logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(fh, X=X_test)
+    arimax_forecast = arimax_model.predict(fh) #, X=X_test
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
     y_pred_arimax['day_num'] = [i.day for i in arimax_forecast.index]
     y_pred_arimax['month_num'] = [i.month for i in arimax_forecast.index]
@@ -249,7 +379,7 @@ def main():
     ##### SARIMAX MODEL #####
 
     #Set parameters
-    sarimax_differencing = 0
+    sarimax_differencing = 1
     sarimax_seasonal_differencing = 1
     sarimax_seasonal = True
     sarimax_m = 12
@@ -264,12 +394,12 @@ def main():
     #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, sp=sarimax_m, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
-    sarimax_model.fit(y_train.lpg_c3, X=X_train) #exogenous=train_exog
+    sarimax_model.fit(y_train.lpg_c3) #, X=X_train
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_model.summary())
 
     logMessage("SARIMAX Model Prediction ..")
-    sarimax_forecast = sarimax_model.predict(fh, X=X_test)
+    sarimax_forecast = sarimax_model.predict(fh) #, X=X_test
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
     y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
     y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]
@@ -298,7 +428,7 @@ def main():
 
     #Set parameters
     prophet_seasonality_mode = 'multiplicative'
-    prophet_n_changepoints = 1
+    prophet_n_changepoints = 2 #2, 5, 12
     prophet_seasonality_prior_scale = 10
     prophet_changepoint_prior_scale = 0.001
     prophet_holidays_prior_scale = 2
@@ -319,11 +449,11 @@ def main():
             yearly_seasonality=prophet_yearly_seasonality)
 
     logMessage("Creating Prophet Model ...")
-    prophet_forecaster.fit(y_train.lpg_c3, X=X_train) #, X_train
+    prophet_forecaster.fit(y_train.lpg_c3) #, X=X_train
     logMessage(prophet_forecaster._get_fitted_params)
     
     logMessage("Prophet Model Prediction ...")
-    prophet_forecast = prophet_forecaster.predict(fh, X=X_test) #, X=X_test
+    prophet_forecast = prophet_forecaster.predict(fh) #, X=X_test
     y_pred_prophet = pd.DataFrame(prophet_forecast).applymap('{:.2f}'.format)
     y_pred_prophet['day_num'] = [i.day for i in prophet_forecast.index]
     y_pred_prophet['month_num'] = [i.month for i in prophet_forecast.index]
@@ -355,7 +485,7 @@ def main():
     from sklearn.ensemble import RandomForestRegressor
 
     #Set parameters
-    ranfor_lags = 0.33
+    ranfor_lags = 5 #2, 5, 12
     ranfor_n_estimators = 100
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
@@ -366,10 +496,10 @@ def main():
     ranfor_forecaster = make_reduction(ranfor_regressor, window_length=ranfor_lags, strategy=ranfor_strategy)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_forecaster.fit(y_train.lpg_c3, X=X_train) #, X_train
+    ranfor_forecaster.fit(y_train.lpg_c3) #, X=X_train
     
     logMessage("Random Forest Model Prediction ...")
-    ranfor_forecast = ranfor_forecaster.predict(fh, X=X_test) #, X=X_test
+    ranfor_forecast = ranfor_forecaster.predict(fh) #, X=X_test
     y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:.2f}'.format)
     y_pred_ranfor['day_num'] = [i.day for i in ranfor_forecast.index]
     y_pred_ranfor['month_num'] = [i.month for i in ranfor_forecast.index]
@@ -396,7 +526,7 @@ def main():
     from xgboost import XGBRegressor
 
     #Set parameters
-    xgb_lags = 0.4
+    xgb_lags = 2 #2, 5, 12
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
@@ -405,10 +535,10 @@ def main():
     xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
 
     logMessage("Creating XGBoost Model ....")
-    xgb_forecaster.fit(y_train.lpg_c3, X=X_train) #, X_train
+    xgb_forecaster.fit(y_train.lpg_c3) #, X=X_train
     
     logMessage("XGBoost Model Prediction ...")
-    xgb_forecast = xgb_forecaster.predict(fh, X=X_test) #, X=X_test
+    xgb_forecast = xgb_forecaster.predict(fh) #, X=X_test
     y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:.2f}'.format)
     y_pred_xgb['day_num'] = [i.day for i in xgb_forecast.index]
     y_pred_xgb['month_num'] = [i.month for i in xgb_forecast.index]
@@ -436,7 +566,7 @@ def main():
     from sklearn.linear_model import LinearRegression
 
     #Set parameters
-    linreg_lags = 50
+    linreg_lags = 5 #2, 5, 12
     linreg_normalize = True
     linreg_strategy = "recursive"
 
@@ -445,10 +575,10 @@ def main():
     linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
     
     logMessage("Creating Linear Regression Model ...")
-    linreg_forecaster.fit(y_train.lpg_c3, X=X_train)
+    linreg_forecaster.fit(y_train.lpg_c3) #, X=X_train
 
     logMessage("Linear Regression Model Prediction ...")
-    linreg_forecast = linreg_forecaster.predict(fh, X=X_test) #, X=X_test
+    linreg_forecast = linreg_forecaster.predict(fh) #, X=X_test
     y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:.2f}'.format)
     y_pred_linreg['day_num'] = [i.day for i in linreg_forecast.index]
     y_pred_linreg['month_num'] = [i.month for i in linreg_forecast.index]
@@ -475,7 +605,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set parameters
-    poly2_lags = 63
+    poly2_lags = 7 #5, 6, 7
     poly2_regularization = None
     poly2_interactions = False
     poly2_strategy = "recursive"
@@ -485,10 +615,10 @@ def main():
     poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy) #WL=0.9 (degree 2), WL=0.7 (degree 3)
     
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_forecaster.fit(y_train.lpg_c3, X=X_train) #, X=X_train
+    poly2_forecaster.fit(y_train.lpg_c3) #, X=X_train
 
     logMessage("Polynomial Regression Orde 2 Model Prediction ...")
-    poly2_forecast = poly2_forecaster.predict(fh, X=X_test) #, X=X_test
+    poly2_forecast = poly2_forecaster.predict(fh) #, X=X_test
     y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:.2f}'.format)
     y_pred_poly2['day_num'] = [i.day for i in poly2_forecast.index]
     y_pred_poly2['month_num'] = [i.month for i in poly2_forecast.index]
@@ -515,7 +645,7 @@ def main():
     from polyfit import PolynomRegressor, Constraints
 
     #Set parameters
-    poly3_lags = 32
+    poly3_lags = 1 #1, 2, 3
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"
@@ -618,11 +748,6 @@ def main():
     all_model_param
 
 #%%    
-    # Save forecast result to database
-    logMessage("Updating forecast result to database ...")
-    total_updated_rows = insert_forecast(conn, y_all_pred)
-    logMessage("Updated rows: {}".format(total_updated_rows))
-    
     # Save mape result to database
     logMessage("Updating MAPE result to database ...")
     total_updated_rows = insert_mape(conn, all_mape_pred)
@@ -636,18 +761,6 @@ def main():
     print("Done")
 
 # %%
-def insert_forecast(conn, y_pred):
-    total_updated_rows = 0
-    for index, row in y_pred.iterrows():
-        prod_date = str(index) #row['date']
-        forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
-        
-        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        updated_rows = update_value(conn, forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date)
-        total_updated_rows = total_updated_rows + updated_rows 
-        
-    return total_updated_rows
-
 def insert_mape(conn, all_mape_pred):
     total_updated_rows = 0
     for index, row in all_mape_pred.iterrows():
@@ -673,43 +786,6 @@ def insert_param(conn, all_model_param):
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
-
-def update_value(conn, forecast_a, forecast_b, forecast_c, 
-                        forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date):
-    
-    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    created_by = 'PYTHON'
-    
-    """ insert forecasting result after last row in table """
-    sql = """ UPDATE lng_lpg_c3_daily
-                SET forecast_a = %s, 
-                    forecast_b = %s, 
-                    forecast_c = %s, 
-                    forecast_d = %s, 
-                    forecast_e = %s, 
-                    forecast_f = %s, 
-                    forecast_g = %s, 
-                    forecast_h = %s, 
-                    updated_at = %s, 
-                    updated_by = %s
-                WHERE prod_date = %s"""
-    #conn = None
-    updated_rows = 0
-    try:
-        # create a new cursor
-        cur = conn.cursor()
-        # execute the UPDATE  statement
-        cur.execute(sql, (forecast_a, forecast_b, forecast_c, forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, date_now, created_by, prod_date))
-        # get the number of updated rows
-        updated_rows = cur.rowcount
-        # Commit the changes to the database
-        conn.commit()
-        # Close cursor
-        cur.close()
-    except (Exception, psycopg2.DatabaseError) as error:
-        logging.error(error)
-
-    return updated_rows
 
 def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, 
                         mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
