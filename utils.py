@@ -201,3 +201,9 @@ def get_last_date_of_prev_month(year, month, step=-1):
     last_date = last_date + relativedelta(months=step)
     
     return last_date.strftime("%Y-%m-%d")
+
+def get_last_date_of_current_year():
+    return datetime.now().date().replace(month=12, day=31).strftime("%Y-%m-%d")
+
+def end_day_forecast_april():
+    return (datetime.now().date() + timedelta(days=365)).replace(month=4, day=30).strftime("%Y-%m-%d")
