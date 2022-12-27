@@ -276,6 +276,17 @@ def main():
     anomalies_data2 = new_s2[new_s2['anomaly'] == False]
     
     #%%
+    import datetime
+    yesterday_date = anomalies_data2.head(1).index - datetime.timedelta(days=1)
+    prev_date_year = yesterday_date - datetime.timedelta(days=364)
+
+    yesterday_date = str(yesterday_date[0])
+    prev_date_year = str(prev_date_year[0])
+
+    print(yesterday_date)
+    print(prev_date_year)
+    
+    #%%
     # Plot data and its anomalies
     from cProfile import label
     from imaplib import Time2Internaldate
@@ -305,19 +316,25 @@ def main():
         #end_month = str(get_last_date_of_month(yr, mt))
         
         # Get last year start date month
-        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        #start_month = get_first_date_of_prev_month(yr,mt,step=-12)
         
         # Get last month last date
-        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        #end_month = get_last_date_of_prev_month(yr,mt,step=-1)
         
         # Get mean fead gas data for the month
-        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
-        mean_month=new_s2['lng_production'].reset_index().query(sql).mean().values[0]
+        #sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        yesterday_date = index - datetime.timedelta(days=1)
+        prev_date_year = yesterday_date - datetime.timedelta(days=364)
+        
+        yesterday_date = yesterday_date.strftime("%Y-%m-%d")
+        prev_date_year = prev_date_year.strftime("%Y-%m-%d")
+        sql = "date>='"+prev_date_year+ "' & "+ "date<='" +yesterday_date+"'"
+        mean_month=new_s2['lng_production'].reset_index().query(sql).mean(skipna = True).values[0] 
         
         # update value at specific location
         new_s2.at[index,'lng_production'] = mean_month
         
-        print(sql), print(mean_month)
+        print(index), print(sql), print(mean_month)
 
     # Check if updated
     new_s2[new_s2['anomaly'] == False]
@@ -569,15 +586,7 @@ def main():
     logMessage("Prophet Model "+prophet_mape_str)
     
     #Get parameters
-    prophet_param_seasonality_mode = str(prophet_forecaster.get_params()['seasonality_mode'])
-    prophet_param_n_changepoints = str(prophet_forecaster.get_params()['n_changepoints'])
-    prophet_param_seasonality_prior_scale = str(prophet_forecaster.get_params()['seasonality_prior_scale'])
-    prophet_param_changepoint_prior_scale = str(prophet_forecaster.get_params()['changepoint_prior_scale'])
-    prophet_param_holidays_prior_scale = str(prophet_forecaster.get_params()['holidays_prior_scale'])
-    prophet_param_daily_seasonality = str(prophet_forecaster.get_params()['daily_seasonality'])
-    prophet_param_weekly_seasonality = str(prophet_forecaster.get_params()['weekly_seasonality'])
-    prophet_param_yearly_seasonality = str(prophet_forecaster.get_params()['yearly_seasonality'])
-    prophet_param = prophet_param_seasonality_mode + ', ' + prophet_param_n_changepoints + ', ' + prophet_param_seasonality_prior_scale + ', ' + prophet_param_changepoint_prior_scale + ', ' + prophet_param_holidays_prior_scale + ', ' + prophet_param_daily_seasonality + ', ' + prophet_param_weekly_seasonality + ', ' + prophet_param_yearly_seasonality
+    prophet_param = str(prophet_forecaster.get_params())
     logMessage("Prophet Model Parameters "+prophet_param)
 
 
@@ -616,9 +625,7 @@ def main():
     logMessage("Random Forest Model "+ranfor_mape_str)
     
     #Get Parameters
-    ranfor_param_estimator = str(ranfor_forecaster.get_fitted_params()['estimator'])
-    ranfor_param_lags = str(ranfor_forecaster.get_fitted_params()['window_length'])
-    ranfor_param = ranfor_param_estimator + ', ' + ranfor_param_lags
+    ranfor_param = str(ranfor_forecaster.get_params())
     logMessage("Random Forest Model Parameters "+ranfor_param)
 
 
@@ -655,9 +662,7 @@ def main():
     logMessage("XGBoost Model "+xgb_mape_str)
     
     #Get Parameters
-    xgb_param_lags = str(xgb_forecaster.get_params()['window_length'])
-    xgb_param_objective = str(xgb_forecaster.get_params()['estimator__objective'])
-    xgb_param = xgb_param_lags + ', ' + xgb_param_objective
+    xgb_param = str(xgb_forecaster.get_params())
     logMessage("XGBoost Model Parameters "+xgb_param)
 
 
@@ -693,9 +698,7 @@ def main():
     logMessage("Linear Regression Model "+linreg_mape_str)
     
     #Get parameters
-    linreg_param_estimator = str(linreg_forecaster.get_fitted_params()['estimator'])
-    linreg_param_lags = str(linreg_forecaster.get_fitted_params()['window_length'])
-    linreg_param = linreg_param_estimator + ', ' + linreg_param_lags
+    linreg_param = str(linreg_forecaster.get_params())
     logMessage("Linear Regression Model Parameters "+linreg_param)
 
 
@@ -733,9 +736,7 @@ def main():
     logMessage("Polynomial Regression Degree=2 Model "+poly2_mape_str)
     
     #Get parameters
-    poly2_param_estimator = str(poly2_forecaster.get_fitted_params()['estimator'])
-    poly2_param_lags = str(poly2_forecaster.get_fitted_params()['window_length'])
-    poly2_param = poly2_param_estimator + ', ' + poly2_param_lags
+    poly2_param = str(poly2_forecaster.get_params())
     logMessage("Polynomial Regression Orde 2 Model Parameters "+poly2_param)
 
 
@@ -773,9 +774,7 @@ def main():
     logMessage("Polynomial Regression Degree=3 Model "+poly3_mape_str)
     
     #Get parameters
-    poly3_param_estimator = str(poly3_forecaster.get_fitted_params()['estimator'])
-    poly3_param_lags = str(poly3_forecaster.get_fitted_params()['window_length'])
-    poly3_param = poly3_param_estimator + ', ' + poly3_param_lags
+    poly3_param = str(poly3_forecaster.get_params())
     logMessage("Polynomial Regression Orde 3 Model Parameters "+poly3_param)
 
     #%%

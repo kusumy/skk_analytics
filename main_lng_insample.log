@@ -1,0 +1,163 @@
+2022-12-27 10:58:53,826 Creating Feed Gas BP Tangguh Model ...
+2022-12-27 10:58:53,826 Connecting to database ...
+2022-12-27 10:58:53,914 Cleaning data ...
+2022-12-27 10:58:54,066 Null Value Cleaning ...
+2022-12-27 10:58:54,525 Unplanned Shutdown Cleaning ...
+2022-12-27 10:58:54,787 AD Fuller Test ...
+2022-12-27 10:58:54,884 Creating ARIMAX Model ...
+2022-12-27 10:59:04,949 ARIMAX Model Summary
+2022-12-27 10:59:04,952                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                  789
+Model:               SARIMAX(1, 0, 3)   Log Likelihood               -4097.814
+Date:                Tue, 27 Dec 2022   AIC                           8215.628
+Time:                        10:59:04   BIC                           8262.336
+Sample:                    01-01-2020   HQIC                          8233.583
+                         - 02-27-2022                                         
+Covariance Type:                  opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+intercept            2.5232      5.739      0.440      0.660      -8.724      13.771
+month                0.2307      4.549      0.051      0.960      -8.685       9.146
+planned_shutdown  -378.8505      6.054    -62.583      0.000    -390.715    -366.986
+day                 -0.1149      0.312     -0.369      0.712      -0.726       0.496
+wpnb_gas             0.0015      0.109      0.014      0.989      -0.213       0.216
+ar.L1                0.9977      0.006    180.924      0.000       0.987       1.008
+ma.L1               -0.5452      0.017    -31.605      0.000      -0.579      -0.511
+ma.L2               -0.0995      0.024     -4.156      0.000      -0.146      -0.053
+ma.L3               -0.0567      0.026     -2.145      0.032      -0.108      -0.005
+sigma2            1893.8614     27.081     69.934      0.000    1840.784    1946.939
+===================================================================================
+Ljung-Box (L1) (Q):                   0.00   Jarque-Bera (JB):             42695.58
+Prob(Q):                              0.99   Prob(JB):                         0.00
+Heteroskedasticity (H):               3.58   Skew:                             0.21
+Prob(H) (two-sided):                  0.00   Kurtosis:                        39.04
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-12-27 10:59:04,957 ARIMAX Model Prediction ..
+2022-12-27 10:59:04,980 ARIMAX Model MAPE: 0.1585
+2022-12-27 10:59:04,980 Arimax Model Parameters (1, 0, 3)
+2022-12-27 10:59:04,981 Creating SARIMAX Model ...
+2022-12-27 11:05:40,125 SARIMAX Model Summary
+2022-12-27 11:05:40,127                                      SARIMAX Results                                      
+==========================================================================================
+Dep. Variable:                                  y   No. Observations:                  789
+Model:             SARIMAX(5, 0, 0)x(2, 1, 0, 12)   Log Likelihood               -4127.765
+Date:                            Tue, 27 Dec 2022   AIC                           8279.529
+Time:                                    11:05:40   BIC                           8335.395
+Sample:                                01-01-2020   HQIC                          8301.020
+                                     - 02-27-2022                                         
+Covariance Type:                              opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+month                1.0988      2.564      0.429      0.668      -3.926       6.123
+planned_shutdown  -447.1112      6.688    -66.852      0.000    -460.220    -434.003
+day                 -0.1843      0.272     -0.677      0.498      -0.718       0.349
+wpnb_gas            -0.0042      0.053     -0.079      0.937      -0.108       0.100
+ar.L1                0.3549      0.023     15.668      0.000       0.310       0.399
+ar.L2                0.1261      0.030      4.150      0.000       0.067       0.186
+ar.L3                0.0624      0.030      2.096      0.036       0.004       0.121
+ar.L4                0.0683      0.034      1.986      0.047       0.001       0.136
+ar.L5                0.0739      0.036      2.038      0.042       0.003       0.145
+ar.S.L12            -0.6626      0.023    -29.327      0.000      -0.707      -0.618
+ar.S.L24            -0.3275      0.025    -12.886      0.000      -0.377      -0.278
+sigma2            2391.4966     38.350     62.360      0.000    2316.332    2466.661
+===================================================================================
+Ljung-Box (L1) (Q):                   0.06   Jarque-Bera (JB):             19096.66
+Prob(Q):                              0.81   Prob(JB):                         0.00
+Heteroskedasticity (H):               3.59   Skew:                            -0.05
+Prob(H) (two-sided):                  0.00   Kurtosis:                        27.29
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-12-27 11:05:40,133 SARIMAX Model Prediction ..
+2022-12-27 11:05:40,156 SARIMAX Model MAPE: 0.1804
+2022-12-27 11:05:40,157 Sarimax Model Parameters (5, 0, 0)(2, 1, 0, 12)
+2022-12-27 11:05:40,209 Creating Prophet Model ....
+2022-12-27 11:05:40,320 Prophet Model Prediction ...
+2022-12-27 11:05:40,628 Prophet Model MAPE: 0.1386
+2022-12-27 11:05:40,628 Prophet Model Parameters {'add_country_holidays': None, 'add_seasonality': None, 'alpha': 0.05, 'changepoint_prior_scale': 0.1, 'changepoint_range': 0.8, 'changepoints': None, 'daily_seasonality': 10, 'freq': None, 'growth': 'linear', 'growth_cap': None, 'growth_floor': 0.0, 'holidays': None, 'holidays_prior_scale': 8, 'mcmc_samples': 0, 'n_changepoints': 2, 'seasonality_mode': 'multiplicative', 'seasonality_prior_scale': 0.1, 'stan_backend': None, 'uncertainty_samples': 1000, 'verbose': 0, 'weekly_seasonality': 1, 'yearly_seasonality': 10}
+2022-12-27 11:05:40,629 Creating Random Forest Model ...
+2022-12-27 11:05:40,992 Random Forest Model Prediction ...
+2022-12-27 11:05:42,413 Random Forest Model MAPE: 0.1387
+2022-12-27 11:05:42,414 Random Forest Model Parameters {'estimator__bootstrap': True, 'estimator__ccp_alpha': 0.0, 'estimator__criterion': 'squared_error', 'estimator__max_depth': None, 'estimator__max_features': 1.0, 'estimator__max_leaf_nodes': None, 'estimator__max_samples': None, 'estimator__min_impurity_decrease': 0.0, 'estimator__min_samples_leaf': 1, 'estimator__min_samples_split': 2, 'estimator__min_weight_fraction_leaf': 0.0, 'estimator__n_estimators': 150, 'estimator__n_jobs': None, 'estimator__oob_score': False, 'estimator__random_state': 0, 'estimator__verbose': 0, 'estimator__warm_start': False, 'estimator': RandomForestRegressor(n_estimators=150, random_state=0), 'pooling': 'local', 'transformers': None, 'window_length': 2}
+2022-12-27 11:05:42,424 Creating XGBoost Model ....
+2022-12-27 11:05:42,624 XGBoost Model Prediction ...
+2022-12-27 11:05:42,909 XGBoost Model MAPE: 0.1345
+2022-12-27 11:05:42,910 XGBoost Model Parameters {'estimator__objective': 'reg:squarederror', 'estimator__base_score': None, 'estimator__booster': None, 'estimator__callbacks': None, 'estimator__colsample_bylevel': None, 'estimator__colsample_bynode': None, 'estimator__colsample_bytree': None, 'estimator__early_stopping_rounds': None, 'estimator__enable_categorical': False, 'estimator__eval_metric': None, 'estimator__gamma': None, 'estimator__gpu_id': None, 'estimator__grow_policy': None, 'estimator__importance_type': None, 'estimator__interaction_constraints': None, 'estimator__learning_rate': None, 'estimator__max_bin': None, 'estimator__max_cat_to_onehot': None, 'estimator__max_delta_step': None, 'estimator__max_depth': None, 'estimator__max_leaves': None, 'estimator__min_child_weight': None, 'estimator__missing': nan, 'estimator__monotone_constraints': None, 'estimator__n_estimators': 100, 'estimator__n_jobs': None, 'estimator__num_parallel_tree': None, 'estimator__predictor': None, 'estimator__random_state': None, 'estimator__reg_alpha': None, 'estimator__reg_lambda': None, 'estimator__sampling_method': None, 'estimator__scale_pos_weight': None, 'estimator__subsample': None, 'estimator__tree_method': None, 'estimator__validate_parameters': None, 'estimator__verbosity': None, 'estimator': XGBRegressor(base_score=None, booster=None, callbacks=None,
+             colsample_bylevel=None, colsample_bynode=None,
+             colsample_bytree=None, early_stopping_rounds=None,
+             enable_categorical=False, eval_metric=None, gamma=None,
+             gpu_id=None, grow_policy=None, importance_type=None,
+             interaction_constraints=None, learning_rate=None, max_bin=None,
+             max_cat_to_onehot=None, max_delta_step=None, max_depth=None,
+             max_leaves=None, min_child_weight=None, missing=nan,
+             monotone_constraints=None, n_estimators=100, n_jobs=None,
+             num_parallel_tree=None, predictor=None, random_state=None,
+             reg_alpha=None, reg_lambda=None, ...), 'pooling': 'local', 'transformers': None, 'window_length': 11}
+2022-12-27 11:05:42,910 Creating Linear Regression Model ...
+2022-12-27 11:05:42,916 Linear Regression Model Prediction ...
+2022-12-27 11:05:42,937 Linear Regression Model MAPE: 0.1349
+2022-12-27 11:05:42,938 Linear Regression Model Parameters {'estimator__copy_X': True, 'estimator__fit_intercept': True, 'estimator__n_jobs': None, 'estimator__normalize': True, 'estimator__positive': False, 'estimator': LinearRegression(normalize=True), 'pooling': 'local', 'transformers': None, 'window_length': 2}
+2022-12-27 11:05:42,977 Creating Polynomial Regression Orde 2 Model ...
+2022-12-27 11:05:43,003 Polynomial Regression Orde 2 Model Prediction ...
+2022-12-27 11:05:43,049 Polynomial Regression Degree=2 Model MAPE: 0.1438
+2022-12-27 11:05:43,050 Polynomial Regression Orde 2 Model Parameters {'estimator__deg': 2, 'estimator__interactions': False, 'estimator__lam': 0, 'estimator__regularization': None, 'estimator': PolynomRegressor(deg=2), 'pooling': 'local', 'transformers': None, 'window_length': 2}
+2022-12-27 11:05:43,050 Creating Polynomial Regression Orde 3 Model ...
+2022-12-27 11:05:43,134 Polynomial Regression Orde 3 Model Prediction ...
+2022-12-27 11:05:43,225 Polynomial Regression Degree=3 Model MAPE: 0.1524
+2022-12-27 11:05:43,225 Polynomial Regression Orde 3 Model Parameters {'estimator__deg': 3, 'estimator__interactions': False, 'estimator__lam': 0, 'estimator__regularization': None, 'estimator': PolynomRegressor(deg=3), 'pooling': 'local', 'transformers': None, 'window_length': 6}
+2022-12-27 11:05:43,241 Creating all model prediction result data frame ...
+2022-12-27 11:05:43,245 Creating all model mape result data frame ...
+2022-12-27 11:05:43,245 Creating all model params result data frame ...
+2022-12-27 11:05:43,246 Updating MAPE result to database ...
+2022-12-27 11:05:43,290 Updated rows: 1
+2022-12-27 11:05:43,291 Updating Model Parameter result to database ...
+2022-12-27 11:05:43,353 Updated rows: 1
+2022-12-27 11:05:43,356 
+
+2022-12-27 11:05:43,356 Creating Condensate Tangguh Model ...
+2022-12-27 11:05:43,356 Connecting to database ...
+2022-12-27 11:05:43,546 Null Value Cleaning ...
+2022-12-27 11:05:43,640 Unplanned Shutdown Cleaning ...
+2022-12-27 11:05:43,937 Creating ARIMAX Model ...
+2022-12-27 11:05:52,058 ARIMAX Model Summary
+2022-12-27 11:05:52,060                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                  789
+Model:               SARIMAX(1, 0, 2)   Log Likelihood               -5860.533
+Date:                Tue, 27 Dec 2022   AIC                          11739.066
+Time:                        11:05:52   BIC                          11781.103
+Sample:                    01-01-2020   HQIC                         11755.226
+                         - 02-27-2022                                         
+Covariance Type:                  opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+intercept           22.0701     58.137      0.380      0.704     -91.876     136.016
+month               22.5390     25.049      0.900      0.368     -26.557      71.635
+planned_shutdown -1849.4821     77.276    -23.933      0.000   -2000.941   -1698.023
+day                 -3.1910      3.165     -1.008      0.313      -9.395       3.013
+wpnb_oil            -0.0492      0.106     -0.466      0.641      -0.256       0.158
+ar.L1                0.9963      0.010     97.364      0.000       0.976       1.016
+ma.L1               -0.6839      0.013    -50.706      0.000      -0.710      -0.657
+ma.L2               -0.1269      0.019     -6.645      0.000      -0.164      -0.089
+sigma2            1.626e+05   2855.657     56.936      0.000    1.57e+05    1.68e+05
+===================================================================================
+Ljung-Box (L1) (Q):                   0.11   Jarque-Bera (JB):            150219.92
+Prob(Q):                              0.74   Prob(JB):                         0.00
+Heteroskedasticity (H):               3.11   Skew:                            -4.77
+Prob(H) (two-sided):                  0.00   Kurtosis:                        69.92
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2022-12-27 11:05:52,064 ARIMAX Model Prediction ..
+2022-12-27 11:05:52,087 ARIMAX Model MAPE: 0.1507
+2022-12-27 11:05:52,087 Arimax Model Parameters (1, 0, 2)
+2022-12-27 11:05:52,088 Creating SARIMAX Model ...

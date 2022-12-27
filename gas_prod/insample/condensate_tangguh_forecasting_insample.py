@@ -568,15 +568,7 @@ def main():
     y_pred_prophet.rename(columns={'condensate':'forecast_c'}, inplace=True)
     
     #Get parameters
-    prophet_param_seasonality_mode = str(prophet_forecaster.get_params()['seasonality_mode'])
-    prophet_param_n_changepoints = str(prophet_forecaster.get_params()['n_changepoints'])
-    prophet_param_seasonality_prior_scale = str(prophet_forecaster.get_params()['seasonality_prior_scale'])
-    prophet_param_changepoint_prior_scale = str(prophet_forecaster.get_params()['changepoint_prior_scale'])
-    prophet_param_holidays_prior_scale = str(prophet_forecaster.get_params()['holidays_prior_scale'])
-    prophet_param_daily_seasonality = str(prophet_forecaster.get_params()['daily_seasonality'])
-    prophet_param_weekly_seasonality = str(prophet_forecaster.get_params()['weekly_seasonality'])
-    prophet_param_yearly_seasonality = str(prophet_forecaster.get_params()['yearly_seasonality'])
-    prophet_param = prophet_param_seasonality_mode + ', ' + prophet_param_n_changepoints + ', ' + prophet_param_seasonality_prior_scale + ', ' + prophet_param_changepoint_prior_scale + ', ' + prophet_param_holidays_prior_scale + ', ' + prophet_param_daily_seasonality + ', ' + prophet_param_weekly_seasonality + ', ' + prophet_param_yearly_seasonality
+    prophet_param = str(prophet_forecaster.get_params())
     logMessage("Prophet Model Parameters "+prophet_param)
     
     ##### RANDOM FOREST MODEL (forecast_d) #####
@@ -615,9 +607,7 @@ def main():
     y_pred_ranfor.rename(columns={'condensate':'forecast_d'}, inplace=True)    
     
     #Get Parameters
-    ranfor_param_estimator = str(ranfor_forecaster.get_fitted_params()['estimator'])
-    ranfor_param_lags = str(ranfor_forecaster.get_fitted_params()['window_length'])
-    ranfor_param = ranfor_param_estimator + ', ' + ranfor_param_lags
+    ranfor_param = str(ranfor_forecaster.get_params())
     logMessage("Random Forest Model Parameters "+ranfor_param)
 
     ##### XGBOOST MODEL (forecast_e) #####
@@ -654,9 +644,7 @@ def main():
     y_pred_xgb.rename(columns={'condensate':'forecast_e'}, inplace=True)
     
     #Get Parameters
-    xgb_param_lags = str(xgb_forecaster.get_params()['window_length'])
-    xgb_param_objective = str(xgb_forecaster.get_params()['estimator__objective'])
-    xgb_param = xgb_param_lags + ', ' + xgb_param_objective
+    xgb_param = str(xgb_forecaster.get_params())
     logMessage("XGBoost Model Parameters "+xgb_param)
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
@@ -692,9 +680,7 @@ def main():
     y_pred_linreg.rename(columns={'condensate':'forecast_f'}, inplace=True)
     
     #Get parameters
-    linreg_param_estimator = str(linreg_forecaster.get_fitted_params()['estimator'])
-    linreg_param_lags = str(linreg_forecaster.get_fitted_params()['window_length'])
-    linreg_param = linreg_param_estimator + ', ' + linreg_param_lags
+    linreg_param = str(linreg_forecaster.get_params())
     logMessage("Linear Regression Model Parameters "+linreg_param)
     
 
@@ -733,9 +719,7 @@ def main():
     y_pred_poly2.rename(columns={'condensate':'forecast_g'}, inplace=True)
     
     #Get parameters
-    poly2_param_estimator = str(poly2_forecaster.get_fitted_params()['estimator'])
-    poly2_param_lags = str(poly2_forecaster.get_fitted_params()['window_length'])
-    poly2_param = poly2_param_estimator + ', ' + poly2_param_lags
+    poly2_param = str(poly2_forecaster.get_params())
     logMessage("Polynomial Regression Orde 2 Model Parameters "+poly2_param)
     
 
@@ -774,9 +758,7 @@ def main():
     y_pred_poly3.rename(columns={'condensate':'forecast_h'}, inplace=True)
     
     #Get parameters
-    poly3_param_estimator = str(poly3_forecaster.get_fitted_params()['estimator'])
-    poly3_param_lags = str(poly3_forecaster.get_fitted_params()['window_length'])
-    poly3_param = poly3_param_estimator + ', ' + poly3_param_lags
+    poly3_param = str(poly3_forecaster.get_params())
     logMessage("Polynomial Regression Orde 3 Model Parameters "+poly3_param)
     
     # %%
