@@ -343,11 +343,11 @@ def main():
     #plot_acf_pacf(train_df)
 
     #%%
-    from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(df_cleaned, model="multiplicative", period=365)
-    fig = result.plot()
-    plt.close()
+    #from chart_studio.plotly import plot_mpl
+    #from statsmodels.tsa.seasonal import seasonal_decompose
+    #result = seasonal_decompose(df_cleaned, model="multiplicative", period=365)
+    #fig = result.plot()
+    #plt.close()
 
     #%%
     from statsmodels.tsa.stattools import adfuller

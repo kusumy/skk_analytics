@@ -152,7 +152,7 @@ def main():
     train_exog.sort_index(inplace=True)
 
     #Load Data from Database (create future exogenous)
-    query_exog = open(os.path.join('hse\\sql', 'query_yearly_future.sql'), mode="rt").read()
+    query_exog = open(os.path.join('hse/sql', 'query_yearly_future.sql'), mode="rt").read()
     #query_2 = open("query_yearly_future.sql", mode="rt").read()
     future_exog = get_sql_data(query_exog, conn)
     #future_exog = retrieve_data(query_2)
