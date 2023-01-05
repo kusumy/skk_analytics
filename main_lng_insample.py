@@ -14,9 +14,9 @@ warnings.filterwarnings('ignore')
 
 #import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
 #import gas_prod.insample.condensate_tangguh_forecasting_insample as condensate_tangguh_insample
-#import gas_prod.insample.lng_production_tangguh_forecasting_insample as lng_production_tangguh_insample
+import gas_prod.insample.lng_production_tangguh_forecasting_insample as lng_production_tangguh_insample
 #import gas_prod.insample.feed_gas_badak_forecasting_insample as feed_gas_badak_insample
-import gas_prod.insample.lng_production_badak_forecasting_insample as lng_production_badak_insample
+#import gas_prod.insample.lng_production_badak_forecasting_insample as lng_production_badak_insample
 #import gas_prod.insample.condensate_badak_forecasting_insample as condensate_badak_insample
 #import gas_prod.insample.c3_badak_forecasting_insample as c3_badak_insample
 #import gas_prod.insample.c4_badak_forecasting_insample as c4_badak_insample
@@ -56,11 +56,11 @@ configLogging("main_lng_insample.log")
 
 #logMessage('\n')
 
-#t4 = time.process_time()
-#lng_production_tangguh_insample.main()
-#t5 = time.process_time()
-#exec_time = format_timespan(t5-t4, max_units=3)
-#logMessage("Creating LNG Production Tangguh Model in: " + exec_time)
+t4 = time.process_time()
+lng_production_tangguh_insample.main()
+t5 = time.process_time()
+exec_time = format_timespan(t5-t4, max_units=3)
+logMessage("Creating LNG Production Tangguh Model in: " + exec_time)
 
 #logMessage('\n')
 
@@ -72,11 +72,11 @@ configLogging("main_lng_insample.log")
 
 #logMessage('\n')
 
-t8 = time.process_time()
-lng_production_badak_insample.main()
-t9 = time.process_time()
-exec_time = format_timespan(t9-t8, max_units=3)
-logMessage("Creating LNG Production PT Badak Model in: " + exec_time)
+#t8 = time.process_time()
+#lng_production_badak_insample.main()
+#t9 = time.process_time()
+#exec_time = format_timespan(t9-t8, max_units=3)
+#logMessage("Creating LNG Production PT Badak Model in: " + exec_time)
 
 #logMessage('\n')
 
