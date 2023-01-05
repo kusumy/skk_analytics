@@ -282,9 +282,6 @@ def main():
 
     #%%
     # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
-
     fig = px.line(new_s2, y='feed_gas')
 
     # Add horizontal line for 3 sigma
