@@ -346,6 +346,7 @@ def main():
     # plt.close()
 
     #%%
+    # Ad-Fuller Testing
     ad_test(df_cleaned)
 
     #%%

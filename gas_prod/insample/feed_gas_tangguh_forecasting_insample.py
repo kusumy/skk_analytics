@@ -82,7 +82,7 @@ def main():
 
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
-    data['wpnb_gas'].fillna(method='ffill')
+    data['wpnb_gas'].fillna(method='ffill', inplace=True)
 
     #%%
     ds = 'date'
@@ -438,9 +438,7 @@ def main():
     df_cleaned['planned_shutdown'] = data['planned_shutdown'].values
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
     df_cleaned['wpnb_gas'] = data['wpnb_gas'].values
-    #df['day_of_year'] = [i.dayofyear for i in df.index]
-    #df['week_of_year'] = [i.weekofyear for i in df.index]
-    #df_cleaned.tail(20)
+    df_cleaned['wpnb_gas'].fillna(method='ffill', inplace=True)
 
     #%%
     # Split into train and test

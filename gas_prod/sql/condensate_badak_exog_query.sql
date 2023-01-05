@@ -1,6 +1,4 @@
 SELECT prod_date AS date, realization AS condensate
 FROM
-lng_condensate_daily
-WHERE lng_plant = 'PT Badak'
-AND prod_date BETWEEN '2022-11-11' AND '2023-04-30'
-ORDER BY prod_date 
+f_lng_cond_prod_ptbadak('PT Badak','20221111', '20230430')
+ORDER BY prod_date
