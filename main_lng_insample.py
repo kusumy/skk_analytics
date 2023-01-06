@@ -12,6 +12,9 @@ from utils import configLogging, logMessage, ad_test
 import warnings
 warnings.filterwarnings('ignore')
 
+import warnings
+warnings.filterwarnings(action='ignore', category=FutureWarning)
+
 #import gas_prod.insample.feed_gas_tangguh_forecasting_insample as feed_gas_tangguh_insample
 #import gas_prod.insample.condensate_tangguh_forecasting_insample as condensate_tangguh_insample
 #import gas_prod.insample.lng_production_tangguh_forecasting_insample as lng_production_tangguh_insample
