@@ -62,6 +62,9 @@ from sklearn.model_selection import GridSearchCV
 mape = MeanAbsolutePercentageError(symmetric=False)
 mse = MeanSquaredError()
 
+from warnings import simplefilter
+simplefilter(action='ignore', category=FutureWarning)
+
 
 def stationarity_check(ts):
             
@@ -399,7 +402,6 @@ def main():
     sarimax_forecast = sarimax_model.predict(fh, X=X_test) #, X=X_test
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
 
-    #%%
     # Calculate model performance
     sarimax_mape = mean_absolute_percentage_error(y_test.lpg_c4, sarimax_forecast)
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
@@ -575,7 +577,7 @@ def main():
     poly2_interactions = False
     poly2_strategy = "recursive"
 
-    poly2_forecaster_param_grid = {"window_length": [0.8, 1, 2, 3, 4]}
+    poly2_forecaster_param_grid = {"window_length": [1, 2, 3, 4]}
 
     # Create regressor object
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
@@ -612,7 +614,7 @@ def main():
     poly3_interactions = False
     poly3_strategy = "recursive"
 
-    poly3_forecaster_param_grid = {"window_length": [0.8, 1, 2, 3, 4]}
+    poly3_forecaster_param_grid = {"window_length": [1, 2, 3, 4]}
 
     # Create regressor object
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)

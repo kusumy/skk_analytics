@@ -595,13 +595,13 @@ def main():
     #CREATE PARAMETERS TO DATAFRAME
     logMessage("Creating all model params result data frame ...")
     all_model_param =  {'model_param_a': [arimax_param],
-                        'model_param_b': [sarimax_param],
-                        'model_param_c': [prophet_best_params_str],
-                        'model_param_d': [ranfor_best_params_str],
-                        'model_param_e': [xgb_best_params_str],
-                        'model_param_f': [linreg_best_params_str],
-                        'model_param_g': [poly2_best_params_str],
-                        'model_param_h': [poly3_best_params_str],
+                            'model_param_b': [sarimax_param],
+                            'model_param_c': [prophet_best_params_str],
+                            'model_param_d': [ranfor_best_params_str],
+                            'model_param_e': [xgb_best_params_str],
+                            'model_param_f': [linreg_best_params_str],
+                            'model_param_g': [poly2_best_params_str],
+                            'model_param_h': [poly3_best_params_str],
                         'lng_plant' : 'PT Badak',
                         'product' : 'Feed Gas'}
 

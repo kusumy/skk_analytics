@@ -486,7 +486,7 @@ def main():
     ##### PROPHET MODEL #####
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[2, 8, 12, 22, 32, 42]
+                        ,'n_changepoints':[2, 8, 12, 22, 29]
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
@@ -533,7 +533,7 @@ def main():
     ranfor_strategy = "recursive"
 
     #Create regressor object
-    ranfor_forecaster_param_grid = {"window_length": [2, 8, 12, 22, 32, 42], 
+    ranfor_forecaster_param_grid = {"window_length": [2, 8, 12, 22, 29], 
                                     "estimator__n_estimators": [100,200]}
 
     # create regressor object
@@ -573,7 +573,7 @@ def main():
     xgb_strategy = "recursive"
 
     #Create regressor object
-    xgb_forecaster_param_grid = {"window_length": [2, 8, 12, 22, 32, 42]
+    xgb_forecaster_param_grid = {"window_length": [2, 8, 12, 22, 29]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -611,7 +611,7 @@ def main():
     linreg_strategy = "recursive"
 
     # Create regressor object
-    linreg_forecaster_param_grid = {"window_length": [2, 8, 12, 22, 32, 42]}
+    linreg_forecaster_param_grid = {"window_length": [2, 8, 12, 22, 29]}
 
     linreg_regressor = LinearRegression(normalize=True, n_jobs=-1)
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
@@ -649,7 +649,7 @@ def main():
     poly2_strategy = "recursive"
 
     # Create regressor object
-    poly2_forecaster_param_grid = {"window_length": [0.8, 1, 2, 3, 4]}
+    poly2_forecaster_param_grid = {"window_length": [1, 2, 3, 4]}
 
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
     poly2_forecaster = make_reduction(poly2_regressor, strategy=poly2_strategy)
@@ -687,7 +687,7 @@ def main():
     poly3_strategy = "recursive"
 
     # Create regressor object
-    poly3_forecaster_param_grid = {"window_length": [0.8, 1, 2, 3, 4]}
+    poly3_forecaster_param_grid = {"window_length": [1, 2, 3, 4]}
 
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
     poly3_forecaster = make_reduction(poly3_regressor, strategy=poly3_strategy)
@@ -696,7 +696,7 @@ def main():
     gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, n_jobs=-1, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    gscv_poly3.fit(y_train.lng_production) #, X=X_train
+    gscv_poly3.fit(y_train.lng_production, X=X_train) #, X=X_train
     
     # Show top 10 best models based on scoring function
     gscv_poly3.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
@@ -708,7 +708,7 @@ def main():
     logMessage("Best Polynomial Regression Degree=3 Models "+poly3_best_params_str)
     
     logMessage("Polynomial Regression Degree=3 Model Prediction ...")
-    poly3_forecast = gscv_poly3.best_forecaster_.predict(fh) #, X=X_test
+    poly3_forecast = gscv_poly3.best_forecaster_.predict(fh, X=X_test) #, X=X_test
     y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
@@ -727,8 +727,8 @@ def main():
                             'model_param_f': [linreg_best_params_str],
                             'model_param_g': [poly2_best_params_str],
                             'model_param_h': [poly3_best_params_str],
-                            'lng_plant' : 'PT Badak',
-                            'product' : 'LNG Production'}
+                        'lng_plant' : 'PT Badak',
+                        'product' : 'LNG Production'}
 
     all_model_param = pd.DataFrame(all_model_param)
 
@@ -869,3 +869,5 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         logMessage(error)
+        
+    return updated_rows

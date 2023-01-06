@@ -513,13 +513,13 @@ def main():
 
     logMessage("Creating Window Splitter Prophet Model ....")   
     cv_prophet = SingleWindowSplitter(fh=fh_int)
-    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, n_jobs=-1, scoring=mse)
+    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating Prophet Model ...")
     gscv_prophet.fit(y_train_cleaned, X_train) #, X_train
 
     # Show top 10 best models based on scoring function
-    gscv_prophet.cv_results_.sort_values(by='rank_test_MeanSquaredError', ascending=True)
+    gscv_prophet.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
 
     # Show best model parameters
     logMessage("Show Best Prophet Models ...")
@@ -553,13 +553,13 @@ def main():
 
     logMessage("Creating Window Splitter Random Forest Model ....")   
     cv_ranfor = SingleWindowSplitter(fh=fh_int)
-    gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, n_jobs=-1, scoring=mse)
+    gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
     gscv_ranfor.fit(y_train_cleaned, X_train) #, X_train
 
     # Show top 10 best models based on scoring function
-    gscv_ranfor.cv_results_.sort_values(by='rank_test_MeanSquaredError', ascending=True)
+    gscv_ranfor.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
 
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")
@@ -590,13 +590,13 @@ def main():
     xgb_forecaster = make_reduction(xgb_regressor, strategy=xgb_strategy)
 
     cv_xgb = SingleWindowSplitter(fh=fh_int)
-    gscv_xgb = ForecastingGridSearchCV(xgb_forecaster, cv=cv_xgb, param_grid=xgb_forecaster_param_grid, n_jobs=-1, scoring=mse)
+    gscv_xgb = ForecastingGridSearchCV(xgb_forecaster, cv=cv_xgb, param_grid=xgb_forecaster_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating XGBoost Model ....")
     gscv_xgb.fit(y_train_cleaned, X=X_train) #, X_train
 
     # Show top 10 best models based on scoring function
-    gscv_xgb.cv_results_.sort_values(by='rank_test_MeanSquaredError', ascending=True)
+    gscv_xgb.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
 
     # Show best model parameters
     logMessage("Show Best XGBoost Models ...")
@@ -624,13 +624,13 @@ def main():
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
 
     cv_linreg = SingleWindowSplitter(fh=fh_int)
-    gscv_linreg = ForecastingGridSearchCV(linreg_forecaster, cv=cv_linreg, param_grid=linreg_forecaster_param_grid, n_jobs=-1, scoring=mse)
+    gscv_linreg = ForecastingGridSearchCV(linreg_forecaster, cv=cv_linreg, param_grid=linreg_forecaster_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating Linear Regression Model ...")
     gscv_linreg.fit(y_train_cleaned, X=X_train) #, X=X_train
     
     # Show top 10 best models based on scoring function
-    gscv_linreg.cv_results_.sort_values(by='rank_test_MeanSquaredError', ascending=True)
+    gscv_linreg.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
 
     # Show best model parameters
     logMessage("Show Best Linear Regression Models ...")
@@ -662,13 +662,13 @@ def main():
     poly2_forecaster = make_reduction(poly2_regressor, strategy=poly2_strategy)
 
     cv_poly2 = SingleWindowSplitter(fh=fh_int)
-    gscv_poly2 = ForecastingGridSearchCV(poly2_forecaster, cv=cv_poly2, param_grid=poly2_forecaster_param_grid, scoring=mse, error_score='raise')
+    gscv_poly2 = ForecastingGridSearchCV(poly2_forecaster, cv=cv_poly2, param_grid=poly2_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
     gscv_poly2.fit(y_train_cleaned, X=X_train) #, X=X_train
     
     # Show top 10 best models based on scoring function
-    gscv_poly2.cv_results_.sort_values(by='rank_test_MeanSquaredError', ascending=True)
+    gscv_poly2.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=2 Models ...")
@@ -700,13 +700,13 @@ def main():
     poly3_forecaster = make_reduction(poly3_regressor, strategy=poly3_strategy)
 
     cv_poly3 = SingleWindowSplitter(fh=fh_int)
-    gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, n_jobs=-1, scoring=mse, error_score='raise')
+    gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, n_jobs=-1, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
     gscv_poly3.fit(y_train_cleaned) #, X=X_train
     
     # Show top 10 best models based on scoring function
-    gscv_poly3.cv_results_.sort_values(by='rank_test_MeanSquaredError', ascending=True)
+    gscv_poly3.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=3 Models ...")
