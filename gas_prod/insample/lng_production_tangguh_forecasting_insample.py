@@ -29,6 +29,33 @@ from utils import *
 
 plt.style.use('fivethirtyeight')
 pd.options.plotting.backend = "plotly"
+from cProfile import label
+from imaplib import Time2Internaldate
+
+from sktime.forecasting.base import ForecastingHorizon
+from sktime.forecasting.model_selection import temporal_train_test_split
+import statsmodels.api as sm
+from pmdarima import auto_arima
+from pmdarima.arima.utils import ndiffs, nsdiffs
+from sklearn.metrics import mean_squared_error
+from sktime.forecasting.arima import AutoARIMA
+from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
+from sktime.forecasting.compose import make_reduction
+from sktime.forecasting.fbprophet import Prophet
+from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
+from sklearn.linear_model import LinearRegression
+from polyfit import Constraints, PolynomRegressor
+
+from sktime.forecasting.model_selection import ForecastingGridSearchCV, ForecastingRandomizedSearchCV, SlidingWindowSplitter, ExpandingWindowSplitter, SingleWindowSplitter
+from sktime.performance_metrics.forecasting import MeanAbsolutePercentageError, MeanSquaredError
+from sklearn.model_selection import GridSearchCV
+
+# Model scoring for Cross Validation
+mape = MeanAbsolutePercentageError(symmetric=False)
+mse = MeanSquaredError()
+
+
 # %%
 def main():
     # Configure logging
@@ -105,9 +132,6 @@ def main():
 
     #%%
     # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
-
     fig = px.line(new_s, y='lng_production')
 
     # Add horizontal line for 3 sigma
@@ -154,10 +178,6 @@ def main():
 
     #%%
     # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
-
-
     fig = px.line(new_s, y='lng_production')
 
     # Add horizontal line for 3 sigma
@@ -221,9 +241,6 @@ def main():
     
     #%%
     # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
-
     fig = px.line(new_s2, y='lng_production')
 
     # Add horizontal line for 3 sigma
@@ -276,9 +293,6 @@ def main():
 
     #%%
     # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
-
     fig = px.line(new_s2, y='lng_production')
 
     # Add horizontal line for 3 sigma
@@ -332,39 +346,25 @@ def main():
     # plt.close()
 
     #%%
-    from statsmodels.tsa.stattools import adfuller
-    def ad_test(dataset):
-        dftest = adfuller(df, autolag = 'AIC')
-        print("1. ADF : ",dftest[0])
-        print("2. P-Value : ", dftest[1])
-        print("3. Num Of Lags : ", dftest[2])
-        print("4. Num Of Observations Used For ADF Regression:", dftest[3])
-        print("5. Critical Values :")
-        for key, val in dftest[4].items():
-            print("\t",key, ": ", val)
-    ad_test(train_df)
+    # Ad-Fuller Testing
+    ad_test(df_cleaned)
 
     #%%
-    from sktime.forecasting.base import ForecastingHorizon
-    from sktime.forecasting.model_selection import temporal_train_test_split
-
     # Test size
-    test_size = 0.2
+    test_size = 365
     # Split data (original data)
     y_train, y_test = temporal_train_test_split(df, test_size=test_size)
     # Split data (original data)
     y_train_cleaned, y_test_cleaned = temporal_train_test_split(df_cleaned, test_size=test_size)
     # Horizon
     fh = ForecastingHorizon(y_test.index, is_relative=False)
+    fh_int = np.arange(1, len(fh))
 
     #%%
     ## Create Exogenous Variable
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['planned_shutdown'] = data['planned_shutdown'].values
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
-    #df['day_of_year'] = [i.dayofyear for i in df.index]
-    #df['week_of_year'] = [i.weekofyear for i in df.index]
-    #df.tail(20)
 
     #%%
     # Split into train and test
@@ -386,15 +386,7 @@ def main():
     ##### ARIMAX MODEL (forecast_a) #####
     #ARIMA(1,1,1)
     # %%
-    import statsmodels.api as sm
-    from pmdarima import auto_arima
-    from pmdarima.arima.utils import ndiffs, nsdiffs
-    from sklearn.metrics import mean_squared_error
-    from sktime.forecasting.arima import AutoARIMA
-    from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
-
     # Create ARIMAX (forecast_a) Model
-    #ARIMA(1,1,1)
     arimax_model = AutoARIMA(d=1, suppress_warnings=True, error_action='ignore', trace=True) #If using SKTime AutoArima
     #arimax_model = auto_arima(y_train_cleaned, X_train[exogenous_features], d=1, trace=True, error_action="ignore", suppress_warnings=True)
     logMessage("Creating ARIMAX Model ...")
@@ -405,16 +397,9 @@ def main():
     logMessage("ARIMAX Model Prediction ..")
     arimax_forecast = arimax_model.predict(fh, X=X_test[exogenous_features]) #If using sktime (fh), if using pmdarima (len(fh))
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
-    y_pred_arimax['day_num'] = [i.day for i in arimax_forecast.index]
-    y_pred_arimax['month_num'] = [i.month for i in arimax_forecast.index]
-    y_pred_arimax['year_num'] = [i.year for i in arimax_forecast.index]
-    y_pred_arimax['date'] = y_pred_arimax['year_num'].astype(str) + '-' + y_pred_arimax['month_num'].astype(str) + '-' + y_pred_arimax['day_num'].astype(str)
-    y_pred_arimax['date'] = pd.DatetimeIndex(y_pred_arimax['date'], freq='D')
-    # Rename column to forecast_a
-    y_pred_arimax.rename(columns={'lng_production':'forecast_a'}, inplace=True)
 
     #Create MAPE
-    arimax_mape = mean_absolute_percentage_error(y_test.lng_production, arimax_forecast)
+    arimax_mape = mean_absolute_percentage_error(y_test_cleaned.lng_production, arimax_forecast)
     arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
     logMessage("ARIMAX Model "+arimax_mape_str)
     
@@ -427,8 +412,6 @@ def main():
     ##### SARIMAX MODEL (forecast_b) #####
     ##### ARIMA(1,0,2)(0,1,1)[4] #####
     #%%
-    from pmdarima.arima import auto_arima
-
     #Set parameters
     sarimax_differencing = 0
     sarimax_seasonal_differencing = 1
@@ -451,16 +434,9 @@ def main():
     logMessage("SARIMAX Model Prediction ..")
     sarimax_forecast = sarimax_model.predict(fh, X=X_test[exogenous_features])
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
-    y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
-    y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]
-    y_pred_sarimax['year_num'] = [i.year for i in sarimax_forecast.index]
-    y_pred_sarimax['date'] = y_pred_sarimax['year_num'].astype(str) + '-' + y_pred_sarimax['month_num'].astype(str) + '-' + y_pred_sarimax['day_num'].astype(str)
-    y_pred_sarimax['date'] = pd.DatetimeIndex(y_pred_sarimax['date'], freq='D')
-    # Rename column to forecast_a
-    y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
 
     #Create MAPE
-    sarimax_mape = mean_absolute_percentage_error(y_test.lng_production, sarimax_forecast)
+    sarimax_mape = mean_absolute_percentage_error(y_test_cleaned.lng_production, sarimax_forecast)
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
     logMessage("SARIMAX Model "+sarimax_mape_str)
     
@@ -473,276 +449,233 @@ def main():
 
     ##### PROPHET MODEL (forecast_c) #####
     #%%
-    # Create model
-    from sktime.forecasting.compose import make_reduction
-    from sktime.forecasting.fbprophet import Prophet
+    #Create Prophet Parameter Grid
+    prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
+                        ,'n_changepoints':[1,6,27]
+                        ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
+                        ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
+                        ,'daily_seasonality':[8,10]
+                        ,'weekly_seasonality':[1,5]
+                        ,'yearly_seasonality':[8,10]
+                        }
 
-    #Set Parameters
-    seasonality_mode = 'additive'
-    n_changepoints = 27 #1, 6, 27
-    seasonality_prior_scale = 0.05
-    changepoint_prior_scale = 0.1
-    holidays_prior_scale = 8
-    daily_seasonality = 8
-    weekly_seasonality = 1
-    yearly_seasonality = 10
-
+    logMessage("Creating Prophet Regressor Object ....") 
     # create regressor object
-    prophet_forecaster = Prophet(
-        seasonality_mode=seasonality_mode,
-        n_changepoints=n_changepoints,
-        seasonality_prior_scale=seasonality_prior_scale, #Flexibility of the seasonality (0.01,10)
-        changepoint_prior_scale=changepoint_prior_scale, #Flexibility of the trend (0.001,0.5)
-        holidays_prior_scale=holidays_prior_scale, #Flexibility of the holiday effects (0.01,10)
-        #changepoint_range=0.8, #proportion of the history in which the trend is allowed to change
-        daily_seasonality=daily_seasonality,
-        weekly_seasonality=weekly_seasonality,
-        yearly_seasonality=yearly_seasonality)
+    prophet_forecaster = Prophet()
 
-    logMessage("Creating Prophet Model ....")
-    prophet_forecaster.fit(y_train_cleaned, X=X_train) #, X_train
-    
+    logMessage("Creating Window Splitter Prophet Model ....")   
+    cv_prophet = SingleWindowSplitter(fh=fh_int)
+    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, n_jobs=-1, scoring=mape)
+
+    logMessage("Creating Prophet Model ...")
+    gscv_prophet.fit(y_train_cleaned, X_train) #, X_train
+
+    # Show top 10 best models based on scoring function
+    gscv_prophet.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
+
+    # Show best model parameters
+    logMessage("Show Best Prophet Models ...")
+    prophet_best_params = gscv_prophet.best_params_
+    prophet_best_params_str = str(prophet_best_params)
+    logMessage("Best Prophet Models "+prophet_best_params_str)
+
     logMessage("Prophet Model Prediction ...")
-    prophet_forecast = prophet_forecaster.predict(fh, X=X_test) #, X=X_test
+    prophet_forecast = gscv_prophet.best_forecaster_.predict(fh, X=X_test)#, X=X_test
     y_pred_prophet = pd.DataFrame(prophet_forecast).applymap('{:.2f}'.format)
-    y_pred_prophet['day_num'] = [i.day for i in prophet_forecast.index]
-    y_pred_prophet['month_num'] = [i.month for i in prophet_forecast.index]
-    y_pred_prophet['year_num'] = [i.year for i in prophet_forecast.index]
-    y_pred_prophet['date'] = y_pred_prophet['year_num'].astype(str) + '-' + y_pred_prophet['month_num'].astype(str) + '-' + y_pred_prophet['day_num'].astype(str)
-    y_pred_prophet['date'] = pd.DatetimeIndex(y_pred_prophet['date'], freq='D')
-    # Rename column to forecast_c
-    y_pred_prophet.rename(columns={'lng_production':'forecast_c'}, inplace=True)
 
     #Create MAPE
-    prophet_mape = mean_absolute_percentage_error(y_test['lng_production'], prophet_forecast)
+    prophet_mape = mean_absolute_percentage_error(y_test_cleaned['lng_production'], prophet_forecast)
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
-    
-    #Get parameters
-    prophet_param = str(prophet_forecaster.get_params())
-    logMessage("Prophet Model Parameters "+prophet_param)
 
 
     ##### RANDOM FOREST MODEL (forecast_d) #####
     #%%
-    from sklearn.ensemble import RandomForestRegressor
-
-    #Set Parameters
-    ranfor_n_estimators = 157
-    ranfor_lags = 27 #1, 6, 27
+    #Create Random Forest Parameter Grid
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
+    ranfor_forecaster_param_grid = {"window_length": [1, 6, 11, 21, 27], 
+                                    "estimator__n_estimators": [150, 200]}
+
     # create regressor object
-    ranfor_regressor = RandomForestRegressor(n_estimators = ranfor_n_estimators, random_state = ranfor_random_state, criterion = ranfor_criterion)
-    ranfor_forecaster = make_reduction(ranfor_regressor, window_length = ranfor_lags, strategy = ranfor_strategy)
+    ranfor_regressor = RandomForestRegressor(random_state = ranfor_random_state, criterion = ranfor_criterion, n_jobs=-1)
+    ranfor_forecaster = make_reduction(ranfor_regressor, strategy = ranfor_strategy)
+
+    logMessage("Creating Window Splitter Random Forest Model ....")   
+    cv_ranfor = SingleWindowSplitter(fh=fh_int)
+    gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_forecaster.fit(y_train_cleaned, X_train) #, X_train
+    gscv_ranfor.fit(y_train_cleaned, X_train) #, X_train
+
+    # Show top 10 best models based on scoring function
+    gscv_ranfor.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
+
+    # Show best model parameters
+    logMessage("Show Best Random Forest Models ...")
+    ranfor_best_params = gscv_ranfor.best_params_
+    ranfor_best_params_str = str(ranfor_best_params)
+    logMessage("Best Random Forest Models "+ranfor_best_params_str)
     
     logMessage("Random Forest Model Prediction ...")
-    ranfor_forecast = ranfor_forecaster.predict(fh, X=X_test) #, X=X_test
+    ranfor_forecast = gscv_ranfor.best_forecaster_.predict(fh, X=X_test) #, X=X_test
     y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:.2f}'.format)
-    y_pred_ranfor['day_num'] = [i.day for i in ranfor_forecast.index]
-    y_pred_ranfor['month_num'] = [i.month for i in ranfor_forecast.index]
-    y_pred_ranfor['year_num'] = [i.year for i in ranfor_forecast.index]
-    y_pred_ranfor['date'] = y_pred_ranfor['year_num'].astype(str) + '-' + y_pred_ranfor['month_num'].astype(str) + '-' + y_pred_ranfor['day_num'].astype(str)
-    y_pred_ranfor['date'] = pd.DatetimeIndex(y_pred_ranfor['date'], freq='D')
-    # Rename column to forecast_d
-    y_pred_ranfor.rename(columns={'lng_production':'forecast_d'}, inplace=True)
 
     #Create MAPE
-    ranfor_mape = mean_absolute_percentage_error(y_test['lng_production'], ranfor_forecast)
+    ranfor_mape = mean_absolute_percentage_error(y_test_cleaned['lng_production'], y_pred_ranfor)
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
-    
-    #Get Parameters
-    ranfor_param = str(ranfor_forecaster.get_params())
-    logMessage("Random Forest Model Parameters "+ranfor_param)
 
 
     ##### XGBOOST MODEL (forecast_e) #####
     #%%
-    # Create model
-    from xgboost import XGBRegressor
-
-    #Set Parameters
+    #Create XGBoost Parameter Grid
     xgb_objective = 'reg:squarederror'
-    xgb_lags = 6 #1, 6, 27
     xgb_strategy = "recursive"
 
-    xgb_regressor = XGBRegressor(objective=xgb_objective)
-    xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
+    xgb_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19, 27]
+                                ,"estimator__n_estimators": [100, 200]
+                                }
+
+    xgb_regressor = XGBRegressor(objective=xgb_objective, n_jobs=-1, seed = 42)
+    xgb_forecaster = make_reduction(xgb_regressor, strategy=xgb_strategy)
+
+    cv_xgb = SingleWindowSplitter(fh=fh_int)
+    gscv_xgb = ForecastingGridSearchCV(xgb_forecaster, cv=cv_xgb, param_grid=xgb_forecaster_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating XGBoost Model ....")
-    xgb_forecaster.fit(y_train_cleaned, X=X_train) #, X_train
+    gscv_xgb.fit(y_train_cleaned, X=X_train) #, X_train
+
+    # Show top 10 best models based on scoring function
+    gscv_xgb.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
+
+    # Show best model parameters
+    logMessage("Show Best XGBoost Models ...")
+    xgb_best_params = gscv_xgb.best_params_
+    xgb_best_params_str = str(xgb_best_params)
+    logMessage("Best XGBoost Models "+xgb_best_params_str)
     
     logMessage("XGBoost Model Prediction ...")
-    xgb_forecast = xgb_forecaster.predict(fh, X=X_test) #, X=X_test
+    xgb_forecast = gscv_xgb.best_forecaster_.predict(fh, X=X_test) #, X=X_test
     y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:.2f}'.format)
-    y_pred_xgb['day_num'] = [i.day for i in xgb_forecast.index]
-    y_pred_xgb['month_num'] = [i.month for i in xgb_forecast.index]
-    y_pred_xgb['year_num'] = [i.year for i in xgb_forecast.index]
-    y_pred_xgb['date'] = y_pred_xgb['year_num'].astype(str) + '-' + y_pred_xgb['month_num'].astype(str) + '-' + y_pred_xgb['day_num'].astype(str)
-    y_pred_xgb['date'] = pd.DatetimeIndex(y_pred_xgb['date'], freq='D')
-    # Rename column to forecast_e
-    y_pred_xgb.rename(columns={'lng_production':'forecast_e'}, inplace=True)
 
     #Create MAPE
-    xgb_mape = mean_absolute_percentage_error(y_test['lng_production'], xgb_forecast)
+    xgb_mape = mean_absolute_percentage_error(y_test_cleaned['lng_production'], y_pred_xgb)
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
-    
-    #Get Parameters
-    xgb_param = str(xgb_forecaster.get_params())
-    logMessage("XGBoost Model Parameters "+xgb_param)
 
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
     #%%
-    # Create model
-    from sklearn.linear_model import LinearRegression
-
-    #Set Parameters
-    linreg_lags = 6 #1, 6, 27
+    # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
+    linreg_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19, 27]}
 
-    linreg_regressor = LinearRegression(normalize=True)
-    linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
+    linreg_regressor = LinearRegression(normalize=True, n_jobs=-1)
+    linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
+
+    cv_linreg = SingleWindowSplitter(fh=fh_int)
+    gscv_linreg = ForecastingGridSearchCV(linreg_forecaster, cv=cv_linreg, param_grid=linreg_forecaster_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating Linear Regression Model ...")
-    linreg_forecaster.fit(y_train_cleaned, X=X_train) #, X=X_train
+    gscv_linreg.fit(y_train_cleaned, X=X_train) #, X=X_train
+    
+    # Show top 10 best models based on scoring function
+    gscv_linreg.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
+
+    # Show best model parameters
+    logMessage("Show Best Linear Regression Models ...")
+    linreg_best_params = gscv_linreg.best_params_
+    linreg_best_params_str = str(linreg_best_params)
+    logMessage("Best Linear Regression Models "+linreg_best_params_str)
     
     logMessage("Linear Regression Model Prediction ...")
-    linreg_forecast = linreg_forecaster.predict(fh, X=X_test) #, X=X_test
+    linreg_forecast = gscv_linreg.best_forecaster_.predict(fh, X=X_test) #, X=X_test
     y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:.2f}'.format)
-    y_pred_linreg['day_num'] = [i.day for i in linreg_forecast.index]
-    y_pred_linreg['month_num'] = [i.month for i in linreg_forecast.index]
-    y_pred_linreg['year_num'] = [i.year for i in linreg_forecast.index]
-    y_pred_linreg['date'] = y_pred_linreg['year_num'].astype(str) + '-' + y_pred_linreg['month_num'].astype(str) + '-' + y_pred_linreg['day_num'].astype(str)
-    y_pred_linreg['date'] = pd.DatetimeIndex(y_pred_linreg['date'], freq='D')
-    # Rename column to forecast_f
-    y_pred_linreg.rename(columns={'lng_production':'forecast_f'}, inplace=True)
 
     #Create MAPE
-    linreg_mape = mean_absolute_percentage_error(y_test['lng_production'], linreg_forecast)
+    linreg_mape = mean_absolute_percentage_error(y_test_cleaned['lng_production'], y_pred_linreg)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
-    
-    #Get parameters
-    linreg_param = str(linreg_forecaster.get_params())
-    logMessage("Linear Regression Model Parameters "+linreg_param)
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
     #%%
-    #Create model
-    from polyfit import Constraints, PolynomRegressor
-
-    #Set Parameters
-    poly2_lags = 6 #1, 6, 27
+    # Create Polynomial Regression Degree=2 Parameter Grid
     poly2_regularization = None
     poly2_interactions = False
     poly2_strategy = "recursive"
 
+    poly2_forecaster_param_grid = {"window_length": [1, 2, 3, 4, 5]}
+
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
-    poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy)
+    poly2_forecaster = make_reduction(poly2_regressor, strategy=poly2_strategy)
+
+    cv_poly2 = SingleWindowSplitter(fh=fh_int)
+    gscv_poly2 = ForecastingGridSearchCV(poly2_forecaster, cv=cv_poly2, param_grid=poly2_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_forecaster.fit(y_train_cleaned, X=X_train) #, X=X_train
+    gscv_poly2.fit(y_train_cleaned, X=X_train) #, X=X_train
     
-    logMessage("Polynomial Regression Orde 2 Model Prediction ...")
-    poly2_forecast = poly2_forecaster.predict(fh, X=X_test) #, X=X_test
+    # Show top 10 best models based on scoring function
+    gscv_poly2.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
+
+    # Show best model parameters
+    logMessage("Show Best Polynomial Regression Degree=2 Models ...")
+    poly2_best_params = gscv_poly2.best_params_
+    poly2_best_params_str = str(poly2_best_params)
+    logMessage("Best Polynomial Regression Degree=3 Models "+poly2_best_params_str)
+    
+    logMessage("Polynomial Regression Degree=2 Model Prediction ...")
+    poly2_forecast = gscv_poly2.best_forecaster_.predict(fh, X=X_test) #, X=X_test
     y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:.2f}'.format)
-    y_pred_poly2['day_num'] = [i.day for i in poly2_forecast.index]
-    y_pred_poly2['month_num'] = [i.month for i in poly2_forecast.index]
-    y_pred_poly2['year_num'] = [i.year for i in poly2_forecast.index]
-    y_pred_poly2['date'] = y_pred_poly2['year_num'].astype(str) + '-' + y_pred_poly2['month_num'].astype(str) + '-' + y_pred_poly2['day_num'].astype(str)
-    y_pred_poly2['date'] = pd.DatetimeIndex(y_pred_poly2['date'], freq='D')
-    # Rename column to forecast_g
-    y_pred_poly2.rename(columns={'lng_production':'forecast_g'}, inplace=True)
 
     #Create MAPE
-    poly2_mape = mean_absolute_percentage_error(y_test['lng_production'], poly2_forecast)
+    poly2_mape = mean_absolute_percentage_error(y_test_cleaned['lng_production'], y_pred_poly2)
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Degree=2 Model "+poly2_mape_str)
-    
-    #Get parameters
-    poly2_param = str(poly2_forecaster.get_params())
-    logMessage("Polynomial Regression Orde 2 Model Parameters "+poly2_param)
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
     #%%
-    #Create model
-    from polyfit import Constraints, PolynomRegressor
-
-    #Set Parameters
-    poly3_lags = 1
+    # Create Polynomial Regression Degree=3 Parameter Grid
     poly3_regularization = None
     poly3_interactions = False
     poly3_strategy = "recursive"
 
+    poly3_forecaster_param_grid = {"window_length": [1, 2, 3, 4, 5]}
+
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
-    poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy)
+    poly3_forecaster = make_reduction(poly3_regressor, strategy=poly3_strategy)
+
+    cv_poly3 = SingleWindowSplitter(fh=fh_int)
+    gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, n_jobs=-1, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_forecaster.fit(y_train_cleaned, X=X_train) #, X=X_train
+    gscv_poly3.fit(y_train_cleaned) #, X=X_train
     
-    logMessage("Polynomial Regression Orde 3 Model Prediction ...")
-    poly3_forecast = poly3_forecaster.predict(fh, X=X_test) #, X=X_test
+    # Show top 10 best models based on scoring function
+    gscv_poly3.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
+
+    # Show best model parameters
+    logMessage("Show Best Polynomial Regression Degree=3 Models ...")
+    poly3_best_params = gscv_poly3.best_params_
+    poly3_best_params_str = str(poly3_best_params)
+    logMessage("Best Polynomial Regression Degree=3 Models "+poly3_best_params_str)
+    
+    logMessage("Polynomial Regression Degree=3 Model Prediction ...")
+    poly3_forecast = gscv_poly3.best_forecaster_.predict(fh) #, X=X_test
     y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:.2f}'.format)
-    y_pred_poly3['day_num'] = [i.day for i in poly3_forecast.index]
-    y_pred_poly3['month_num'] = [i.month for i in poly3_forecast.index]
-    y_pred_poly3['year_num'] = [i.year for i in poly3_forecast.index]
-    y_pred_poly3['date'] = y_pred_poly3['year_num'].astype(str) + '-' + y_pred_poly3['month_num'].astype(str) + '-' + y_pred_poly3['day_num'].astype(str)
-    y_pred_poly3['date'] = pd.DatetimeIndex(y_pred_poly3['date'], freq='D')
-    # Rename column to forecast_h
-    y_pred_poly3.rename(columns={'lng_production':'forecast_h'}, inplace=True)
 
     #Create MAPE
-    poly3_mape = mean_absolute_percentage_error(y_test['lng_production'], poly3_forecast)
+    poly3_mape = mean_absolute_percentage_error(y_test_cleaned['lng_production'], y_pred_poly3)
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Degree=3 Model "+poly3_mape_str)
-    
-    #Get parameters
-    poly3_param = str(poly3_forecaster.get_params())
-    logMessage("Polynomial Regression Orde 3 Model Parameters "+poly3_param)
+
 
     #%%
-    ##### PLOT PREDICTION #####
-    fig, ax = plt.subplots(figsize=(20,8))
-    ax.plot(y_train, label='train')
-    ax.plot(y_test, label='test', color='green')
-    ax.plot(arimax_forecast, label='pred_arimax')
-    ax.plot(sarimax_forecast, label='pred_sarimax')
-    ax.plot(prophet_forecast, label='pred_prophet')
-    ax.plot(ranfor_forecast, label='pred_ranfor')
-    ax.plot(xgb_forecast, label='pred_xgb')
-    ax.plot(linreg_forecast, label='pred_linreg')
-    ax.plot(poly2_forecast, label='pred_poly2')
-    ax.plot(poly3_forecast, label='pred_poly3')
-    title = 'LNG Production BP Tangguh Forecasting with Exogenous Variable and Cleaning Data'
-    ax.set_title(title)
-    ax.set_ylabel("LNG Production")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    plt.close()
-
-    #%%
-    ##### JOIN PREDICTION RESULT TO DATAFRAME #####
-    logMessage("Creating all model prediction result data frame ...")
-    y_all_pred = pd.concat([y_pred_arimax[['forecast_a']],
-                            y_pred_sarimax[['forecast_b']],
-                            y_pred_prophet[['forecast_c']],
-                            y_pred_ranfor[['forecast_d']],
-                            y_pred_xgb[['forecast_e']],
-                            y_pred_linreg[['forecast_f']],
-                            y_pred_poly2[['forecast_g']],
-                            y_pred_poly3[['forecast_h']]], axis=1)
-    y_all_pred['date'] = y_test.index.values
-
     #CREATE MAPE TO DATAFRAME
     logMessage("Creating all model mape result data frame ...")
     all_mape_pred =  {'mape_forecast_a': [arimax_mape],
@@ -762,12 +695,12 @@ def main():
     logMessage("Creating all model params result data frame ...")
     all_model_param =  {'model_param_a': [arimax_param],
                         'model_param_b': [sarimax_param],
-                        'model_param_c': [prophet_param],
-                        'model_param_d': [ranfor_param],
-                        'model_param_e': [xgb_param],
-                        'model_param_f': [linreg_param],
-                        'model_param_g': [poly2_param],
-                        'model_param_h': [poly3_param],
+                        'model_param_c': [prophet_best_params_str],
+                        'model_param_d': [ranfor_best_params_str],
+                        'model_param_e': [xgb_best_params_str],
+                        'model_param_f': [linreg_best_params_str],
+                        'model_param_g': [poly2_best_params_str],
+                        'model_param_h': [poly3_best_params_str],
                         'lng_plant' : 'BP Tangguh',
                         'product' : 'LNG Production'}
 
