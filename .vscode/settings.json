@@ -1,0 +1,14 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "188.166.239.112",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "postgresql_ml_lng_skk",
+            "database": "skk_da_lng_analytics",
+            "username": "postgres",
+            "password": "rahasia"
+        }
+    ]
+}

@@ -7,7 +7,7 @@ import arrow
 import sys
 import time
 from humanfriendly import format_timespan
-from utils import configLogging, logMessage, ad_test
+from utils import configLogging, logMessage
 
 import warnings
 warnings.filterwarnings('ignore')

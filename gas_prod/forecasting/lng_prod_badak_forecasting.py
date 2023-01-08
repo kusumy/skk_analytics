@@ -9,6 +9,7 @@ import plotly.express as px
 import psycopg2
 import seaborn as sns
 import time
+import ast
 
 from humanfriendly import format_timespan
 from tokenize import Ignore
@@ -18,7 +19,7 @@ from pmdarima.arima.auto import auto_arima
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import configLogging, logMessage, ad_test, stationarity_check, decomposition_plot, plot_acf_pacf
+from utils import *
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
@@ -92,73 +93,6 @@ def main():
 
     # Get only anomalies data
     #anomalies_data = new_s[new_s['anomaly'].isnull()]
-    
-    #%%
-    from datetime import date, datetime, timedelta
-    def get_first_date_of_current_month(year, month):
-        """Return the first date of the month.
-
-        Args:
-            year (int): Year
-            month (int): Month
-
-        Returns:
-            date (datetime): First date of the current month
-        """
-        first_date = datetime(year, month, 1)
-        return first_date.strftime("%Y-%m-%d")
-
-    def get_last_date_of_month(year, month):
-        """Return the last date of the month.
-        
-        Args:
-            year (int): Year, i.e. 2022
-            month (int): Month, i.e. 1 for January
-
-        Returns:
-            date (datetime): Last date of the current month
-        """
-        
-        if month == 12:
-            last_date = datetime(year, month, 31)
-        else:
-            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-        
-        return last_date.strftime("%Y-%m-%d")
-
-    def get_first_date_of_prev_month(year, month, step=-1):
-        """Return the first date of the month.
-
-        Args:
-            year (int): Year
-            month (int): Month
-
-        Returns:
-            date (datetime): First date of the current month
-        """
-        first_date = datetime(year, month, 1)
-        first_date = first_date + relativedelta(months=step)
-        return first_date.strftime("%Y-%m-%d")
-
-    def get_last_date_of_prev_month(year, month, step=-1):
-        """Return the last date of the month.
-        
-        Args:
-            year (int): Year, i.e. 2022
-            month (int): Month, i.e. 1 for January
-
-        Returns:
-            date (datetime): Last date of the current month
-        """
-        
-        if month == 12:
-            last_date = datetime(year, month, 31)
-        else:
-            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-            
-        last_date = last_date + relativedelta(months=step)
-        
-        return last_date.strftime("%Y-%m-%d")
     
     for index, row in anomalies_data.iterrows():
         yr = index.year
@@ -266,7 +200,20 @@ def main():
         import statsmodels.api as sm
         from sktime.forecasting.arima import AutoARIMA, ARIMA
 
-        #Set parameters
+        # Get best parameter from database
+        sql_model_param = """SELECT model_param_a 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        arima_modal_param = get_sql_data(sql_model_param, conn)
+        arima_modal_param = arima_modal_param['model_param_a'][0]
+       
+        # Convert string to tuple
+        arima_modal_param = ast.literal_eval(arima_modal_param)
+        
+        # Set parameters
         arimax_differencing = 1
         arimax_stationary = False
         arimax_trace = True
@@ -277,7 +224,8 @@ def main():
         logMessage("Creating ARIMAX Model ...")
         #ARIMA(1,1,3)(0,0,0)[0]
         #arimax_model = AutoARIMA(d=arimax_differencing, stationary=arimax_stationary, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
-        arimax_model = ARIMA(order=(1, 1, 3), suppress_warnings=arimax_suppress_warnings)
+        #arimax_model = ARIMA(order=(1, 1, 3), suppress_warnings=arimax_suppress_warnings)
+        arimax_model = ARIMA(order=arima_modal_param, suppress_warnings=arimax_suppress_warnings)
         arimax_model.fit(train_df, X=train_exog)
         future_exog = future_exog.sort_index()
         logMessage("ARIMAX Model Summary")
@@ -298,6 +246,19 @@ def main():
         #%%
         ##### SARIMAX MODEL #####
 
+        # Get best parameter from database
+        sql_model_param = """SELECT model_param_b 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        sarimax_modal_param = get_sql_data(sql_model_param, conn)
+        sarimax_modal_param = sarimax_modal_param['model_param_b'][0]
+       
+        # Convert string to tuple
+        sarimax_modal_param = ast.literal_eval(sarimax_modal_param)
+        
         #Set parameters
         sarimax_differencing = 1
         sarimax_seasonal_differencing = 0
@@ -333,16 +294,29 @@ def main():
         ##### PROPHET MODEL #####
         from sktime.forecasting.fbprophet import Prophet
         from sktime.forecasting.compose import make_reduction
+        
+        # Get best parameter from database
+        sql_model_param = """SELECT model_param_c 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        prophet_modal_param = get_sql_data(sql_model_param, conn)
+        prophet_modal_param = prophet_modal_param['model_param_c'][0]
+       
+        # Convert string to tuple
+        prophet_modal_param = ast.literal_eval(prophet_modal_param)
 
         #Set parameters
-        prophet_seasonality_mode = 'additive'
-        prophet_n_changepoints = 2
-        prophet_seasonality_prior_scale = 0.05
-        prophet_changepoint_prior_scale = 0.4
-        prophet_holidays_prior_scale = 8
-        prophet_daily_seasonality = 7
-        prophet_weekly_seasonality = 1
-        prophet_yearly_seasonality = 10
+        prophet_seasonality_mode = prophet_modal_param['seasonality_mode']
+        prophet_n_changepoints = prophet_modal_param['n_changepoints']
+        prophet_seasonality_prior_scale = prophet_modal_param['seasonality_prior_scale']
+        prophet_changepoint_prior_scale = prophet_modal_param['changepoint_prior_scale']
+        #prophet_holidays_prior_scale = prophet_modal_param['seasonality_mode']
+        prophet_daily_seasonality = prophet_modal_param['daily_seasonality']
+        prophet_weekly_seasonality = prophet_modal_param['weekly_seasonality']
+        prophet_yearly_seasonality = prophet_modal_param['yearly_seasonality']
 
         #Create regressor object
         logMessage("Creating Prophet Model ....")
@@ -351,7 +325,7 @@ def main():
                 n_changepoints=prophet_n_changepoints,
                 seasonality_prior_scale=prophet_seasonality_prior_scale, #Flexibility of the seasonality (0.01,10)
                 changepoint_prior_scale=prophet_changepoint_prior_scale, #Flexibility of the trend (0.001,0.5)
-                holidays_prior_scale=prophet_holidays_prior_scale, #Flexibility of the holiday effects (0.01,10)
+                #holidays_prior_scale=prophet_holidays_prior_scale, #Flexibility of the holiday effects (0.01,10)
                 #changepoint_range=0.8, #proportion of the history in which the trend is allowed to change
                 daily_seasonality=prophet_daily_seasonality,
                 weekly_seasonality=prophet_weekly_seasonality,
@@ -373,11 +347,24 @@ def main():
         ##### RANDOM FOREST MODEL #####
         from sklearn.ensemble import RandomForestRegressor
 
+        # Get best parameter from database
+        sql_model_param = """SELECT model_param_d 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        ranfor_modal_param = get_sql_data(sql_model_param, conn)
+        ranfor_modal_param = ranfor_modal_param['model_param_d'][0]
+       
+        # Convert string to tuple
+        ranfor_modal_param = ast.literal_eval(ranfor_modal_param)
+        
         #Set parameters
-        ranfor_n_estimators = 100
+        ranfor_n_estimators =  ranfor_modal_param['estimator__n_estimators']
         ranfor_random_state = 0
         ranfor_criterion =  "squared_error"
-        ranfor_lags = 32
+        ranfor_lags = ranfor_modal_param['window_length']
         ranfor_strategy = "recursive"
 
         #Create regressor object
@@ -401,9 +388,22 @@ def main():
         ##### XGBOOST MODEL #####
         from xgboost import XGBRegressor
 
+        # Get best parameter from database
+        sql_model_param = """SELECT model_param_e 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        xgb_modal_param = get_sql_data(sql_model_param, conn)
+        xgb_modal_param = xgb_modal_param['model_param_e'][0]
+       
+        # Convert string to tuple
+        xgb_modal_param = ast.literal_eval(xgb_modal_param)
+        
         #Set parameters
         xgb_objective = 'reg:squarederror'
-        xgb_lags = 42
+        xgb_lags = xgb_modal_param['window_length']
         xgb_strategy = "recursive"
 
         #Create regressor object
@@ -427,9 +427,22 @@ def main():
         ##### LINEAR REGRESSION MODEL #####
         from sklearn.linear_model import LinearRegression
 
+        # Get best parameter from database
+        sql_model_param = """SELECT model_param_f 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        linreg_modal_param = get_sql_data(sql_model_param, conn)
+        linreg_modal_param = linreg_modal_param['model_param_f'][0]
+       
+        # Convert string to tuple
+        linreg_modal_param = ast.literal_eval(linreg_modal_param)
+        
         #Set parameters
         linreg_normalize = True
-        linreg_lags = 44
+        linreg_lags = linreg_modal_param['window_length']
         linreg_strategy = "recursive"
 
         # Create regressor object
@@ -453,10 +466,23 @@ def main():
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
         from polyfit import PolynomRegressor, Constraints
 
+        # Get best parameter from database
+        sql_model_param = """SELECT model_param_g 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        poly2_modal_param = get_sql_data(sql_model_param, conn)
+        poly2_modal_param = poly2_modal_param['model_param_g'][0]
+       
+        # Convert string to tuple
+        poly2_modal_param = ast.literal_eval(poly2_modal_param)
+        
         #Set parameters
         poly2_regularization = None
         poly2_interactions = False
-        poly2_lags = 7
+        poly2_lags = poly2_modal_param['window_length']
         poly2_strategy = "recursive"
 
         # Create regressor object
@@ -480,10 +506,23 @@ def main():
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
         from polyfit import PolynomRegressor, Constraints
 
+        # Get best parameter from database
+        sql_model_param = """SELECT model_param_h 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        poly3_modal_param = get_sql_data(sql_model_param, conn)
+        poly3_modal_param = poly3_modal_param['model_param_h'][0]
+       
+        # Convert string to tuple
+        poly3_modal_param = ast.literal_eval(poly3_modal_param)
+        
         #Set parameters
         poly3_regularization = None
         poly3_interactions = False
-        poly3_lags = 2
+        poly3_lags = poly3_modal_param['window_length']
         poly3_strategy = "recursive"
 
         # Create regressor object
@@ -596,6 +635,6 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
 
     return updated_rows
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
 #     #main(sys.argv[1], sys.argv[2], sys.argv[3])
-#     main()
+    main()
