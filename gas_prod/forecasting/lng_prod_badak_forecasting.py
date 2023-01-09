@@ -208,11 +208,11 @@ def main():
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        arima_modal_param = get_sql_data(sql_model_param, conn)
-        arima_modal_param = arima_modal_param['model_param_a'][0]
+        arima_model_param = get_sql_data(sql_model_param, conn)
+        arima_model_param = arima_model_param['model_param_a'][0]
        
         # Convert string to tuple
-        arima_modal_param = ast.literal_eval(arima_modal_param)
+        arima_model_param = ast.literal_eval(arima_model_param)
         
         # Set parameters
         arimax_differencing = 1
@@ -226,7 +226,7 @@ def main():
         #ARIMA(1,1,3)(0,0,0)[0]
         #arimax_model = AutoARIMA(d=arimax_differencing, stationary=arimax_stationary, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
         #arimax_model = ARIMA(order=(1, 1, 3), suppress_warnings=arimax_suppress_warnings)
-        arimax_model = ARIMA(order=arima_modal_param, suppress_warnings=arimax_suppress_warnings)
+        arimax_model = ARIMA(order=arima_model_param, suppress_warnings=arimax_suppress_warnings)
         arimax_model.fit(train_df, X=train_exog)
         future_exog = future_exog.sort_index()
         logMessage("ARIMAX Model Summary")
@@ -255,11 +255,11 @@ def main():
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        sarimax_modal_param = get_sql_data(sql_model_param, conn)
-        sarimax_modal_param = sarimax_modal_param['model_param_b'][0]
+        sarimax_model_param = get_sql_data(sql_model_param, conn)
+        sarimax_model_param = sarimax_model_param['model_param_b'][0]
        
         # Convert string to tuple
-        sarimax_modal_param = ast.literal_eval(sarimax_modal_param)
+        sarimax_model_param = ast.literal_eval(sarimax_model_param)
         
         #Set parameters
         sarimax_differencing = 1
@@ -270,13 +270,16 @@ def main():
         sarimax_trace = True
         sarimax_error_action = "ignore"
         sarimax_suppress_warnings = True
+        sarimax_order = sarimax_model_param['order']
+        sarimax_seasonal_order = sarimax_model_param['seasonal_order']
 
         # Create SARIMA Model
         logMessage("Creating SARIMAX Model ...")
         #ARIMA(2,1,3)(0,0,0)[12] 
         #sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, sp=sarimax_sp, stationary=sarimax_stationary,
         #                seasonal=sarimax_seasonal, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
-        sarimax_model = ARIMA(order=(2, 1, 2), seasonal_order=(0, 0, 0, 4), suppress_warnings=sarimax_suppress_warnings)
+        #sarimax_model = ARIMA(order=(2, 1, 2), seasonal_order=(0, 0, 0, 4), suppress_warnings=sarimax_suppress_warnings)
+        sarimax_model = ARIMA(order=sarimax_order, seasonal_order=sarimax_seasonal_order, suppress_warnings=sarimax_suppress_warnings)
         sarimax_model.fit(train_df, X=train_exog)
         logMessage("SARIMAX Model Summary")
         logMessage(sarimax_model.summary())
@@ -305,21 +308,21 @@ def main():
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        prophet_modal_param = get_sql_data(sql_model_param, conn)
-        prophet_modal_param = prophet_modal_param['model_param_c'][0]
+        prophet_model_param = get_sql_data(sql_model_param, conn)
+        prophet_model_param = prophet_model_param['model_param_c'][0]
        
-        # Convert string to tuple
-        prophet_modal_param = ast.literal_eval(prophet_modal_param)
+        # Convert string to dictionary
+        prophet_model_param = ast.literal_eval(prophet_model_param)
 
         #Set parameters
-        prophet_seasonality_mode = prophet_modal_param['seasonality_mode']
-        prophet_n_changepoints = prophet_modal_param['n_changepoints']
-        prophet_seasonality_prior_scale = prophet_modal_param['seasonality_prior_scale']
-        prophet_changepoint_prior_scale = prophet_modal_param['changepoint_prior_scale']
-        #prophet_holidays_prior_scale = prophet_modal_param['seasonality_mode']
-        prophet_daily_seasonality = prophet_modal_param['daily_seasonality']
-        prophet_weekly_seasonality = prophet_modal_param['weekly_seasonality']
-        prophet_yearly_seasonality = prophet_modal_param['yearly_seasonality']
+        prophet_seasonality_mode = prophet_model_param['seasonality_mode']
+        prophet_n_changepoints = prophet_model_param['n_changepoints']
+        prophet_seasonality_prior_scale = prophet_model_param['seasonality_prior_scale']
+        prophet_changepoint_prior_scale = prophet_model_param['changepoint_prior_scale']
+        #prophet_holidays_prior_scale = prophet_model_param['seasonality_mode']
+        prophet_daily_seasonality = prophet_model_param['daily_seasonality']
+        prophet_weekly_seasonality = prophet_model_param['weekly_seasonality']
+        prophet_yearly_seasonality = prophet_model_param['yearly_seasonality']
 
         #Create regressor object
         logMessage("Creating Prophet Model ....")
@@ -358,17 +361,17 @@ def main():
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        ranfor_modal_param = get_sql_data(sql_model_param, conn)
-        ranfor_modal_param = ranfor_modal_param['model_param_d'][0]
+        ranfor_model_param = get_sql_data(sql_model_param, conn)
+        ranfor_model_param = ranfor_model_param['model_param_d'][0]
        
         # Convert string to tuple
-        ranfor_modal_param = ast.literal_eval(ranfor_modal_param)
+        ranfor_model_param = ast.literal_eval(ranfor_model_param)
         
         #Set parameters
-        ranfor_n_estimators =  ranfor_modal_param['estimator__n_estimators']
+        ranfor_n_estimators =  ranfor_model_param['estimator__n_estimators']
         ranfor_random_state = 0
         ranfor_criterion =  "squared_error"
-        ranfor_lags = ranfor_modal_param['window_length']
+        ranfor_lags = ranfor_model_param['window_length']
         ranfor_strategy = "recursive"
 
         #Create regressor object
@@ -400,15 +403,15 @@ def main():
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        xgb_modal_param = get_sql_data(sql_model_param, conn)
-        xgb_modal_param = xgb_modal_param['model_param_e'][0]
+        xgb_model_param = get_sql_data(sql_model_param, conn)
+        xgb_model_param = xgb_model_param['model_param_e'][0]
        
         # Convert string to tuple
-        xgb_modal_param = ast.literal_eval(xgb_modal_param)
+        xgb_model_param = ast.literal_eval(xgb_model_param)
         
         #Set parameters
         xgb_objective = 'reg:squarederror'
-        xgb_lags = xgb_modal_param['window_length']
+        xgb_lags = xgb_model_param['window_length']
         xgb_strategy = "recursive"
 
         #Create regressor object
@@ -440,15 +443,15 @@ def main():
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        linreg_modal_param = get_sql_data(sql_model_param, conn)
-        linreg_modal_param = linreg_modal_param['model_param_f'][0]
+        linreg_model_param = get_sql_data(sql_model_param, conn)
+        linreg_model_param = linreg_model_param['model_param_f'][0]
        
         # Convert string to tuple
-        linreg_modal_param = ast.literal_eval(linreg_modal_param)
+        linreg_model_param = ast.literal_eval(linreg_model_param)
         
         #Set parameters
         linreg_normalize = True
-        linreg_lags = linreg_modal_param['window_length']
+        linreg_lags = linreg_model_param['window_length']
         linreg_strategy = "recursive"
 
         # Create regressor object
@@ -480,16 +483,16 @@ def main():
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        poly2_modal_param = get_sql_data(sql_model_param, conn)
-        poly2_modal_param = poly2_modal_param['model_param_g'][0]
+        poly2_model_param = get_sql_data(sql_model_param, conn)
+        poly2_model_param = poly2_model_param['model_param_g'][0]
        
         # Convert string to tuple
-        poly2_modal_param = ast.literal_eval(poly2_modal_param)
+        poly2_model_param = ast.literal_eval(poly2_model_param)
         
         #Set parameters
         poly2_regularization = None
         poly2_interactions = False
-        poly2_lags = poly2_modal_param['window_length']
+        poly2_lags = poly2_model_param['window_length']
         poly2_strategy = "recursive"
 
         # Create regressor object
@@ -521,16 +524,16 @@ def main():
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        poly3_modal_param = get_sql_data(sql_model_param, conn)
-        poly3_modal_param = poly3_modal_param['model_param_h'][0]
+        poly3_model_param = get_sql_data(sql_model_param, conn)
+        poly3_model_param = poly3_model_param['model_param_h'][0]
        
         # Convert string to tuple
-        poly3_modal_param = ast.literal_eval(poly3_modal_param)
+        poly3_model_param = ast.literal_eval(poly3_model_param)
         
         #Set parameters
         poly3_regularization = None
         poly3_interactions = False
-        poly3_lags = poly3_modal_param['window_length']
+        poly3_lags = poly3_model_param['window_length']
         poly3_strategy = "recursive"
 
         # Create regressor object
