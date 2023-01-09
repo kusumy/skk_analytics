@@ -36,6 +36,17 @@ from adtk.data import validate_series
 pd.options.plotting.backend = "plotly"
 from dateutil.relativedelta import *
 
+from pmdarima.arima.utils import ndiffs, nsdiffs
+import statsmodels.api as sm
+from sktime.forecasting.arima import AutoARIMA, ARIMA
+from sktime.forecasting.fbprophet import Prophet
+from sktime.forecasting.compose import make_reduction
+from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
+from sklearn.linear_model import LinearRegression
+from polyfit import PolynomRegressor, Constraints
+
+
 # %%
 def main():
     # Configure logging
@@ -196,23 +207,19 @@ def main():
         ##### FORECASTING #####
         #%%
         ##### ARIMAX MODEL #####
-        from pmdarima.arima.utils import ndiffs, nsdiffs
-        import statsmodels.api as sm
-        from sktime.forecasting.arima import AutoARIMA, ARIMA
-
         # Get best parameter from database
-        sql_model_param = """SELECT model_param_a 
+        sql_arimax_model_param = """SELECT model_param_a 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
                         AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        arima_model_param = get_sql_data(sql_model_param, conn)
-        arima_model_param = arima_model_param['model_param_a'][0]
+        arimax_model_param = get_sql_data(sql_arimax_model_param, conn)
+        arimax_model_param = arimax_model_param['model_param_a'][0]
        
         # Convert string to tuple
-        arima_model_param = ast.literal_eval(arima_model_param)
+        arimax_model_param = ast.literal_eval(arimax_model_param)
         
         # Set parameters
         arimax_differencing = 1
@@ -223,10 +230,7 @@ def main():
 
         # Create ARIMA Model
         logMessage("Creating ARIMAX Model ...")
-        #ARIMA(1,1,3)(0,0,0)[0]
-        #arimax_model = AutoARIMA(d=arimax_differencing, stationary=arimax_stationary, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
-        #arimax_model = ARIMA(order=(1, 1, 3), suppress_warnings=arimax_suppress_warnings)
-        arimax_model = ARIMA(order=arima_model_param, suppress_warnings=arimax_suppress_warnings)
+        arimax_model = ARIMA(order=arimax_model_param, suppress_warnings=arimax_suppress_warnings)
         arimax_model.fit(train_df, X=train_exog)
         future_exog = future_exog.sort_index()
         logMessage("ARIMAX Model Summary")
@@ -246,16 +250,15 @@ def main():
 
         #%%
         ##### SARIMAX MODEL #####
-
         # Get best parameter from database
-        sql_model_param = """SELECT model_param_b 
+        sql_sarimax_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
                         AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        sarimax_model_param = get_sql_data(sql_model_param, conn)
+        sarimax_model_param = get_sql_data(sql_sarimax_model_param, conn)
         sarimax_model_param = sarimax_model_param['model_param_b'][0]
        
         # Convert string to tuple
@@ -270,8 +273,8 @@ def main():
         sarimax_trace = True
         sarimax_error_action = "ignore"
         sarimax_suppress_warnings = True
-        sarimax_order = sarimax_model_param['order']
-        sarimax_seasonal_order = sarimax_model_param['seasonal_order']
+        sarimax_order = sarimax_model_param['sarimax_order']
+        sarimax_seasonal_order = sarimax_model_param['sarimax_seasonal_order']
 
         # Create SARIMA Model
         logMessage("Creating SARIMAX Model ...")
@@ -296,19 +299,16 @@ def main():
         y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
 
         #%%
-        ##### PROPHET MODEL #####
-        from sktime.forecasting.fbprophet import Prophet
-        from sktime.forecasting.compose import make_reduction
-        
+        ##### PROPHET MODEL #####      
         # Get best parameter from database
-        sql_model_param = """SELECT model_param_c 
+        sql_prophet_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
                         AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        prophet_model_param = get_sql_data(sql_model_param, conn)
+        prophet_model_param = get_sql_data(sql_prophet_model_param, conn)
         prophet_model_param = prophet_model_param['model_param_c'][0]
        
         # Convert string to dictionary
@@ -351,17 +351,15 @@ def main():
 
 
         ##### RANDOM FOREST MODEL #####
-        from sklearn.ensemble import RandomForestRegressor
-
         # Get best parameter from database
-        sql_model_param = """SELECT model_param_d 
+        sql_ranfor_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
                         AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        ranfor_model_param = get_sql_data(sql_model_param, conn)
+        ranfor_model_param = get_sql_data(sql_ranfor_model_param, conn)
         ranfor_model_param = ranfor_model_param['model_param_d'][0]
        
         # Convert string to tuple
@@ -392,18 +390,16 @@ def main():
         y_pred_ranfor.rename(columns={0:'forecast_d'}, inplace=True)
 
 
-        ##### XGBOOST MODEL #####
-        from xgboost import XGBRegressor
-
+        ##### XGBOOST MODEL #####      
         # Get best parameter from database
-        sql_model_param = """SELECT model_param_e 
+        sql_xgb_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
                         AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        xgb_model_param = get_sql_data(sql_model_param, conn)
+        xgb_model_param = get_sql_data(sql_xgb_model_param, conn)
         xgb_model_param = xgb_model_param['model_param_e'][0]
        
         # Convert string to tuple
@@ -433,17 +429,15 @@ def main():
 
 
         ##### LINEAR REGRESSION MODEL #####
-        from sklearn.linear_model import LinearRegression
-
         # Get best parameter from database
-        sql_model_param = """SELECT model_param_f 
+        sql_linreg_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
                         AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        linreg_model_param = get_sql_data(sql_model_param, conn)
+        linreg_model_param = get_sql_data(sql_linreg_model_param, conn)
         linreg_model_param = linreg_model_param['model_param_f'][0]
        
         # Convert string to tuple
@@ -473,17 +467,15 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
-        from polyfit import PolynomRegressor, Constraints
-
         # Get best parameter from database
-        sql_model_param = """SELECT model_param_g 
+        sql_poly2_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
                         AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        poly2_model_param = get_sql_data(sql_model_param, conn)
+        poly2_model_param = get_sql_data(sql_poly2_model_param, conn)
         poly2_model_param = poly2_model_param['model_param_g'][0]
        
         # Convert string to tuple
@@ -514,17 +506,15 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
-        from polyfit import PolynomRegressor, Constraints
-
         # Get best parameter from database
-        sql_model_param = """SELECT model_param_h 
+        sql_poly3_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
                         AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
-        poly3_model_param = get_sql_data(sql_model_param, conn)
+        poly3_model_param = get_sql_data(sql_poly3_model_param, conn)
         poly3_model_param = poly3_model_param['model_param_h'][0]
        
         # Convert string to tuple

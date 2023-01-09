@@ -9,6 +9,7 @@ import plotly.express as px
 import psycopg2
 import seaborn as sns
 import time
+import ast
 
 from humanfriendly import format_timespan
 from tokenize import Ignore
@@ -33,6 +34,17 @@ from adtk.visualization import plot
 from adtk.data import validate_series
 pd.options.plotting.backend = "plotly"
 from dateutil.relativedelta import *
+
+from pmdarima.arima.utils import ndiffs, nsdiffs
+import statsmodels.api as sm
+from sktime.forecasting.arima import AutoARIMA, ARIMA
+from sktime.forecasting.fbprophet import Prophet
+from sktime.forecasting.compose import make_reduction
+from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
+from sklearn.linear_model import LinearRegression
+from polyfit import PolynomRegressor, Constraints
+
 
 #%%
 def main():
@@ -228,10 +240,19 @@ def main():
         ##### FORECASTING #####
 
         ##### ARIMAX MODEL #####
-        from sktime.forecasting.arima import ARIMA
-        from pmdarima.arima.utils import ndiffs, nsdiffs
-        from sklearn.metrics import mean_squared_error
-        import statsmodels.api as sm
+        # Get best parameter from database
+        sql_arimax_model_param = """SELECT model_param_a 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'Feed Gas'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        arimax_model_param = get_sql_data(sql_arimax_model_param, conn)
+        arimax_model_param = arimax_model_param['model_param_a'][0]
+       
+        # Convert string to tuple
+        arimax_model_param = ast.literal_eval(arimax_model_param)
 
         #Set parameters
         arimax_differencing = 1
@@ -243,7 +264,7 @@ def main():
         #ARIMA(4,1,5)
         #arimax_model = auto_arima(train_df, exogenous=future_exog, d=arimax_differencing, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
         logMessage("Creating ARIMAX Model ...")
-        arimax_model = ARIMA(order=(3, 1, 2), suppress_warnings=arimax_suppress_warnings)
+        arimax_model = ARIMA(order=arimax_model_param, suppress_warnings=arimax_suppress_warnings)
         arimax_model.fit(train_df, X=train_exog)
         logMessage("ARIMAX Model Summary")
         logMessage(arimax_model.summary())
@@ -261,7 +282,20 @@ def main():
 
 
         ##### SARIMAX MODEL #####
-
+        # Get best parameter from database
+        sql_sarimax_model_param = """SELECT model_param_b 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'Feed Gas'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        sarimax_model_param = get_sql_data(sql_sarimax_model_param, conn)
+        sarimax_model_param = sarimax_model_param['model_param_b'][0]
+       
+        # Convert string to tuple
+        sarimax_model_param = ast.literal_eval(sarimax_model_param)
+        
         #Set parameters
         sarimax_differencing = 1
         sarimax_seasonal_differencing = 1
@@ -270,12 +304,14 @@ def main():
         sarimax_trace = True
         sarimax_error_action = "ignore"
         sarimax_suppress_warnings = True
+        sarimax_order = sarimax_model_param['sarimax_order']
+        sarimax_seasonal_order = sarimax_model_param['sarimax_seasonal_order']
 
         # Create SARIMAX Model
         #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, 
         #                            m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
         logMessage("Creating SARIMAX Model ...")
-        sarimax_model = ARIMA(order=(3, 1, 2), seasonal_order=(1, 1, 1, 12), suppress_warnings=sarimax_suppress_warnings)
+        sarimax_model = ARIMA(order=sarimax_order, seasonal_order=sarimax_seasonal_order, suppress_warnings=sarimax_suppress_warnings)
         sarimax_model.fit(train_df, X=train_exog)
         logMessage("SARIMAX Model Summary")
         logMessage(sarimax_model.summary())
@@ -293,18 +329,29 @@ def main():
 
 
         ##### PROPHET MODEL #####
-        from sktime.forecasting.fbprophet import Prophet
-        from sktime.forecasting.compose import make_reduction
+        # Get best parameter from database
+        sql_prophet_model_param = """SELECT model_param_c 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'Feed Gas'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        prophet_model_param = get_sql_data(sql_prophet_model_param, conn)
+        prophet_model_param = prophet_model_param['model_param_c'][0]
+       
+        # Convert string to dictionary
+        prophet_model_param = ast.literal_eval(prophet_model_param)
 
         #Set parameters
-        prophet_seasonality_mode = 'additive'
-        prophet_n_changepoints = 9
-        prophet_seasonality_prior_scale = 10
-        prophet_changepoint_prior_scale = 0.5
-        prophet_holidays_prior_scale = 2
-        prophet_daily_seasonality = True
-        prophet_weekly_seasonality = False
-        prophet_yearly_seasonality = True
+        prophet_seasonality_mode = prophet_model_param['seasonality_mode']
+        prophet_n_changepoints = prophet_model_param['n_changepoints']
+        prophet_seasonality_prior_scale = prophet_model_param['seasonality_prior_scale']
+        prophet_changepoint_prior_scale = prophet_model_param['changepoint_prior_scale']
+        #prophet_holidays_prior_scale = prophet_model_param['seasonality_mode']
+        prophet_daily_seasonality = prophet_model_param['daily_seasonality']
+        prophet_weekly_seasonality = prophet_model_param['weekly_seasonality']
+        prophet_yearly_seasonality = prophet_model_param['yearly_seasonality']
 
         #Create regressor object
         logMessage("Creating Prophet Model ....")
@@ -313,13 +360,13 @@ def main():
                             n_changepoints=prophet_n_changepoints,
                             seasonality_prior_scale=prophet_seasonality_prior_scale, #Flexibility of the seasonality (0.01,10)
                             changepoint_prior_scale=prophet_changepoint_prior_scale, #Flexibility of the trend (0.001,0.5)
-                            holidays_prior_scale=prophet_holidays_prior_scale, #Flexibility of the holiday effects (0.01,10)
+                            #holidays_prior_scale=prophet_holidays_prior_scale, #Flexibility of the holiday effects (0.01,10)
                             #changepoint_range=0.8, #proportion of the history in which the trend is allowed to change
                             daily_seasonality=prophet_daily_seasonality,
                             weekly_seasonality=prophet_weekly_seasonality,
                             yearly_seasonality=prophet_yearly_seasonality)
+        
         prophet_forecaster.fit(train_df, train_exog) #, X_train
-
         logMessage("Prophet Model Prediction ...")
         future_exog.sort_index(inplace=True)
         prophet_forecast = prophet_forecaster.predict(fh, X=future_exog) #, X=X_test
@@ -334,11 +381,23 @@ def main():
 
 
         ##### RANDOM FOREST MODEL #####
-        from sklearn.ensemble import RandomForestRegressor
+        # Get best parameter from database
+        sql_ranfor_model_param = """SELECT model_param_d 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'Feed Gas'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        ranfor_model_param = get_sql_data(sql_ranfor_model_param, conn)
+        ranfor_model_param = ranfor_model_param['model_param_d'][0]
+       
+        # Convert string to tuple
+        ranfor_model_param = ast.literal_eval(ranfor_model_param)
 
         #Set parameters
-        ranfor_lags = 7
-        ranfor_n_estimators = 80
+        ranfor_lags = ranfor_model_param['window_length']
+        ranfor_n_estimators = ranfor_model_param['estimator__n_estimators']
         ranfor_random_state = 0
         ranfor_criterion = "squared_error"
         ranfor_strategy = "recursive"
@@ -363,10 +422,22 @@ def main():
 
 
         ##### XGBOOST MODEL #####
-        from xgboost import XGBRegressor
+        # Get best parameter from database
+        sql_xgb_model_param = """SELECT model_param_e 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'Feed Gas'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        xgb_model_param = get_sql_data(sql_xgb_model_param, conn)
+        xgb_model_param = xgb_model_param['model_param_e'][0]
+       
+        # Convert string to tuple
+        xgb_model_param = ast.literal_eval(xgb_model_param)
 
         #Set parameters
-        xgb_lags = 14
+        xgb_lags = xgb_model_param['window_length']
         xgb_objective = 'reg:squarederror'
         xgb_strategy = "recursive"
 
@@ -390,10 +461,22 @@ def main():
 
 
         #### LINEAR REGRESSION MODEL #####
-        from sklearn.linear_model import LinearRegression
+        # Get best parameter from database
+        sql_linreg_model_param = """SELECT model_param_f 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'Feed Gas'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        linreg_model_param = get_sql_data(sql_linreg_model_param, conn)
+        linreg_model_param = linreg_model_param['model_param_f'][0]
+       
+        # Convert string to tuple
+        linreg_model_param = ast.literal_eval(linreg_model_param)
 
         #Set parameters
-        linreg_lags = 0.96
+        linreg_lags = linreg_model_param['window_length']
         linreg_normalize = True
         linreg_strategy = "recursive"
 
@@ -417,12 +500,24 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
-        from polyfit import PolynomRegressor, Constraints
+        # Get best parameter from database
+        sql_poly2_model_param = """SELECT model_param_g 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'Feed Gas'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        poly2_model_param = get_sql_data(sql_poly2_model_param, conn)
+        poly2_model_param = poly2_model_param['model_param_g'][0]
+       
+        # Convert string to tuple
+        poly2_model_param = ast.literal_eval(poly2_model_param)
 
         #Set parameters
         poly2_regularization = None
         poly2_interactions = False
-        poly_lags = 24
+        poly_lags = poly2_model_param['window_length']
         poly2_strategy = "recursive"
 
         # Create regressor object
@@ -445,12 +540,24 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
-        from polyfit import PolynomRegressor, Constraints
+        # Get best parameter from database
+        sql_poly3_model_param = """SELECT model_param_h 
+                        FROM lng_analytics_model_param 
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'Feed Gas'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+                    
+        poly3_model_param = get_sql_data(sql_poly3_model_param, conn)
+        poly3_model_param = poly3_model_param['model_param_h'][0]
+       
+        # Convert string to tuple
+        poly3_model_param = ast.literal_eval(poly3_model_param)
 
         #Set parameters
         poly3_regularization = None
         poly3_interactions = False
-        poly3_lags = 27
+        poly3_lags = poly3_model_param['window_length']
         poly3_strategy = "recursive"
 
         # Create regressor object
