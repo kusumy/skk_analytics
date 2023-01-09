@@ -294,7 +294,6 @@ def main():
 
     #%%
     ##### FORECASTING #####
-
     ##### ARIMAX MODEL #####
     #ARIMA(4,1,2)(0,0,0)[0]   
     #Set parameters
@@ -364,9 +363,9 @@ def main():
     logMessage("SARIMAX Model "+sarimax_mape_str)
     
     #Get parameters
-    sarimax_param_order = str(sarimax_model.get_fitted_params()['order'])
-    sarimax_param_order_seasonal = str(sarimax_model.get_fitted_params()['seasonal_order'])
-    sarimax_param = sarimax_param_order + sarimax_param_order_seasonal
+    sarimax_param_order = sarimax_model.get_fitted_params()['order']
+    sarimax_param_order_seasonal = sarimax_model.get_fitted_params()['seasonal_order']
+    sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
     logMessage("Sarimax Model Parameters "+sarimax_param)
 
 
@@ -529,7 +528,6 @@ def main():
     logMessage("Linear Regression Model "+linreg_mape_str)
 
 
-
     #%%
     ##### POLYNOMIAL REGRESSION DEGREE=2 #####
     # Create Polynomial Regression Degree=2 Parameter Grid
@@ -556,7 +554,7 @@ def main():
     logMessage("Show Best Polynomial Regression Degree=2 Models ...")
     poly2_best_params = gscv_poly2.best_params_
     poly2_best_params_str = str(poly2_best_params)
-    logMessage("Best Polynomial Regression Degree=3 Models "+poly2_best_params_str)
+    logMessage("Best Polynomial Regression Degree=2 Models "+poly2_best_params_str)
     
     logMessage("Polynomial Regression Degree=2 Model Prediction ...")
     poly2_forecast = gscv_poly2.best_forecaster_.predict(fh, X=X_test) #, X=X_test

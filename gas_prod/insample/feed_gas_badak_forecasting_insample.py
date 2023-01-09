@@ -356,9 +356,9 @@ def main():
     logMessage("SARIMAX Model "+sarimax_mape_str)
     
     #Get parameters
-    sarimax_param_order = str(sarimax_model.get_fitted_params()['order'])
-    sarimax_param_order_seasonal = str(sarimax_model.get_fitted_params()['seasonal_order'])
-    sarimax_param = sarimax_param_order + sarimax_param_order_seasonal
+    sarimax_param_order = sarimax_model.get_fitted_params()['order']
+    sarimax_param_order_seasonal = sarimax_model.get_fitted_params()['seasonal_order']
+    sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
     logMessage("Sarimax Model Parameters "+sarimax_param)
 
 
