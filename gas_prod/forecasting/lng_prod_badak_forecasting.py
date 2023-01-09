@@ -204,6 +204,7 @@ def main():
         sql_model_param = """SELECT model_param_a 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
@@ -250,6 +251,7 @@ def main():
         sql_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
@@ -299,6 +301,7 @@ def main():
         sql_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
@@ -351,6 +354,7 @@ def main():
         sql_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
@@ -392,6 +396,7 @@ def main():
         sql_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
@@ -431,6 +436,7 @@ def main():
         sql_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
@@ -470,6 +476,7 @@ def main():
         sql_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
@@ -510,6 +517,7 @@ def main():
         sql_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LNG Production'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""
                     
