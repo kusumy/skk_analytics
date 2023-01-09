@@ -18,7 +18,7 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import configLogging, logMessage, ad_test, stationarity_check, decomposition_plot, plot_acf_pacf
+from utils import *
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
@@ -93,73 +93,7 @@ def main():
     # Get only anomalies data
     #anomalies_data = new_s[new_s['anomaly'].isnull()]
     
-    #%%
-    from datetime import date, datetime, timedelta
-    def get_first_date_of_current_month(year, month):
-        """Return the first date of the month.
-
-        Args:
-            year (int): Year
-            month (int): Month
-
-        Returns:
-            date (datetime): First date of the current month
-        """
-        first_date = datetime(year, month, 1)
-        return first_date.strftime("%Y-%m-%d")
-
-    def get_last_date_of_month(year, month):
-        """Return the last date of the month.
-        
-        Args:
-            year (int): Year, i.e. 2022
-            month (int): Month, i.e. 1 for January
-
-        Returns:
-            date (datetime): Last date of the current month
-        """
-        
-        if month == 12:
-            last_date = datetime(year, month, 31)
-        else:
-            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-        
-        return last_date.strftime("%Y-%m-%d")
-
-    def get_first_date_of_prev_month(year, month, step=-1):
-        """Return the first date of the month.
-
-        Args:
-            year (int): Year
-            month (int): Month
-
-        Returns:
-            date (datetime): First date of the current month
-        """
-        first_date = datetime(year, month, 1)
-        first_date = first_date + relativedelta(months=step)
-        return first_date.strftime("%Y-%m-%d")
-
-    def get_last_date_of_prev_month(year, month, step=-1):
-        """Return the last date of the month.
-        
-        Args:
-            year (int): Year, i.e. 2022
-            month (int): Month, i.e. 1 for January
-
-        Returns:
-            date (datetime): Last date of the current month
-        """
-        
-        if month == 12:
-            last_date = datetime(year, month, 31)
-        else:
-            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-            
-        last_date = last_date + relativedelta(months=step)
-        
-        return last_date.strftime("%Y-%m-%d")
-    
+    #%%  
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month
