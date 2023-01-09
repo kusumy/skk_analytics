@@ -474,7 +474,7 @@ def main():
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    arimax_mape = mean_absolute_percentage_error(y_test.feed_gas, arimax_forecast)
+    arimax_mape = mean_absolute_percentage_error(y_test_cleaned.feed_gas, arimax_forecast)
     arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
     logMessage("ARIMAX Model "+arimax_mape_str)
     
@@ -511,7 +511,7 @@ def main():
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    sarimax_mape = mean_absolute_percentage_error(y_test.feed_gas, sarimax_forecast)
+    sarimax_mape = mean_absolute_percentage_error(y_test_cleaned.feed_gas, sarimax_forecast)
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
     logMessage("SARIMAX Model "+sarimax_mape_str)
     
@@ -559,7 +559,7 @@ def main():
     y_pred_prophet = pd.DataFrame(prophet_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    prophet_mape = mean_absolute_percentage_error(y_test['feed_gas'], prophet_forecast)
+    prophet_mape = mean_absolute_percentage_error(y_test_cleaned['feed_gas'], prophet_forecast)
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
 
@@ -599,7 +599,7 @@ def main():
     y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    ranfor_mape = mean_absolute_percentage_error(y_test['feed_gas'], y_pred_ranfor)
+    ranfor_mape = mean_absolute_percentage_error(y_test_cleaned['feed_gas'], y_pred_ranfor)
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
 
@@ -637,7 +637,7 @@ def main():
     y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    xgb_mape = mean_absolute_percentage_error(y_test['feed_gas'], y_pred_xgb)
+    xgb_mape = mean_absolute_percentage_error(y_test_cleaned['feed_gas'], y_pred_xgb)
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
 
@@ -671,7 +671,7 @@ def main():
     y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    linreg_mape = mean_absolute_percentage_error(y_test['feed_gas'], y_pred_linreg)
+    linreg_mape = mean_absolute_percentage_error(y_test_cleaned['feed_gas'], y_pred_linreg)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
 
@@ -708,7 +708,7 @@ def main():
     y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    poly2_mape = mean_absolute_percentage_error(y_test['feed_gas'], y_pred_poly2)
+    poly2_mape = mean_absolute_percentage_error(y_test_cleaned['feed_gas'], y_pred_poly2)
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Degree=2 Model "+poly2_mape_str)
 
@@ -745,7 +745,7 @@ def main():
     y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    poly3_mape = mean_absolute_percentage_error(y_test['feed_gas'], y_pred_poly3)
+    poly3_mape = mean_absolute_percentage_error(y_test_cleaned['feed_gas'], y_pred_poly3)
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Degree=3 Model "+poly3_mape_str)
 

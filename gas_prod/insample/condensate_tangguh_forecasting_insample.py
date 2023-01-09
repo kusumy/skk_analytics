@@ -485,7 +485,7 @@ def main():
     y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    sarimax_mape = mean_absolute_percentage_error(y_test.condensate, sarimax_forecast)
+    sarimax_mape = mean_absolute_percentage_error(y_test_cleaned.condensate, sarimax_forecast)
     sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
     logMessage("SARIMAX Model "+sarimax_mape_str)
     
