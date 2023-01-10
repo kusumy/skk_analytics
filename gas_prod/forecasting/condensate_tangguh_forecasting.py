@@ -701,7 +701,7 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
                         forecast_d, forecast_e, forecast_f, forecast_g, forecast_h, prod_date):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    created_by = 'python'
+    created_by = 'PYTHON'
     
     """ insert forecasting result after last row in table """
     sql = """ UPDATE lng_condensate_daily
