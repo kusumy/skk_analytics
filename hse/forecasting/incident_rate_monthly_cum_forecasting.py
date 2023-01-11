@@ -121,7 +121,7 @@ def main():
     #%%
     # Prepare data
     data['date'] = pd.to_datetime(data['date'], format='%Y-%m')
-    data = data[~(data['date'] > '2022-08')]
+    data = data[~(data['date'] > '2022-12')]
     data = data.rename(columns=str.lower)
 
     data['date'] = pd.PeriodIndex(data['date'], freq='M')
@@ -162,7 +162,7 @@ def main():
 
     #%%
     # Create forecasting Horizon
-    time_predict = pd.period_range('2023-01', periods=12, freq='M')
+    time_predict = pd.period_range('2022-11', periods=14, freq='M')
     # Create forecasting Horizon
     fh = ForecastingHorizon(time_predict, is_relative=False)
 
@@ -193,14 +193,14 @@ def main():
     data2['date'] = pd.to_datetime(data2['date'], format='%Y-%m')
 
     #%%
-    test_exog = data2[['date', 'drilling_explor_cum', 'drilling_explot_cum', 'workover_cum',
+    future_exog = data2[['date', 'drilling_explor_cum', 'drilling_explot_cum', 'workover_cum',
                     'wellservice_cum', 'survei_seismic_cum']].copy()
-    test_exog = test_exog.set_index(test_exog['date'])
-    test_exog.index = pd.PeriodIndex(test_exog.index, freq='M')
-    #test_exog.sort_index(inplace=True)
-    test_exog.drop(['date'], axis=1, inplace=True)
-    test_exog = test_exog.iloc[-12:]
-    test_exog['bulan'] = [i.month for i in test_exog.index]
+    future_exog = future_exog.set_index(future_exog['date'])
+    future_exog.index = pd.PeriodIndex(future_exog.index, freq='M')
+    #future_exog.sort_index(inplace=True)
+    future_exog.drop(['date'], axis=1, inplace=True)
+    future_exog = future_exog.iloc[-14:]
+    future_exog['bulan'] = [i.month for i in future_exog.index]
 
     # %%
     ##### ARIMAX MODEL #####
@@ -221,10 +221,10 @@ def main():
     logMessage(arimax_model.summary())
     
     logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(len(fh), X=test_exog) #, X=test_exog
+    arimax_forecast = arimax_model.predict(len(fh), X=future_exog) #, X=future_exog
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:,.2f}'.format)
-    #y_pred_arimax['month_num'] = [i.month for i in test_exog.index]
-    #y_pred_arimax['year_num'] = [i.year for i in test_exog.index]
+    #y_pred_arimax['month_num'] = [i.month for i in future_exog.index]
+    #y_pred_arimax['year_num'] = [i.year for i in future_exog.index]
 
      # Rename column to forecast_a
     y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
@@ -248,7 +248,7 @@ def main():
 
     # Create forecasting
     logMessage("XGBoost Model Prediction ...")
-    xgb_forecast = xgb_forecaster.predict(fh, X=test_exog) #, X=test_exog
+    xgb_forecast = xgb_forecaster.predict(fh, X=future_exog) #, X=future_exog
     y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:,.2f}'.format)
     y_pred_xgb['month_num'] = [i.month for i in xgb_forecast.index]
     y_pred_xgb['year_num'] = [i.year for i in xgb_forecast.index]
@@ -276,7 +276,7 @@ def main():
 
     # Create forecasting
     logMessage("Random Forest Model Prediction")
-    ranfor_forecast = ranfor_forecaster.predict(fh, X=test_exog) #, X=test_exog
+    ranfor_forecast = ranfor_forecaster.predict(fh, X=future_exog) #, X=future_exog
     y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:,.2f}'.format)
     y_pred_ranfor['month_num'] = [i.month for i in ranfor_forecast.index]
     y_pred_ranfor['year_num'] = [i.year for i in ranfor_forecast.index]
@@ -302,7 +302,7 @@ def main():
     linreg_forecaster.fit(train_df, X=train_exog) #, X=train_exog
     
     logMessage("Linear Regression Model Prediction ...")
-    linreg_forecast = linreg_forecaster.predict(fh, X=test_exog) #, X=test_exog
+    linreg_forecast = linreg_forecaster.predict(fh, X=future_exog) #, X=future_exog
     y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:,.2f}'.format)
     y_pred_linreg['month_num'] = [i.month for i in linreg_forecast.index]
     y_pred_linreg['year_num'] = [i.year for i in linreg_forecast.index]
@@ -330,7 +330,7 @@ def main():
     poly2_forecaster.fit(train_df, X=train_exog) #, X=train_exog
     
     logMessage("Polynomial Regression Orde 2 Model Prediction ...")
-    poly2_forecast = poly2_forecaster.predict(fh, X=test_exog) #, X=test_exog
+    poly2_forecast = poly2_forecaster.predict(fh, X=future_exog) #, X=future_exog
     y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:,.2f}'.format)
     y_pred_poly2['month_num'] = [i.month for i in poly2_forecast.index]
     y_pred_poly2['year_num'] = [i.year for i in poly2_forecast.index]
@@ -356,7 +356,7 @@ def main():
     poly3_forecaster.fit(train_df, X=train_exog) #, X=train_exog
     
     logMessage("Polynomial Regression Orde 3 Model Prediction ...")
-    poly3_forecast = poly3_forecaster.predict(fh, X=test_exog) #, X=test_exog
+    poly3_forecast = poly3_forecaster.predict(fh, X=future_exog) #, X=future_exog
     y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:,.2f}'.format)
     y_pred_poly3['month_num'] = [i.month for i in poly3_forecast.index]
     y_pred_poly3['year_num'] = [i.year for i in poly3_forecast.index]

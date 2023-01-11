@@ -1,9 +1,55 @@
-2023-01-11 22:21:03,734 Connecting to database ...
-2023-01-11 22:21:04,000 1. ADF : -1.4722318600455666
-2023-01-11 22:21:04,000 2. P-Value : 0.547200406910903
-2023-01-11 22:21:04,000 3. Num Of Lags : 0
-2023-01-11 22:21:04,000 4. Num Of Observations Used For ADF Regression: 115
-2023-01-11 22:21:04,000 5. Critical Values : 
-2023-01-11 22:21:04,000 	 1%: -3.4885349695076844
-2023-01-11 22:21:04,000 	 5%: -2.887019521656941
-2023-01-11 22:21:04,000 	 10%: -2.5803597920604915
+2023-01-11 23:52:55,409 Connecting to database ...
+2023-01-11 23:52:55,810 1. ADF : -1.4794367420058536
+2023-01-11 23:52:55,810 2. P-Value : 0.5436580595807815
+2023-01-11 23:52:55,810 3. Num Of Lags : 0
+2023-01-11 23:52:55,810 4. Num Of Observations Used For ADF Regression: 117
+2023-01-11 23:52:55,810 5. Critical Values : 
+2023-01-11 23:52:55,810 	 1%: -3.487517288664615
+2023-01-11 23:52:55,810 	 5%: -2.8865777180380032
+2023-01-11 23:52:55,810 	 10%: -2.5801239192052012
+2023-01-11 23:52:56,212 Creating ARIMAX Model ...
+2023-01-11 23:52:56,270 ARIMAX Model Summary
+2023-01-11 23:52:56,272                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                  118
+Model:               SARIMAX(0, 1, 0)   Log Likelihood                 152.641
+Date:                Wed, 11 Jan 2023   AIC                           -289.282
+Time:                        23:52:56   BIC                           -267.185
+Sample:                    01-31-2013   HQIC                          -280.311
+                         - 10-31-2022                                         
+Covariance Type:                  opg                                         
+=======================================================================================
+                          coef    std err          z      P>|z|      [0.025      0.975]
+---------------------------------------------------------------------------------------
+intercept              -0.0066      0.010     -0.646      0.518      -0.026       0.013
+drilling_explor_cum     0.0004      0.001      0.577      0.564      -0.001       0.002
+drilling_explot_cum     0.0003      0.000      2.335      0.020    4.22e-05       0.000
+workover_cum           -0.0001   8.96e-05     -1.268      0.205      -0.000     6.2e-05
+wellservice_cum      4.922e-06   2.05e-06      2.405      0.016    9.11e-07    8.93e-06
+survei_seismic_cum     -0.0033      0.002     -1.492      0.136      -0.008       0.001
+bulan                  -0.0083      0.010     -0.812      0.417      -0.028       0.012
+sigma2                  0.0043      0.000     16.489      0.000       0.004       0.005
+===================================================================================
+Ljung-Box (L1) (Q):                   0.13   Jarque-Bera (JB):              1097.55
+Prob(Q):                              0.71   Prob(JB):                         0.00
+Heteroskedasticity (H):               2.84   Skew:                             0.92
+Prob(H) (two-sided):                  0.00   Kurtosis:                        17.89
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2023-01-11 23:52:56,276 ARIMAX Model Prediction ..
+2023-01-11 23:52:56,297 Creating XGBoost Model ....
+2023-01-11 23:52:56,372 XGBoost Model Prediction ...
+2023-01-11 23:52:56,393 Creating Random Forest Model ...
+2023-01-11 23:52:56,633 Random Forest Model Prediction
+2023-01-11 23:52:56,702 Creating Linear Regression Model ...
+2023-01-11 23:52:56,709 Linear Regression Model Prediction ...
+2023-01-11 23:52:56,751 Creating Polynomial Regression Orde 2 Model ...
+2023-01-11 23:52:56,772 Polynomial Regression Orde 2 Model Prediction ...
+2023-01-11 23:52:56,883 Creating Polynomial Regression Orde 3 Model ...
+2023-01-11 23:52:56,907 Polynomial Regression Orde 3 Model Prediction ...
+2023-01-11 23:52:57,035 Creating all model prediction result data frame ...
+2023-01-11 23:52:57,055 Updating forecast result to database ...
+2023-01-11 23:53:00,399 Updated rows: 14
+2023-01-11 23:53:00,399 Done
