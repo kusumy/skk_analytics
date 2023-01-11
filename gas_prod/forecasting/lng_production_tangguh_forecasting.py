@@ -537,7 +537,7 @@ def main():
 
         # Create regressor object
         logMessage("Creating Linear Regression Model ...")
-        linreg_regressor = LinearRegression(normalize=linreg_normalize)
+        linreg_regressor = LinearRegression()
         linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
         linreg_forecaster.fit(train_df, X=train_exog)
 

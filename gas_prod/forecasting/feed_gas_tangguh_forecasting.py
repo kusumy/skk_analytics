@@ -541,7 +541,7 @@ def main():
 
         # Create regressor object
         logMessage("Creating Linear Regression Model ...")
-        linreg_regressor = LinearRegression(normalize=linreg_normalize)
+        linreg_regressor = LinearRegression()
         linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
         linreg_forecaster.fit(train_df, X=train_exog)
 
@@ -730,8 +730,8 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
 
     return updated_rows
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
     #main(sys.argv[1], sys.argv[2], sys.argv[3])
     # adding skk_analytics to the system path
-    sys.path.insert(0, './')
-    main()
+#    sys.path.insert(0, './')
+#    main()
