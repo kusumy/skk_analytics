@@ -1,4 +1,5 @@
 # %%
+import logging
 import os
 import sys
 import numpy as np
@@ -17,8 +18,8 @@ from tracemalloc import start
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 plt.style.use('fivethirtyeight')
-from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import *
+#from connection import config, retrieve_data, create_db_connection, get_sql_data
+#from utils import *
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
@@ -40,10 +41,14 @@ from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
-from polyfit import PolynomRegressor, Constraints
+#from polyfit import PolynomRegressor, Constraints
 
 #%%
 def main():
+    from connection import create_db_connection, get_sql_data
+    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month
+    from polyfit import PolynomRegressor
+    
     # Configure logging
     #configLogging("feed_gas_tangguh.log")
     logMessage("Forecasting Feed Gas BP Tangguh ...")
@@ -62,7 +67,7 @@ def main():
     query_1 = open(query, mode="rt").read()
     data = get_sql_data(query_1, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
-    data['wpnb_gas'].fillna(method='ffill')
+    data['wpnb_gas'].fillna(method='ffill', inplace=True)
     data = data.reset_index()
     
     #%%
@@ -726,12 +731,24 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
 
     return updated_rows
 
-#if __name__ == "__main__":
-    #main(sys.argv[1], sys.argv[2], sys.argv[3])
-    # adding skk_analytics to the system path
-#    sys.path.insert(0, './')
-#    main()
+if __name__ == "__main__":
+    # getting the name of the directory
+    # where the this file is present.
+    current = os.path.dirname(os.path.abspath("__file__"))
+
+    # Getting the parent directory name
+    # where the current directory is present.
+    parent = os.path.dirname(current)
+
+    # Getting the parent directory name
+    gr_parent = os.path.dirname(parent)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(current)
+
+    main()

@@ -19,8 +19,8 @@ import plotly.express as px
 from pmdarima.arima.auto import auto_arima
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import *
+#from connection import config, retrieve_data, create_db_connection, get_sql_data
+#from utils import *
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
@@ -49,6 +49,10 @@ from polyfit import PolynomRegressor, Constraints
 
 #%%
 def main():
+    from connection import create_db_connection, get_sql_data
+    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month
+    from polyfit import PolynomRegressor
+    
     # Configure logging
     #configLogging("condensate_badak_forecasting.log")
     logMessage("Forecasting Condensate PT Badak ...")
@@ -662,6 +666,20 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
 
     return updated_rows
 
-# if __name__ == "__main__":
-#     #main(sys.argv[1], sys.argv[2], sys.argv[3])
-#     main()
+if __name__ == "__main__":
+    # getting the name of the directory
+    # where the this file is present.
+    current = os.path.dirname(os.path.abspath("__file__"))
+
+    # Getting the parent directory name
+    # where the current directory is present.
+    parent = os.path.dirname(current)
+
+    # Getting the parent directory name
+    gr_parent = os.path.dirname(parent)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(current)
+
+    main()

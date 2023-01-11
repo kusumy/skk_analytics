@@ -45,6 +45,10 @@ from polyfit import PolynomRegressor, Constraints
 
 #%%
 def main():
+    from connection import create_db_connection, get_sql_data
+    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month
+    from polyfit import PolynomRegressor
+    
     # Configure logging
     #configLogging("condensate_tangguh_forecasting.log")
     logMessage("Forecasting Condensate BP Tangguh ...")
@@ -63,7 +67,7 @@ def main():
     query_1 = open(query, mode="rt").read()
     data = get_sql_data(query_1, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
-    data['wpnb_oil'].fillna(method='ffill')
+    data['wpnb_oil'].fillna(method='ffill', inplace=True)
     data = data.reset_index()
     
     #%%
@@ -735,6 +739,20 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
 
     return updated_rows
 
-# if __name__ == "__main__":
-#     #main(sys.argv[1], sys.argv[2], sys.argv[3])
-#     main()
+if __name__ == "__main__":
+    # getting the name of the directory
+    # where the this file is present.
+    current = os.path.dirname(os.path.abspath("__file__"))
+
+    # Getting the parent directory name
+    # where the current directory is present.
+    parent = os.path.dirname(current)
+
+    # Getting the parent directory name
+    gr_parent = os.path.dirname(parent)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(current)
+
+    main()
