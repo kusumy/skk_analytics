@@ -542,7 +542,7 @@ def main():
     linreg_forecaster_param_grid = {"window_length": [3, 5, 7, 11]}
 
     # Create regressor object
-    linreg_regressor = LinearRegression(normalize=True, n_jobs=-1)
+    linreg_regressor = LinearRegression(n_jobs=-1)
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
 
     cv_linreg = SingleWindowSplitter(fh=fh_int)

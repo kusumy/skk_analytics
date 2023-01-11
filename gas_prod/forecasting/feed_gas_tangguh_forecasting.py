@@ -730,6 +730,8 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
 
     return updated_rows
 
-# if __name__ == "__main__":
-#     #main(sys.argv[1], sys.argv[2], sys.argv[3])
-#     main()
+if __name__ == "__main__":
+    #main(sys.argv[1], sys.argv[2], sys.argv[3])
+    # adding skk_analytics to the system path
+    sys.path.insert(0, './')
+    main()
