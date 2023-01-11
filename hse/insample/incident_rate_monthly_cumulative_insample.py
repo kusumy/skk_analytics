@@ -127,7 +127,7 @@ def main():
 
     # Prepare data
     data['date'] = pd.to_datetime(data['date'], format='%Y-%m')
-    data = data[~(data['date'] > '2022-09')]
+    data = data[~(data['date'] > '2022-12')]
     data = data.rename(columns=str.lower)
     data['date'] = pd.PeriodIndex(data['date'], freq='M')
     data = data.reset_index()
@@ -185,6 +185,11 @@ def main():
     df['wellservice_cum'] = data['wellservice_cum'].values
     df['survey_seismic_cum'] = data['survey_seismic_cum'].values
     df['bulan'] = [i.month for i in df.index]
+    df['bor_eksplorasi_cum'].fillna(method='ffill', inplace=True)
+    df['bor_eksploitasi_cum'].fillna(method='ffill', inplace=True)
+    df['workover_cum'].fillna(method='ffill', inplace=True)
+    df['wellservice_cum'].fillna(method='ffill', inplace=True)
+    df['survey_seismic_cum'].fillna(method='ffill', inplace=True)
     #df.tail(20)
 
     # Split into train and test

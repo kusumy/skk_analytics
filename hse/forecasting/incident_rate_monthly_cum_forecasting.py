@@ -121,7 +121,7 @@ def main():
     #%%
     # Prepare data
     data['date'] = pd.to_datetime(data['date'], format='%Y-%m')
-    data = data[~(data['date'] > '2022-09')]
+    data = data[~(data['date'] > '2022-08')]
     data = data.rename(columns=str.lower)
 
     data['date'] = pd.PeriodIndex(data['date'], freq='M')
@@ -162,7 +162,7 @@ def main():
 
     #%%
     # Create forecasting Horizon
-    time_predict = pd.period_range('2022-10', periods=3, freq='M')
+    time_predict = pd.period_range('2023-01', periods=12, freq='M')
     # Create forecasting Horizon
     fh = ForecastingHorizon(time_predict, is_relative=False)
 
@@ -174,6 +174,11 @@ def main():
     df['wellservice_cum'] = data['wellservice_cum'].values
     df['survei_seismic_cum'] = data['survey_seismic_cum'].values
     df['bulan'] = [i.month for i in df.index]
+    df['drilling_explor_cum'].fillna(method='ffill', inplace=True)
+    df['drilling_explot_cum'].fillna(method='ffill', inplace=True)
+    df['workover_cum'].fillna(method='ffill', inplace=True)
+    df['wellservice_cum'].fillna(method='ffill', inplace=True)
+    df['survei_seismic_cum'].fillna(method='ffill', inplace=True)
     train_exog = df.iloc[:,1:]
 
     #%%
@@ -194,7 +199,7 @@ def main():
     test_exog.index = pd.PeriodIndex(test_exog.index, freq='M')
     #test_exog.sort_index(inplace=True)
     test_exog.drop(['date'], axis=1, inplace=True)
-    test_exog = test_exog.iloc[-3:]
+    test_exog = test_exog.iloc[-12:]
     test_exog['bulan'] = [i.month for i in test_exog.index]
 
     # %%
