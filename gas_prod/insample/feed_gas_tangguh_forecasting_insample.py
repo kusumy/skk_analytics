@@ -37,6 +37,8 @@ from imaplib import Time2Internaldate
 from sktime.forecasting.model_selection import temporal_train_test_split
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import make_reduction
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 from pmdarima.arima.utils import ndiffs, nsdiffs
 from sklearn.metrics import mean_squared_error
@@ -54,8 +56,8 @@ from sktime.forecasting.model_selection import ForecastingGridSearchCV, Forecast
 from sktime.performance_metrics.forecasting import MeanAbsolutePercentageError, MeanSquaredError
 from sklearn.model_selection import GridSearchCV
 
-import warnings
-warnings.filterwarnings(action='ignore', category=FutureWarning)
+#import warnings
+#warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
@@ -245,7 +247,7 @@ def main():
         # update value at specific location
         new_s.at[index,'feed_gas'] = mean_month
         
-        print(sql), print(mean_month)
+        #print(sql), print(mean_month)
 
     # Check if updated
     anomaly_upd = new_s[new_s['anomaly'].isnull()]
@@ -357,7 +359,7 @@ def main():
         # update value at specific location
         new_s2.at[index,'feed_gas'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
 
     # Check if updated
     new_s2[new_s2['anomaly'] == False]
@@ -459,7 +461,9 @@ def main():
     ax.legend(loc='best')
     plt.close()
 
-
+    import warnings
+    warnings.filterwarnings(action='ignore')
+    
     ##### ARIMAX MODEL (forecast_a) #####
     # %%
     # Create ARIMAX (forecast_a) Model
@@ -648,7 +652,7 @@ def main():
     linreg_strategy = "recursive"
     linreg_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19, 27]}
 
-    linreg_regressor = LinearRegression(normalize=True, n_jobs=-1)
+    linreg_regressor = LinearRegression(n_jobs=-1)
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
 
     cv_linreg = SingleWindowSplitter(fh=fh_int)
@@ -721,7 +725,6 @@ def main():
     poly3_strategy = "recursive"
 
     poly3_forecaster_param_grid = {"window_length": [1, 2]}
-
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
     poly3_forecaster = make_reduction(poly3_regressor, strategy=poly3_strategy)
 
