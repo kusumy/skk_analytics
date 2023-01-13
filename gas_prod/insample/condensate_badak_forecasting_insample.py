@@ -1,56 +1,60 @@
 # %%
 import logging
 import os
+import sys
+import time
+from datetime import datetime
+from tokenize import Ignore
+from tracemalloc import start
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import pmdarima as pm
 import psycopg2
 import seaborn as sns
-import time
-
-from humanfriendly import format_timespan
-from tokenize import Ignore
-from datetime import datetime
-from tracemalloc import start
-import plotly.express as px
-from pmdarima.arima.auto import auto_arima
-import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-from connection import *
-from utils import *
-import pmdarima as pm
-from pmdarima import model_selection 
-from pmdarima.arima import auto_arima
+from adtk.data import validate_series
 #import mlflow
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
-from adtk.data import validate_series
-pd.options.plotting.backend = "plotly"
-from dateutil.relativedelta import *
+from humanfriendly import format_timespan
+from pmdarima import model_selection
+from pmdarima.arima import auto_arima
+from pmdarima.arima.auto import auto_arima
 
-from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_absolute_error, r2_score
+pd.options.plotting.backend = "plotly"
 from cProfile import label
 from imaplib import Time2Internaldate
-from tsmoothie.smoother import PolynomialSmoother,  LowessSmoother
-from sktime.forecasting.model_selection import temporal_train_test_split
-from sktime.forecasting.base import ForecastingHorizon
-from pmdarima.arima.utils import ndiffs, nsdiffs
-from sklearn.metrics import mean_squared_error
-import statsmodels.api as sm
-from sktime.forecasting.arima import AutoARIMA
-from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
-from pmdarima.arima import auto_arima, ARIMA
-from sktime.forecasting.fbprophet import Prophet
-from sktime.forecasting.compose import make_reduction
-from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
-from sklearn.linear_model import LinearRegression
-from polyfit import PolynomRegressor, Constraints
 
-from sktime.forecasting.model_selection import ForecastingGridSearchCV, ForecastingRandomizedSearchCV, SlidingWindowSplitter, ExpandingWindowSplitter, SingleWindowSplitter
-from sktime.performance_metrics.forecasting import MeanAbsolutePercentageError, MeanSquaredError
+import statsmodels.api as sm
+from dateutil.relativedelta import *
+from pmdarima.arima import ARIMA, auto_arima
+from pmdarima.arima.utils import ndiffs, nsdiffs
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import (mean_absolute_error,
+                             mean_absolute_percentage_error,
+                             mean_squared_error, r2_score)
 from sklearn.model_selection import GridSearchCV
+from sktime.forecasting.arima import AutoARIMA
+from sktime.forecasting.base import ForecastingHorizon
+from sktime.forecasting.compose import make_reduction
+from sktime.forecasting.fbprophet import Prophet
+from sktime.forecasting.model_selection import (ExpandingWindowSplitter,
+                                                ForecastingGridSearchCV,
+                                                ForecastingRandomizedSearchCV,
+                                                SingleWindowSplitter,
+                                                SlidingWindowSplitter,
+                                                temporal_train_test_split)
+from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
+from sktime.performance_metrics.forecasting import (
+    MeanAbsolutePercentageError, MeanSquaredError)
+from tsmoothie.smoother import LowessSmoother, PolynomialSmoother
+from xgboost import XGBRegressor
+
+from polyfit import Constraints, PolynomRegressor
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
@@ -59,6 +63,12 @@ mse = MeanSquaredError()
 
 #%%
 def main():
+
+    from connection import create_db_connection, get_sql_data
+    from polyfit import PolynomRegressor
+    from utils import (ad_test, get_first_date_of_prev_month,
+                       get_last_date_of_prev_month, logMessage)
+
     # Configure logging
     #configLogging("condensate_badak.log")
     logMessage("Creating Condensate Badak Model ...")
@@ -106,97 +116,6 @@ def main():
 
     #%%
     #REPLACE ANOMALY VALUES
-    from datetime import date, datetime, timedelta
-
-    def get_first_date_of_current_month(year, month):
-        """Return the first date of the month.
-
-        Args:
-            year (int): Year
-            month (int): Month
-
-        Returns:
-            date (datetime): First date of the current month
-        """
-        first_date = datetime(year, month, 1)
-        return first_date.strftime("%Y-%m-%d")
-
-    def get_last_date_of_month(year, month):
-        """Return the last date of the month.
-            
-        Args:
-            year (int): Year, i.e. 2022
-            month (int): Month, i.e. 1 for January
-
-        Returns:
-            date (datetime): Last date of the current month
-        """
-            
-        if month == 12:
-            last_date = datetime(year, month, 31)
-        else:
-            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-            
-        return last_date.strftime("%Y-%m-%d")
-
-        
-    def get_first_date_of_prev_month(year, month, step=-1):
-        """Return the first date of the month.
-
-        Args:
-            year (int): Year
-            month (int): Month
-
-        Returns:
-            date (datetime): First date of the current month
-        """
-        first_date = datetime(year, month, 1)
-        first_date = first_date + relativedelta(months=step)
-        return first_date.strftime("%Y-%m-%d")
-
-    def get_last_date_of_prev_month(year, month, step=-1):
-        """Return the last date of the month.
-            
-        Args:
-            year (int): Year, i.e. 2022
-            month (int): Month, i.e. 1 for January
-
-        Returns:
-            date (datetime): Last date of the current month
-        """
-            
-        if month == 12:
-            last_date = datetime(year, month, 31)
-        else:
-            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-                
-        last_date = last_date + relativedelta(months=step)
-            
-        return last_date.strftime("%Y-%m-%d")
-
-    for index, row in anomalies_data.iterrows():
-        yr = index.year
-        mt = index.month
-            
-        # Get start month and end month
-        #start_month = str(get_first_date_of_current_month(yr, mt))
-        #end_month = str(get_last_date_of_month(yr, mt))
-            
-        # Get last year start date month
-        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
-            
-        # Get last month last date
-        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
-            
-        # Get mean fead gas data for the month
-        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
-        mean_month=new_s['condensate'].reset_index().query(sql).mean().values[0]
-            
-        # update value at specific location
-        new_s.at[index,'condensate'] = mean_month
-            
-        print(sql), print(mean_month)
-
     # Check if updated
     anomaly_upd = new_s[new_s['anomaly'].isnull()]
 
@@ -714,7 +633,7 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
 
     return updated_rows
 
@@ -757,6 +676,24 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
 
     return updated_rows
+
+if __name__ == "__main__":
+    # getting the name of the directory
+    # where the this file is present.
+    current = os.path.dirname(os.path.abspath("__file__"))
+
+    # Getting the parent directory name
+    # where the current directory is present.
+    parent = os.path.dirname(current)
+
+    # Getting the parent directory name
+    gr_parent = os.path.dirname(parent)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(current)
+
+    main()
