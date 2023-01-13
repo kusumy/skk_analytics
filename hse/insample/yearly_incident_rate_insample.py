@@ -112,7 +112,7 @@ def main():
     if conn == None:
         exit()
     
-    query_1 = open(os.path.join('hse/insample', 'query_yearly.sql'), mode="rt").read()    
+    query_1 = open(os.path.join('hse/sql', 'query_yearly.sql'), mode="rt").read()    
     #query_1 = open("query_yearly.sql", mode="rt").read()
     data = get_sql_data(query_1, conn)
     #data = retrieve_data(query_1)

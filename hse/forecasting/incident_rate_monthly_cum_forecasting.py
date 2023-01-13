@@ -125,7 +125,6 @@ def main():
     data = data.rename(columns=str.lower)
 
     data['date'] = pd.PeriodIndex(data['date'], freq='M')
-    data = data.drop([data.index[0], data.index[1]])
     data = data.reset_index()
     #data.head()
 

@@ -117,7 +117,7 @@ def main():
         
     #Load Data from Database
     #query_1 = open("query_month_cum.sql", mode="rt").read()
-    query_1 = open(os.path.join('hse/insample', 'query_month_cum.sql'), mode="rt").read()
+    query_1 = open(os.path.join('hse/sql', 'query_month_cum.sql'), mode="rt").read()
     data = get_sql_data(query_1, conn)
     #data = retrieve_data(query_1)
     data['year_num'] = data['year_num'].astype(int)
@@ -179,17 +179,17 @@ def main():
     #fh
 
     ## Create Exogenous Variable
-    df['bor_eksplorasi_cum'] = data['bor_eksplorasi_cum'].values
-    df['bor_eksploitasi_cum'] = data['bor_eksploitasi_cum'].values
+    df['drilling_explor_cum'] = data['bor_eksplorasi_cum'].values
+    df['drilling_explot_cum'] = data['bor_eksploitasi_cum'].values
     df['workover_cum'] = data['workover_cum'].values
     df['wellservice_cum'] = data['wellservice_cum'].values
-    df['survey_seismic_cum'] = data['survey_seismic_cum'].values
+    df['survei_seismic_cum'] = data['survey_seismic_cum'].values
     df['bulan'] = [i.month for i in df.index]
-    df['bor_eksplorasi_cum'].fillna(method='ffill', inplace=True)
-    df['bor_eksploitasi_cum'].fillna(method='ffill', inplace=True)
+    df['drilling_explor_cum'].fillna(method='ffill', inplace=True)
+    df['drilling_explot_cum'].fillna(method='ffill', inplace=True)
     df['workover_cum'].fillna(method='ffill', inplace=True)
     df['wellservice_cum'].fillna(method='ffill', inplace=True)
-    df['survey_seismic_cum'].fillna(method='ffill', inplace=True)
+    df['survei_seismic_cum'].fillna(method='ffill', inplace=True)
     #df.tail(20)
 
     # Split into train and test
