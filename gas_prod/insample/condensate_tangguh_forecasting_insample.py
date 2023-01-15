@@ -2,6 +2,7 @@
 import logging
 import os
 import sys
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 #import mlflow
@@ -17,38 +18,43 @@ from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
 
-from connection import *
-from utils import *
-
-from pmdarima import model_selection
-from sklearn.metrics import (mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, r2_score)
-
+from adtk.data import validate_series
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
-from adtk.data import validate_series
-pd.options.plotting.backend = "plotly"
-from dateutil.relativedelta import *
+from pmdarima import model_selection
+from sklearn.metrics import (mean_absolute_error,
+                             mean_absolute_percentage_error,
+                             mean_squared_error, r2_score)
 
+
+pd.options.plotting.backend = "plotly"
 from cProfile import label
 from imaplib import Time2Internaldate
-from sktime.forecasting.model_selection import temporal_train_test_split
-from sktime.forecasting.base import ForecastingHorizon
-from pmdarima.arima.utils import ndiffs, nsdiffs
-from sklearn.metrics import mean_squared_error
-import statsmodels.api as sm
-from sktime.forecasting.arima import AutoARIMA
-from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
-from pmdarima.arima import auto_arima, ARIMA
-from sktime.forecasting.fbprophet import Prophet
-from sktime.forecasting.compose import make_reduction
-from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
-from sklearn.linear_model import LinearRegression
-from polyfit import PolynomRegressor, Constraints
 
-from sktime.forecasting.model_selection import ForecastingGridSearchCV, ForecastingRandomizedSearchCV, SlidingWindowSplitter, ExpandingWindowSplitter, SingleWindowSplitter
-from sktime.performance_metrics.forecasting import MeanAbsolutePercentageError, MeanSquaredError
+import statsmodels.api as sm
+from dateutil.relativedelta import *
+from pmdarima.arima import ARIMA, auto_arima
+from pmdarima.arima.utils import ndiffs, nsdiffs
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
+from sktime.forecasting.arima import AutoARIMA
+from sktime.forecasting.base import ForecastingHorizon
+from sktime.forecasting.compose import make_reduction
+from sktime.forecasting.fbprophet import Prophet
+from sktime.forecasting.model_selection import (ExpandingWindowSplitter,
+                                                ForecastingGridSearchCV,
+                                                ForecastingRandomizedSearchCV,
+                                                SingleWindowSplitter,
+                                                SlidingWindowSplitter,
+                                                temporal_train_test_split)
+from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
+from sktime.performance_metrics.forecasting import (
+    MeanAbsolutePercentageError, MeanSquaredError)
+from xgboost import XGBRegressor
+
+from polyfit import Constraints, PolynomRegressor
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
@@ -57,6 +63,11 @@ mse = MeanSquaredError()
 
 # %%
 def main():
+    from connection import create_db_connection, get_sql_data
+    from polyfit import PolynomRegressor
+    from utils import (ad_test, get_first_date_of_prev_month,
+                       get_last_date_of_prev_month, logMessage)
+
     # Configure logging
     #configLogging("condensate_tangguh.log")
     logMessage("Creating Condensate Tangguh Model ...")
@@ -853,7 +864,7 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
 
     return updated_rows
 
@@ -896,6 +907,24 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
 
     return updated_rows
+
+if __name__ == "__main__":
+    # getting the name of the directory
+    # where the this file is present.
+    current = os.path.dirname(os.path.abspath("__file__"))
+
+    # Getting the parent directory name
+    # where the current directory is present.
+    parent = os.path.dirname(current)
+
+    # Getting the parent directory name
+    gr_parent = os.path.dirname(parent)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(current)
+
+    main()

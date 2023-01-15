@@ -10,12 +10,14 @@
 # 2. Import data from database
 # 3. EDA process (Stationary Check, Decomposition Plot, ACF-PACF Plot)
 
-
 # %%
 import logging
-import configparser
 import os
 import sys
+from datetime import datetime
+from tokenize import Ignore
+from tracemalloc import start
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,55 +26,54 @@ import plotly.express as px
 import pmdarima as pm
 import psycopg2
 import seaborn as sns
-
-from datetime import datetime
-from tokenize import Ignore
-from tracemalloc import start
 from pmdarima.arima.auto import auto_arima
-from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import configLogging, logMessage, ad_test, stationarity_check, decomposition_plot, plot_acf_pacf
-
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
 plt.style.use('fivethirtyeight')
 
+from adtk.data import validate_series
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
-from adtk.data import validate_series
+
 pd.options.plotting.backend = "plotly"
-from dateutil.relativedelta import *
-
-from pmdarima import model_selection 
-from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
-
 from cProfile import label
 from imaplib import Time2Internaldate
-from chart_studio.plotly import plot_mpl
-from statsmodels.tsa.seasonal import seasonal_decompose
-from sktime.forecasting.model_selection import temporal_train_test_split
-from sktime.forecasting.base import ForecastingHorizon
 
-from pmdarima.arima.utils import ndiffs, nsdiffs
 import statsmodels.api as sm
-from sktime.forecasting.arima import AutoARIMA
-from sktime.forecasting.fbprophet import Prophet
-from sktime.forecasting.compose import make_reduction
+from dateutil.relativedelta import *
+from pmdarima import model_selection
+from pmdarima.arima.utils import ndiffs, nsdiffs
 from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
-from polyfit import PolynomRegressor, Constraints
-
-from sktime.forecasting.model_selection import ForecastingGridSearchCV, ForecastingRandomizedSearchCV, SlidingWindowSplitter, ExpandingWindowSplitter, SingleWindowSplitter
-from sktime.performance_metrics.forecasting import MeanAbsolutePercentageError, MeanSquaredError
+from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
 from sklearn.model_selection import GridSearchCV
+from sktime.forecasting.arima import AutoARIMA
+from sktime.forecasting.base import ForecastingHorizon
+from sktime.forecasting.compose import make_reduction
+from sktime.forecasting.fbprophet import Prophet
+from sktime.forecasting.model_selection import (ForecastingGridSearchCV,
+                                                SingleWindowSplitter,
+                                                temporal_train_test_split)
+from sktime.performance_metrics.forecasting import (
+    MeanAbsolutePercentageError, MeanSquaredError)
+#from chart_studio.plotly import plot_mpl
+from statsmodels.tsa.seasonal import seasonal_decompose
+from xgboost import XGBRegressor
+
+from polyfit import Constraints, PolynomRegressor
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
 mse = MeanSquaredError()
 
 def stationarity_check(ts):
-            
+    from connection import create_db_connection, get_sql_data
+    from polyfit import PolynomRegressor
+    from utils import (ad_test, get_first_date_of_prev_month,
+                       get_last_date_of_prev_month, logMessage)
+
     # Calculate rolling statistics
     roll_mean = ts.rolling(window=8, center=False).mean()
     roll_std = ts.rolling(window=8, center=False).std()
@@ -142,7 +143,13 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
     return fig,ax
 
     # %%
+    
 def main():
+    from connection import create_db_connection, get_sql_data
+    from polyfit import PolynomRegressor
+    from utils import (ad_test, get_first_date_of_prev_month,
+                       get_last_date_of_prev_month, logMessage)
+
     # Configure logging
     #configLogging("lng_prod_badak_forecasting.log")
     logMessage("Forecasting LNG Production PT Badak ...")
@@ -226,74 +233,6 @@ def main():
 
     #%%
     #REPLACE ANOMALY VALUES
-    from datetime import date, datetime, timedelta
-
-    def get_first_date_of_current_month(year, month):
-        """Return the first date of the month.
-
-        Args:
-            year (int): Year
-            month (int): Month
-
-        Returns:
-            date (datetime): First date of the current month
-        """
-        first_date = datetime(year, month, 1)
-        return first_date.strftime("%Y-%m-%d")
-
-    def get_last_date_of_month(year, month):
-        """Return the last date of the month.
-        
-        Args:
-            year (int): Year, i.e. 2022
-            month (int): Month, i.e. 1 for January
-
-        Returns:
-            date (datetime): Last date of the current month
-        """
-        
-        if month == 12:
-            last_date = datetime(year, month, 31)
-        else:
-            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-        
-        return last_date.strftime("%Y-%m-%d")
-
-    
-    def get_first_date_of_prev_month(year, month, step=-1):
-        """Return the first date of the month.
-
-        Args:
-            year (int): Year
-            month (int): Month
-
-        Returns:
-            date (datetime): First date of the current month
-        """
-        first_date = datetime(year, month, 1)
-        first_date = first_date + relativedelta(months=step)
-        return first_date.strftime("%Y-%m-%d")
-
-    def get_last_date_of_prev_month(year, month, step=-1):
-        """Return the last date of the month.
-        
-        Args:
-            year (int): Year, i.e. 2022
-            month (int): Month, i.e. 1 for January
-
-        Returns:
-            date (datetime): Last date of the current month
-        """
-        
-        if month == 12:
-            last_date = datetime(year, month, 31)
-        else:
-            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-            
-        last_date = last_date + relativedelta(months=step)
-        
-        return last_date.strftime("%Y-%m-%d")
-
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month
@@ -825,7 +764,7 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
 
     return updated_rows
 
@@ -868,6 +807,24 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
         
     return updated_rows
+
+if __name__ == "__main__":
+    # getting the name of the directory
+    # where the this file is present.
+    current = os.path.dirname(os.path.abspath("__file__"))
+
+    # Getting the parent directory name
+    # where the current directory is present.
+    parent = os.path.dirname(current)
+
+    # Getting the parent directory name
+    gr_parent = os.path.dirname(parent)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(current)
+
+    main()
