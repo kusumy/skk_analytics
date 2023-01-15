@@ -427,7 +427,8 @@ def main():
     logMessage("Polynomial Regression Orde 3 Model Parameters "+poly3_param)
 
     # %%
-    #Create Dataframe Mape All Method
+    #CREATE DATAFRAME MAPE
+    logMessage("Creating all model mape result data frame ...")
     all_mape_pred = {'mape_forecast_a' : [mape_arimax],
                     'mape_forecast_b' : [mape_xgb],
                     'mape_forecast_c' : [mape_ranfor],

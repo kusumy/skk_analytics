@@ -1,61 +1,70 @@
-2023-01-13 09:37:28,554 Connecting to database ...
-2023-01-13 09:37:28,978 1. ADF : -0.37339984519550595
-2023-01-13 09:37:28,978 2. P-Value : 0.9144462141783269
-2023-01-13 09:37:28,978 3. Num Of Lags : 2
-2023-01-13 09:37:28,978 4. Num Of Observations Used For ADF Regression: 7
-2023-01-13 09:37:28,978 5. Critical Values : 
-2023-01-13 09:37:28,978 	 1%: -4.9386902332361515
-2023-01-13 09:37:28,978 	 5%: -3.477582857142857
-2023-01-13 09:37:28,979 	 10%: -2.8438679591836733
-2023-01-13 09:37:29,089 Creating ARIMAX Model ...
-2023-01-13 09:37:29,749 ARIMAX Model Summary
-2023-01-13 09:37:29,753                                SARIMAX Results                                
+2023-01-16 01:12:58,740 Connecting to database ...
+2023-01-16 01:12:59,106 1. ADF : -1.4794367420058536
+2023-01-16 01:12:59,106 2. P-Value : 0.5436580595807815
+2023-01-16 01:12:59,106 3. Num Of Lags : 0
+2023-01-16 01:12:59,106 4. Num Of Observations Used For ADF Regression: 117
+2023-01-16 01:12:59,106 5. Critical Values : 
+2023-01-16 01:12:59,106 	 1%: -3.487517288664615
+2023-01-16 01:12:59,106 	 5%: -2.8865777180380032
+2023-01-16 01:12:59,106 	 10%: -2.5801239192052012
+2023-01-16 01:12:59,170 Creating ARIMAX Model ...
+2023-01-16 01:12:59,499 ARIMAX Model Summary
+2023-01-16 01:12:59,500                                SARIMAX Results                                
 ==============================================================================
-Dep. Variable:                      y   No. Observations:                    9
-Model:               SARIMAX(0, 1, 0)   Log Likelihood                   4.319
-Date:                Fri, 13 Jan 2023   AIC                              5.362
-Time:                        09:37:29   BIC                              5.918
-Sample:                    12-31-2013   HQIC                             1.612
-                         - 12-31-2021                                         
+Dep. Variable:                      y   No. Observations:                  109
+Model:               SARIMAX(0, 1, 0)   Log Likelihood                 136.936
+Date:                Mon, 16 Jan 2023   AIC                           -257.873
+Time:                        01:12:59   BIC                           -236.416
+Sample:                    01-31-2013   HQIC                          -249.173
+                         - 01-31-2022                                         
 Covariance Type:                  opg                                         
+=======================================================================================
+                          coef    std err          z      P>|z|      [0.025      0.975]
+---------------------------------------------------------------------------------------
+intercept              -0.0067      0.011     -0.602      0.547      -0.028       0.015
+drilling_explor_cum     0.0004      0.001      0.493      0.622      -0.001       0.002
+drilling_explot_cum     0.0003      0.000      2.261      0.024    3.58e-05       0.001
+workover_cum           -0.0001   9.62e-05     -1.159      0.246      -0.000     7.7e-05
+wellservice_cum      5.004e-06   2.19e-06      2.287      0.022    7.15e-07    9.29e-06
+survei_seismic_cum     -0.0033      0.002     -1.367      0.172      -0.008       0.001
+bulan                  -0.0087      0.011     -0.799      0.424      -0.030       0.013
+sigma2                  0.0046      0.000     15.306      0.000       0.004       0.005
 ===================================================================================
-                      coef    std err          z      P>|z|      [0.025      0.975]
------------------------------------------------------------------------------------
-intercept          -0.0436      0.132     -0.330      0.742      -0.303       0.216
-survey_seismic     -0.0084      0.011     -0.753      0.452      -0.030       0.014
-bor_eksplorasi      0.0016      0.014      0.115      0.908      -0.026       0.029
-bor_eksploitasi     0.0003      0.002      0.117      0.907      -0.004       0.005
-workover            0.0001      0.002      0.043      0.966      -0.005       0.005
-wellservice      9.008e-06   6.74e-05      0.134      0.894      -0.000       0.000
-sigma2              0.0199      0.015      1.284      0.199      -0.010       0.050
-===================================================================================
-Ljung-Box (L1) (Q):                   3.23   Jarque-Bera (JB):                 0.20
-Prob(Q):                              0.07   Prob(JB):                         0.90
-Heteroskedasticity (H):               5.94   Skew:                            -0.39
-Prob(H) (two-sided):                  0.18   Kurtosis:                         2.97
+Ljung-Box (L1) (Q):                   0.13   Jarque-Bera (JB):               858.95
+Prob(Q):                              0.72   Prob(JB):                         0.00
+Heteroskedasticity (H):               3.24   Skew:                             0.89
+Prob(H) (two-sided):                  0.00   Kurtosis:                        16.70
 ===================================================================================
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2023-01-13 09:37:29,761 ARIMAX Model Prediction ..
-2023-01-13 09:37:29,780 ARIMAX Model MAPE: 0.0058
-2023-01-13 09:37:29,823 Creating XGBoost Model ....
-2023-01-13 09:37:29,909 XGBoost Model Prediction ...
-2023-01-13 09:37:29,923 XGBoost Model MAPE: 0.2132
-2023-01-13 09:37:29,925 XGBoost Model Parameters 6, reg:squarederror
-2023-01-13 09:37:29,925 Creating Random Forest Model ...
-2023-01-13 09:37:30,083 Random Forest Model Prediction ...
-2023-01-13 09:37:30,107 Random Forest Model MAPE: 0.2174
-2023-01-13 09:37:30,110 Random Forest Model Parameters RandomForestRegressor(random_state=0), 8
-2023-01-13 09:37:30,110 Creating Linear Regression Model ...
-2023-01-13 09:37:30,119 Linear Regression Model Prediction ...
-2023-01-13 09:37:30,129 Linear Regression Model MAPE: 0.4474
-2023-01-13 09:37:30,130 Linear Regression Model Parameters LinearRegression(normalize=True), 4
-2023-01-13 09:37:30,233 Creating Polynomial Regression Orde 2 Model ...
-2023-01-13 09:37:30,256 Polynomial Regression Orde 2 Model Prediction ...
-2023-01-13 09:37:30,268 Polynomial Regression Orde 2 Model MAPE: 0.1721
-2023-01-13 09:37:30,269 Polynomial Regression Orde 2 Model Parameters PolynomRegressor(deg=2), 7
-2023-01-13 09:37:30,269 Creating Polynomial Regression Orde 3 Model ...
-2023-01-13 09:37:30,288 Polynomial Regression Orde 3 Model Prediction ...
-2023-01-13 09:37:30,299 Polynomial Regression Orde 3 Model MAPE: 0.1896
-2023-01-13 09:37:30,300 Polynomial Regression Orde 3 Model Parameters PolynomRegressor(deg=3), 7
+2023-01-16 01:12:59,504 ARIMAX Model Prediction ..
+2023-01-16 01:12:59,513 ARIMAX Model MAPE: 0.1177
+2023-01-16 01:12:59,513 Arimax Model Parameters (0, 1, 0)
+2023-01-16 01:12:59,522 Creating XGBoost Model ....
+2023-01-16 01:12:59,610 XGBoost Model Prediction ...
+2023-01-16 01:12:59,627 XGBoost Model MAPE: 0.1403
+2023-01-16 01:12:59,630 XGBoost Model Parameters 8, reg:squarederror
+2023-01-16 01:12:59,630 Creating Random Forest Model ...
+2023-01-16 01:12:59,851 Random Forest Model Prediction ...
+2023-01-16 01:12:59,899 Random Forest Model MAPE: 0.1189
+2023-01-16 01:12:59,920 Random Forest Model Parameters RandomForestRegressor(random_state=0), 19
+2023-01-16 01:12:59,921 Creating Linear Regression Model ...
+2023-01-16 01:12:59,927 Linear Regression Model Prediction ...
+2023-01-16 01:12:59,932 Linear Regression Model MAPE: 0.1347
+2023-01-16 01:12:59,932 Linear Regression Model Parameters LinearRegression(normalize=True), 1
+2023-01-16 01:12:59,969 Creating Polynomial Regression Orde 2 Model ...
+2023-01-16 01:12:59,980 Polynomial Regression Orde 2 Model Prediction ...
+2023-01-16 01:12:59,986 Polynomial Regression Orde 2 Model MAPE: 0.0599
+2023-01-16 01:12:59,986 Polynomial Regression Orde 2 Model Parameters PolynomRegressor(deg=2), 1
+2023-01-16 01:12:59,986 Creating Polynomial Regression Orde 3 Model ...
+2023-01-16 01:12:59,997 Polynomial Regression Orde 3 Model Prediction ...
+2023-01-16 01:13:00,002 Polynomial Regression Orde 3 Model MAPE: 0.7395
+2023-01-16 01:13:00,003 Polynomial Regression Orde 3 Model Parameters PolynomRegressor(deg=3), 1
+2023-01-16 01:13:00,003 Creating all model mape result data frame ...
+2023-01-16 01:13:00,003 Creating all model params result data frame ...
+2023-01-16 01:13:00,003 Updating MAPE result to database ...
+2023-01-16 01:13:00,047 Updated rows: 1
+2023-01-16 01:13:00,047 Updating Model Parameter result to database ...
+2023-01-16 01:13:00,112 Updated rows: 1
+2023-01-16 01:13:00,112 Done
