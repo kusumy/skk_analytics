@@ -34,13 +34,13 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 # Configure logging
 configLogging("main_hse_insample.log")
 
-#t0 = time.process_time()
-#ir_monthly_cum_insample.main()
-#t1 = time.process_time()
-#exec_time = format_timespan(t1-t0, max_units=3)
-#print("Forecasting incident rate monthly cumulative : " + exec_time)
+t0 = time.process_time()
+ir_monthly_cum_insample.main()
+t1 = time.process_time()
+exec_time = format_timespan(t1-t0, max_units=3)
+print("Forecasting incident rate monthly cumulative : " + exec_time)
 
-#print('\n')
+print('\n')
 
 t2 = time.process_time()
 ir_yearly_insample.main()
@@ -50,8 +50,8 @@ print("Forecasting incident rate yearly : " + exec_time)
 
 print('\n')
 
-#total_exec_time = format_timespan(t3-t0, max_units=3)
-#print("Total execution time : " + total_exec_time)
+total_exec_time = format_timespan(t3-t0, max_units=3)
+print("Total execution time : " + total_exec_time)
 
 exit()
 
