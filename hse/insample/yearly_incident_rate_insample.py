@@ -108,7 +108,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_hse_skk')
+    conn = create_db_connection(section='postgresql_ml_hse')
     if conn == None:
         exit()
     
@@ -164,7 +164,7 @@ def main():
     test_size = 0.1
 
     # Split data
-    y_train, y_test = temporal_train_test_split(df['trir'], test_size=test_size)
+    y_train, y_test = temporal_train_test_split(df[['trir']], test_size=test_size)
     #y_train.tail()
 
     #%%
@@ -199,6 +199,7 @@ def main():
     from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
     import statsmodels.api as sm
     from sktime.forecasting.arima import AutoARIMA
+    from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 
     #Set parameters
     arimax_differencing = 1
@@ -206,8 +207,14 @@ def main():
     arimax_error_action = "ignore"
     arimax_suppress_warnings = True
 
-    # Create SARIMA Model
-    arimax_model = AutoARIMA(d=arimax_differencing, suppress_warnings=arimax_suppress_warnings, error_action=arimax_error_action, trace=arimax_trace) #If using SKTime AutoArima
+    # Create ARIMA Model
+    #arimax_model = AutoARIMA(d=arimax_differencing, suppress_warnings=arimax_suppress_warnings, error_action=arimax_error_action, trace=arimax_trace, information_criterion="aic") #If using SKTime AutoArima
+    #arimax_model = StatsForecastAutoARIMA(d=arimax_differencing, trace=arimax_trace, information_criterion="aicc") #If using SKTime AutoArima
+    arimax_model = pm.auto_arima(y=y_train, X=X_train, start_p=0, d=1, start_q=0, 
+                                max_p=10, max_d=0, max_q=10,
+                                m=0, seasonal=False, error_action='warn',trace=True,
+                                supress_warnings=True,stepwise=True, stationary=False)
+
     logMessage("Creating ARIMAX Model ...")
     
     arimax_model.fit(y_train, X=X_train)
@@ -216,7 +223,7 @@ def main():
     logMessage(arimax_model.summary())
 
     logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(fh, X=X_test) #n_periods=len(fh)
+    arimax_forecast = arimax_model.predict(n_periods=len(fh), X=X_test) #n_periods=len(fh)
     y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:,.2f}'.format)
     y_pred_arimax['year_num'] = [i.year for i in arimax_forecast.index]
     #Rename colum 0
@@ -227,8 +234,8 @@ def main():
     logMessage("ARIMAX Model "+mape_arimax_str)
     
     #Get parameter
-    #arimax_param = str(arimax_model.get_fitted_params())
-    #logMessage("Arimax Model Parameters "+arimax_param)
+    arimax_param = str(arimax_model.order)
+    logMessage("Arimax Model Parameters "+arimax_param)
 
     ##### XGBOOST MODEL #####
     from xgboost import XGBRegressor
