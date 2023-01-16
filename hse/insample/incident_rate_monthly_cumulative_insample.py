@@ -281,9 +281,7 @@ def main():
     logMessage("XGBoost Model "+mape_xgb_str)
     
     #Get Parameters
-    xgb_param_lags = str(xgb_forecaster.get_params()['window_length'])
-    xgb_param_objective = str(xgb_forecaster.get_params()['estimator__objective'])
-    xgb_param = xgb_param_lags + ', ' + xgb_param_objective
+    xgb_param = str(xgb_forecaster.get_params())
     logMessage("XGBoost Model Parameters "+xgb_param)
 
 
@@ -317,9 +315,7 @@ def main():
     logMessage("Random Forest Model "+mape_ranfor_str)
     
     #Get Parameters
-    ranfor_param_estimator = str(ranfor_forecaster.get_fitted_params()['estimator'])
-    ranfor_param_lags = str(ranfor_forecaster.get_fitted_params()['window_length'])
-    ranfor_param = ranfor_param_estimator + ', ' + ranfor_param_lags
+    ranfor_param = str(ranfor_forecaster.get_fitted_params())
     logMessage("Random Forest Model Parameters "+ranfor_param)
 
 
@@ -351,9 +347,7 @@ def main():
     logMessage("Linear Regression Model "+mape_linreg_str)
     
     #Get parameters
-    linreg_param_estimator = str(linreg_forecaster.get_fitted_params()['estimator'])
-    linreg_param_lags = str(linreg_forecaster.get_fitted_params()['window_length'])
-    linreg_param = linreg_param_estimator + ', ' + linreg_param_lags
+    linreg_param = str(linreg_forecaster.get_fitted_params())
     logMessage("Linear Regression Model Parameters "+linreg_param)
 
 
@@ -386,9 +380,7 @@ def main():
     logMessage("Polynomial Regression Orde 2 Model "+mape_poly2_str)
     
     #Get parameters
-    poly2_param_estimator = str(poly2_forecaster.get_fitted_params()['estimator'])
-    poly2_param_lags = str(poly2_forecaster.get_fitted_params()['window_length'])
-    poly2_param = poly2_param_estimator + ', ' + poly2_param_lags
+    poly2_param = str(poly2_forecaster.get_fitted_params())
     logMessage("Polynomial Regression Orde 2 Model Parameters "+poly2_param)
     
 
@@ -421,9 +413,7 @@ def main():
     logMessage("Polynomial Regression Orde 3 Model "+mape_poly3_str)
     
     #Get parameters
-    poly3_param_estimator = str(poly3_forecaster.get_fitted_params()['estimator'])
-    poly3_param_lags = str(poly3_forecaster.get_fitted_params()['window_length'])
-    poly3_param = poly3_param_estimator + ', ' + poly3_param_lags
+    poly3_param = str(poly3_forecaster.get_fitted_params())
     logMessage("Polynomial Regression Orde 3 Model Parameters "+poly3_param)
 
     # %%
@@ -505,8 +495,9 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
                     mape_forecast_d,
                     mape_forecast_e,
                     mape_forecast_f,
+                    created_at,
                     created_by)
-                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
           """
                 
     #conn = None
@@ -516,7 +507,7 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         cur = conn.cursor()
         # execute the UPDATE  statement
         cur.execute(sql, (type_id, date_now, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f,
-                          created_by))
+                          date_now, created_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
@@ -544,8 +535,9 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
                     best_param_d,
                     best_param_e,
                     best_param_f,
+                    created_at,
                     created_by)
-                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
           """
     
     #conn = None
@@ -555,7 +547,7 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
         cur = conn.cursor()
         # execute the UPDATE  statement
         cur.execute(sql, (ir_type, date_now, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f,
-                          created_by))
+                          date_now, created_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database

@@ -42,16 +42,16 @@ print("Forecasting incident rate monthly cumulative : " + exec_time)
 
 #print('\n')
 
-#t2 = time.process_time()
-#ir_yearly_insample.main()
-#t3 = time.process_time()
-#exec_time = format_timespan(t3-t2, max_units=3)
-#print("Forecasting incident rate yearly : " + exec_time)
+t2 = time.process_time()
+ir_yearly_insample.main()
+t3 = time.process_time()
+exec_time = format_timespan(t3-t2, max_units=3)
+print("Forecasting incident rate yearly : " + exec_time)
 
-#print('\n')
+print('\n')
 
-#total_exec_time = format_timespan(t3-t0, max_units=3)
-#print("Total execution time : " + total_exec_time)
+total_exec_time = format_timespan(t3-t0, max_units=3)
+print("Total execution time : " + total_exec_time)
 
 exit()
 
