@@ -1,3 +1,90 @@
-2023-01-11 16:08:16,952 Forecasting Feed Gas BP Tangguh ...
-2023-01-11 16:08:22,176 Connecting to database ...
-2023-01-11 16:08:27,808 Cleaning data ...
+2023-01-18 08:55:23,545 Forecasting Feed Gas BP Tangguh ...
+2023-01-18 08:55:23,545 Connecting to database ...
+2023-01-18 08:55:23,632 Cleaning data ...
+2023-01-18 08:55:25,576 Creating ARIMAX Model ...
+2023-01-18 08:55:26,631 ARIMAX Model Summary
+2023-01-18 08:55:26,638                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                 1055
+Model:               SARIMAX(1, 0, 3)   Log Likelihood               -5511.699
+Date:                Wed, 18 Jan 2023   AIC                          11043.397
+Time:                        08:55:26   BIC                          11093.010
+Sample:                    01-01-2020   HQIC                         11062.204
+                         - 11-20-2022                                         
+Covariance Type:                  opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+intercept            1.9717      4.058      0.486      0.627      -5.982       9.926
+planned_shutdown  -345.4681      6.398    -53.996      0.000    -358.008    -332.928
+wpnb_gas             0.0044      0.079      0.056      0.955      -0.151       0.159
+month               -0.0269      4.202     -0.006      0.995      -8.262       8.209
+day                 -0.1757      0.293     -0.600      0.549      -0.750       0.398
+ar.L1                0.9982      0.004    255.853      0.000       0.991       1.006
+ma.L1               -0.4668      0.016    -29.071      0.000      -0.498      -0.435
+ma.L2               -0.1694      0.016    -10.303      0.000      -0.202      -0.137
+ma.L3               -0.0678      0.023     -2.897      0.004      -0.114      -0.022
+sigma2            2027.4847     23.598     85.918      0.000    1981.234    2073.736
+===================================================================================
+Ljung-Box (L1) (Q):                   0.00   Jarque-Bera (JB):             62932.50
+Prob(Q):                              1.00   Prob(JB):                         0.00
+Heteroskedasticity (H):               1.98   Skew:                            -0.94
+Prob(H) (two-sided):                  0.00   Kurtosis:                        40.79
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2023-01-18 08:55:26,653 ARIMAX Model Prediction ..
+2023-01-18 08:55:26,725 Creating SARIMAX Model ...
+2023-01-18 08:55:51,757 SARIMAX Model Summary
+2023-01-18 08:55:51,763                                      SARIMAX Results                                      
+==========================================================================================
+Dep. Variable:                                  y   No. Observations:                 1055
+Model:             SARIMAX(5, 0, 0)x(2, 1, 0, 12)   Log Likelihood               -5566.759
+Date:                            Wed, 18 Jan 2023   AIC                          11159.518
+Time:                                    08:55:51   BIC                          11223.866
+Sample:                                01-01-2020   HQIC                         11183.925
+                                     - 11-20-2022                                         
+Covariance Type:                              opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+intercept            1.0310      1.667      0.618      0.536      -2.237       4.299
+planned_shutdown  -512.3771      6.040    -84.830      0.000    -524.215    -500.539
+wpnb_gas            -0.0161      0.029     -0.562      0.574      -0.072       0.040
+month                0.9766      1.796      0.544      0.587      -2.543       4.496
+day                 -0.2129      0.226     -0.941      0.347      -0.657       0.231
+ar.L1                0.3547      0.016     21.733      0.000       0.323       0.387
+ar.L2                0.0485      0.028      1.761      0.078      -0.005       0.102
+ar.L3                0.0243      0.027      0.893      0.372      -0.029       0.078
+ar.L4                0.0191      0.034      0.567      0.571      -0.047       0.085
+ar.L5                0.0776      0.036      2.145      0.032       0.007       0.149
+ar.S.L12            -0.6861      0.016    -41.690      0.000      -0.718      -0.654
+ar.S.L24            -0.3268      0.018    -18.578      0.000      -0.361      -0.292
+sigma2            2492.5193     32.851     75.875      0.000    2428.133    2556.905
+===================================================================================
+Ljung-Box (L1) (Q):                   0.12   Jarque-Bera (JB):             36636.43
+Prob(Q):                              0.73   Prob(JB):                         0.00
+Heteroskedasticity (H):               1.75   Skew:                            -1.23
+Prob(H) (two-sided):                  0.00   Kurtosis:                        31.93
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2023-01-18 08:55:51,789 SARIMAX Model Prediction ..
+2023-01-18 08:55:51,856 Creating Prophet Model ....
+2023-01-18 08:55:52,160 Prophet Model Prediction ...
+2023-01-18 08:55:52,811 Creating Random Forest Model ...
+2023-01-18 08:55:59,664 Random Forest Model Prediction ...
+2023-01-18 08:56:03,843 Creating XGBoost Model ....
+2023-01-18 08:56:29,694 XGBoost Model Prediction ...
+2023-01-18 08:56:32,283 Creating Linear Regression Model ...
+2023-01-18 08:56:32,298 Linear Regression Model Prediction ...
+2023-01-18 08:56:32,371 Creating Polynomial Regression Orde 2 Model ...
+2023-01-18 08:56:32,406 Polynomial Regression Orde 2 Model Prediction ...
+2023-01-18 08:56:32,490 Creating Polynomial Regression Orde 3 Model ...
+2023-01-18 08:56:32,537 Polynomial Regression Orde 3 Model Prediction ...
+2023-01-18 08:56:32,623 Creating all model prediction result data frame ...
+2023-01-18 08:56:32,689 Updating forecast result to database ...
+2023-01-18 08:56:42,501 Updated rows: 161
+2023-01-18 08:56:42,502 Done
