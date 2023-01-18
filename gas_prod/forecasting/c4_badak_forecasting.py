@@ -53,11 +53,11 @@ from sklearn.linear_model import LinearRegression
 # %%
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month
+    from utils import configLogging, logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month
     from polyfit import PolynomRegressor
     
     # Configure logging
-    configLogging("lpg_c4_badak_forecasting.log")
+    #configLogging("lpg_c4_badak_forecasting.log")
     
     # Connect to database
     # Exit program if not connected to database
