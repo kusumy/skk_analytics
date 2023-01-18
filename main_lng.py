@@ -3,7 +3,7 @@ import argparse
 import itertools
 import logging
 import ast
-import arrow
+#import arrow
 import sys
 import time
 from humanfriendly import format_timespan
