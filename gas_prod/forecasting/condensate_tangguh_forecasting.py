@@ -71,6 +71,7 @@ def main():
     data = data.reset_index()
     
     #%%
+    logMessage("Condensate Tangguh Null Value Cleaning ...")
     data_null_cleaning = data[['date', 'condensate', 'wpnb_oil', 'unplanned_shutdown', 'planned_shutdown']].copy()
     data_null_cleaning['condensate_copy'] = data[['condensate']].copy()
     ds_null_cleaning = 'date'
@@ -220,14 +221,14 @@ def main():
         # update value at specific location
         new_s2.at[index,'condensate'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
 
     # Check if updated
     new_s2[new_s2['anomaly'] == False]
     anomaly_upd2 = new_s2[new_s2['anomaly'] == False]
 
     #%%
-    logMessage("Prepare final data")
+    logMessage("Condensate Tangguh Prepare Data ...")
     #prepare data
     data_cleaned = new_s2[['condensate']].copy()
     data_cleaned = data_cleaned.reset_index()
@@ -259,9 +260,8 @@ def main():
     # plt.close()
 
     #%%
-    logMessage("AD-Fuller Testing")
     #Ad Fuller Test
-    ad_test(train_df)
+    #ad_test(train_df)
 
     #%%
     logMessage("Create Exogenous Features for Training")
@@ -270,6 +270,7 @@ def main():
     df_cleaned['wpnb_oil'] = data['wpnb_oil'].values
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    df_cleaned['wpnb_oil'].fillna(method='ffill', inplace=True)
     train_exog = df_cleaned.iloc[:,1:]
     #train_exog
 
@@ -301,8 +302,9 @@ def main():
     future_exog['month'] = [i.month for i in future_exog.index]
     future_exog['day'] = [i.day for i in future_exog.index]
     future_exog['wpnb_oil'] = future_exog['wpnb_oil'].astype(np.float32)
+    future_exog['wpnb_oil'].fillna(method='ffill', inplace=True)
     future_exog[['wpnb_oil']].applymap('{:.2f}'.format)
-    #future_exog
+    
 
     #Set forecasting horizon
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
@@ -320,7 +322,7 @@ def main():
     try:
         ##### FORECASTING #####
         ##### ARIMAX MODEL #####
-        logMessage("Arimax Model Forecasting ...")
+        logMessage("Create Arimax Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
                         FROM lng_analytics_model_param 
@@ -361,7 +363,7 @@ def main():
 
 
         ##### SARIMAX MODEL #####
-        logMessage("Sarimax Model Forecasting ...")
+        logMessage("Create Sarimax Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_sarimax_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
@@ -398,7 +400,7 @@ def main():
         logMessage(sarimax_model.summary())
 
         logMessage("SARIMAX Model Prediction ..")
-        sarimax_forecast = sarimax_model.predict(len(future_exog), X=future_exog)
+        sarimax_forecast = sarimax_model.predict(fh, X=future_exog) #len(future_exog)
         y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
         y_pred_sarimax['day_num'] = [i.day for i in sarimax_forecast.index]
         y_pred_sarimax['month_num'] = [i.month for i in sarimax_forecast.index]
@@ -411,7 +413,7 @@ def main():
 
         ##### PROPHET MODEL #####
         # Get best parameter from database
-        logMessage("Prophet Model Forecasting ...")
+        logMessage("Create Prophet Forecasting Condensate BP Tangguh ...")
         sql_prophet_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'BP Tangguh' 
@@ -462,7 +464,7 @@ def main():
 
 
         ##### RANDOM FOREST MODEL #####
-        logMessage("Random Forest Model Forecasting ...")
+        logMessage("Create Random Forest Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
@@ -503,7 +505,7 @@ def main():
 
 
         ##### XGBOOST MODEL #####
-        logMessage("XGBoost Model Forecasting ...")
+        logMessage("Create XGBoost Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
@@ -542,7 +544,7 @@ def main():
 
 
         ##### LINEAR REGRESSION MODEL #####
-        logMessage("Linear Regression Model Forecasting ...")
+        logMessage("Create Linear Regression Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_linreg_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
@@ -581,7 +583,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
-        logMessage("Polynomial Regression Deg=2 Model Forecasting ...")
+        logMessage("Create Polynomial Regression Degree=2 Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_poly2_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
@@ -621,7 +623,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
-        logMessage("Polynomial Regression Deg=3 Model Forecasting ...")
+        logMessage("Create Polynomial Regression Degree=3 Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_poly3_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 

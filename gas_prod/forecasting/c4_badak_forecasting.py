@@ -74,6 +74,7 @@ def main():
     data = data.reset_index()
 
     #%%
+    logMessage("LPG C4 PT Badak Null Value Cleaning ...")
     data_null_cleaning = data[['date', 'lpg_c4']].copy()
     data_null_cleaning['lpg_c4_copy'] = data[['lpg_c4']].copy()
     ds_null_cleaning = 'date'
@@ -135,9 +136,10 @@ def main():
         # update value at specific location
         new_s.at[index,'lpg_c4'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
     
     #%%
+    logMessage("LPG C4 PT Badak Prepare Data ...")
     #prepare data
     data_cleaned = new_s[['lpg_c4']].copy()
     data_cleaned = data_cleaned.reset_index()
@@ -179,11 +181,12 @@ def main():
 
     #%%
     #Ad Fuller Test
-    ad_test(df_cleaned['lpg_c4'])
+    #ad_test(df_cleaned['lpg_c4'])
 
     #%%
     from sktime.forecasting.base import ForecastingHorizon
 
+    logMessage("Create Exogenous Features for Training ...")
     # create features (exog) from date
     #df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
@@ -191,6 +194,7 @@ def main():
     #train_exog
 
     #%%
+    logMessage("Create Exogenous Features for Future Dates ...")
     query_exog = os.path.join('gas_prod/sql',"c4_badak_exog_query.sql")
     query_2 = open(query_exog, mode="rt").read()
     data_exog = get_sql_data(query_2, conn)
@@ -215,6 +219,7 @@ def main():
     try:
         ##### FORECASTING #####
         ##### ARIMAX MODEL #####
+        logMessage("Create Arimax Forecasting LPG C4 PT Badak ...")
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
                         FROM lng_analytics_model_param 
@@ -256,6 +261,7 @@ def main():
 
 
         ##### SARIMAX MODEL #####
+        logMessage("Create Sarimax Forecasting LPG C4 PT Badak ...")
         # Get best parameter from database
         sql_sarimax_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
@@ -300,6 +306,7 @@ def main():
 
 
         ##### PROPHET MODEL #####
+        logMessage("Create Prophet Forecasting LPG C4 PT Badak ...")
         # Get best parameter from database
         sql_prophet_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
@@ -349,6 +356,7 @@ def main():
 
 
         ##### RANDOM FOREST MODEL #####
+        logMessage("Create Random Forest Forecasting LPG C4 PT Badak ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
@@ -387,6 +395,7 @@ def main():
 
 
         ##### XGBOOST MODEL #####
+        logMessage("Create XGBoost Forecasting LPG C4 PT Badak ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
@@ -423,6 +432,7 @@ def main():
 
 
         ##### LINEAR REGRESSION MODEL #####
+        logMessage("Create Linear Regression Forecasting LPG C4 PT Badak ...")
         # Get best parameter from database
         sql_linreg_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
@@ -460,6 +470,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 #####
+        logMessage("Create Polynomial Regression Degree=2 Forecasting LPG C4 PT Badak ...")
         # Get best parameter from database
         sql_poly2_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
@@ -498,6 +509,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 #####
+        logMessage("Create Polynomial Regression Degree=3 Forecasting LPG C4 PT Badak ...")
         # Get best parameter from database
         sql_poly3_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 

@@ -71,6 +71,7 @@ def main():
     data = data.reset_index()
     
     #%%
+    logMessage("Feed Gas BP Tangguh Null Value Cleaning ...")
     data_null_cleaning = data[['date', 'feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
     data_null_cleaning['feed_gas_copy'] = data[['feed_gas']].copy()
     ds_null_cleaning = 'date'
@@ -145,12 +146,13 @@ def main():
         # update value at specific location
         new_s.at[index,'feed_gas'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
     
     # Check if updated
     #new_s[new_s['anomaly'].isnull()]
     
     #%%
+    logMessage("Feed Gas Tangguh Unplanned Shutdown Cleaning ...")
     data_unplanned_cleaning = new_s[['feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
     #ds_cleaning2 = 'date'
     #data_unplanned_cleaning = data_unplanned_cleaning.set_index(ds_cleaning2)
@@ -219,13 +221,14 @@ def main():
         # update value at specific location
         new_s2.at[index,'feed_gas'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
 
     # Check if updated
     new_s2[new_s2['anomaly'] == False]
     anomaly_upd2 = new_s2[new_s2['anomaly'] == False]
 
     #%%
+    logMessage("Feed Gas BP Tangguh Prepare Data ...")
     #prepare data
     data_cleaned = new_s2[['feed_gas']].copy()
     data_cleaned = data_cleaned.reset_index()
@@ -261,11 +264,13 @@ def main():
     #ad_test(train_df)
 
     #%%
+    logMessage("Create Exogenous Features for Training ...")
     #Create Exogenous Features for Training
     df_cleaned['planned_shutdown'] = data['planned_shutdown'].values
     df_cleaned['wpnb_gas'] = data['wpnb_gas'].values
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    df_cleaned['wpnb_gas'].fillna(method='ffill', inplace=True)
     train_exog = df_cleaned.iloc[:,1:]
 
     from sktime.forecasting.base import ForecastingHorizon
@@ -286,6 +291,7 @@ def main():
     future_exog = future_exog.set_index(ds_exog)
     future_exog.index = pd.DatetimeIndex(future_exog.index, freq='D')
 
+    logMessage("Create Exogenous Features for Future Dates ...")
     #Create exogenous date index
     future_exog['planned_shutdown'] = future_exog['planned_shutdown'].values
     future_exog['wpnb_gas'] = future_exog['wpnb_gas'].astype(np.float32)
@@ -308,6 +314,7 @@ def main():
     #%%
     try:
         ##### FORECASTING #####
+        logMessage("Create Arimax Forecasting Feed Gas BP Tangguh ...")
         ##### ARIMAX MODEL (forecast_a) #####
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
@@ -350,6 +357,7 @@ def main():
 
 
         ##### SARIMAX MODEL #####
+        logMessage("Create Sarimax Forecasting Feed Gas BP Tangguh ...")
         # Get best parameter from database
         sql_sarimax_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
@@ -398,6 +406,7 @@ def main():
         y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
 
         ##### PROPHET MODEL #####
+        logMessage("Create Prophet Forecasting Feed Gas BP Tangguh ...")
         # Get best parameter from database
         sql_prophet_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
@@ -448,6 +457,7 @@ def main():
         y_pred_prophet.rename(columns={0:'forecast_c'}, inplace=True)
 
         ##### RANDOM FOREST MODEL #####
+        logMessage("Create Random Forest Forecasting Feed Gas BP Tangguh ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
@@ -487,6 +497,7 @@ def main():
         y_pred_ranfor.rename(columns={0:'forecast_d'}, inplace=True)
 
         ##### XGBOOST MODEL #####
+        logMessage("Create XGBoost Forecasting Feed Gas BP Tangguh ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
@@ -525,6 +536,7 @@ def main():
         y_pred_xgb.rename(columns={0:'forecast_e'}, inplace=True)
 
         ##### LINEAR REGRESSION MODEL #####
+        logMessage("Create Linear Regression Forecasting Feed Gas BP Tangguh ...")
         # Get best parameter from database
         sql_linreg_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
@@ -564,6 +576,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
+        logMessage("Create Polynomial Regression Degree=2 Forecasting Feed Gas BP Tangguh ...")
         # Get best parameter from database
         sql_poly2_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
@@ -603,6 +616,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
+        logMessage("Create Polynomial Regression Degree=3 Forecasting Feed Gas BP Tangguh ...")
         # Get best parameter from database
         sql_poly3_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 

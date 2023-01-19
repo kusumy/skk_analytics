@@ -72,6 +72,7 @@ def main():
     data = data.reset_index()
 
     #%%
+    logMessage("Condensate PT Badak Null Value Cleaning ...")
     data_null_cleaning = data[['date', 'condensate']].copy()
     data_null_cleaning['condensate_copy'] = data[['condensate']].copy()
     ds_null_cleaning = 'date'
@@ -132,9 +133,10 @@ def main():
         # update value at specific location
         new_s.at[index,'condensate'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
     
     #%%
+    logMessage("Condensate PT Badak Prepare Data ...")
     #prepare data
     data_cleaned = new_s[['condensate']].copy()
     data_cleaned = data_cleaned.reset_index()
@@ -146,6 +148,7 @@ def main():
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
+    logMessage("Condensate PT Badak Data Smoothing ...")
     # Smooth time series signal using polynomial smoothing
     from tsmoothie.smoother import PolynomialSmoother,  LowessSmoother
 
@@ -203,13 +206,14 @@ def main():
 
     #%%
     #Ad Fuller Test
-    ad_test(df_smoothed['condensate'])
+    #ad_test(df_smoothed['condensate'])
 
     #%%
     #Select target column after smoothing data
     train_df = df_smoothed['condensate']
 
     #%%
+    logMessage("Create Exogenous Features for Training ...")
     # create features from date
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
@@ -222,6 +226,7 @@ def main():
     data_exog.sort_index(inplace=True)
     data_exog = data_exog.reset_index()
 
+    logMessage("Create Exogenous Features for Future Dates ...")
     ds_exog = 'date'
     x_exog = 'condensate'
     future_exog = data_exog[[ds_exog, x_exog]]
@@ -237,7 +242,7 @@ def main():
     #%%
     try:
         ##### FORECASTING #####
-
+        logMessage("Create Arimax Forecasting Condensate PT Badak ...")
         ##### ARIMAX MODEL #####
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
@@ -280,6 +285,7 @@ def main():
 
 
         ##### SARIMAX MODEL #####
+        logMessage("Create Sarimax Forecasting Condensate PT Badak ...")
         # Get best parameter from database
         sql_sarimax_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
@@ -326,6 +332,7 @@ def main():
 
 
         ##### PROPHET MODEL #####
+        logMessage("Create Prophet Forecasting Condensate PT Badak ...")
         # Get best parameter from database
         sql_prophet_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
@@ -377,6 +384,7 @@ def main():
 
 
         ##### RANDOM FOREST MODEL #####
+        logMessage("Create Random Forest Forecasting Condensate PT Badak ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
@@ -418,6 +426,7 @@ def main():
 
 
         ##### XGBOOST MODEL #####
+        logMessage("Create XGBoost Forecasting Condensate PT Badak ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
@@ -456,6 +465,7 @@ def main():
 
 
         ##### LINEAR REGRESSION MODEL #####
+        logMessage("Create Linear Regression Forecasting Condensate PT Badak ...")
         # Get best parameter from database
         sql_linreg_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
@@ -495,6 +505,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 #####
+        logMessage("Create Polynomial Regression Degree=2 Forecasting Condensate PT Badak ...")
         # Get best parameter from database
         sql_poly2_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
@@ -535,6 +546,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 #####
+        logMessage("Create Polynomial Regression Degree=3 Forecasting Condensate PT Badak ...")
         # Get best parameter from database
         sql_poly3_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 

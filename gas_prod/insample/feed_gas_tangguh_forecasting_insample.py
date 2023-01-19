@@ -111,6 +111,8 @@ def main():
     from polyfit import PolynomRegressor
     from utils import (ad_test, get_first_date_of_prev_month,
                        get_last_date_of_prev_month, logMessage)
+    import warnings
+    warnings.filterwarnings(action='ignore')
 
     # Configure logging
     #configLogging("feed_gas_tangguh.log")
@@ -439,10 +441,7 @@ def main():
     ax.set_xlabel("Datestamp")
     ax.legend(loc='best')
     plt.close()
-
-    import warnings
-    warnings.filterwarnings(action='ignore')
-    
+   
     ##### ARIMAX MODEL (forecast_a) #####
     # %%
     # Create ARIMAX (forecast_a) Model

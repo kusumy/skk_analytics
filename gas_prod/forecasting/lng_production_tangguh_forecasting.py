@@ -72,6 +72,7 @@ def main():
     data = data.reset_index()
     
     #%%
+    logMessage("LNG Production Tangguh Null Value Cleaning ...")
     data_null_cleaning = data[['date', 'lng_production', 'unplanned_shutdown', 'planned_shutdown']].copy()
     data_null_cleaning['lng_production_copy'] = data[['lng_production']].copy()
     ds_null_cleaning = 'date'
@@ -154,6 +155,7 @@ def main():
     #new_s[new_s['anomaly'].isnull()]    
 
     #%%
+    logMessage("Unplanned Shutdown Cleaning ...")
     data_unplanned_cleaning = new_s[['lng_production', 'unplanned_shutdown', 'planned_shutdown']].copy()
     #ds_cleaning2 = 'date'
     #data_unplanned_cleaning = data_unplanned_cleaning.set_index(ds_cleaning2)
@@ -227,6 +229,7 @@ def main():
     anomaly_upd2 = new_s2[new_s2['anomaly'] == False]
 
     #%%
+    logMessage("LNG Production Tangguh Prepare Data ...")
     #prepare data
     data_cleaned = new_s2[['lng_production']].copy()
     data_cleaned = data_cleaned.reset_index()
@@ -257,8 +260,9 @@ def main():
     # plt.close()
 
     #%%
+    #logMessage("AD-Fuller Testing")
     #Ad Fuller Test
-    ad_test(train_df)
+    #ad_test(train_df)
 
     #%%
     ### CREATE EXOGENOUS VARIABLE ###
@@ -271,6 +275,8 @@ def main():
     time_predict = pd.period_range('2022-09-14', periods=109, freq='D')
 
     #%%
+    logMessage("Load Exogenous Data")
+    #Load Data from Database
     query_exog = os.path.join('gas_prod/sql','lng_prod_tangguh_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     data_exog = get_sql_data(query_2, conn)
@@ -285,6 +291,7 @@ def main():
     future_exog = future_exog.set_index(ds_exog)
     future_exog.index = pd.DatetimeIndex(future_exog.index, freq='D')
 
+    logMessage("Create Exogenous Features for future")
     #Create exogenous date index
     future_exog['planned_shutdown'] = future_exog['planned_shutdown']
     future_exog['month'] = [i.month for i in future_exog.index]
@@ -304,7 +311,7 @@ def main():
     try:
         ##### FORECASTING #####
         ##### ARIMAX MODEL #####
-        logMessage("Arimax Model Forecasting ...")
+        logMessage("Create Arimax Forecasting LNG Production BP Tangguh ...")
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
                         FROM lng_analytics_model_param 
@@ -346,7 +353,7 @@ def main():
 
 
         ##### SARIMAX MODEL #####
-        logMessage("Sarimax Model Forecasting ...")
+        logMessage("Create Sarimax Forecasting LNG Production BP Tangguh ...")
         # Get best parameter from database
         sql_sarimax_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
@@ -373,7 +380,7 @@ def main():
         sarimax_seasonal_order = sarimax_model_param['sarimax_seasonal_order']
 
         # Create SARIMAX Model
-        logMessage("Creating ARIMAX Model ...")
+        logMessage("Creating SARIMAX Model ...")
         #sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_sesonal_differencing, suppress_warnings=sarimax_suppress_warnings,
         #                  seasonal=sarimax_seasonal, sp=sarimax_period, trace=sarimax_trace, error_action=sarimax_error_action)
         sarimax_model = ARIMA(order=sarimax_order, seasonal_order=sarimax_seasonal_order, suppress_warnings=sarimax_suppress_warnings)
@@ -395,7 +402,7 @@ def main():
         y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
 
         ##### PROPHET MODEL #####
-        logMessage("Prophet Model Forecasting ...")
+        logMessage("Create Prophet Forecasting LNG Production BP Tangguh ...")
         # Get best parameter from database
         sql_prophet_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
@@ -406,6 +413,9 @@ def main():
                     
         prophet_model_param = get_sql_data(sql_prophet_model_param, conn)
         prophet_model_param = prophet_model_param['model_param_c'][0]
+        
+        # Convert string to dictionary
+        prophet_model_param = ast.literal_eval(prophet_model_param)
         
         # Set parameters
         prophet_seasonality_mode = prophet_model_param['seasonality_mode']
@@ -444,7 +454,7 @@ def main():
 
 
         ##### RANDOM FOREST MODEL #####
-        logMessage("Random Forest Model Forecasting ...")
+        logMessage("Create Random Forest Forecasting LNG Production BP Tangguh ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
@@ -485,7 +495,7 @@ def main():
 
 
         ##### XGBOOST MODEL #####
-        logMessage("XGBoost Model Forecasting ...")
+        logMessage("Create XGBoost Forecasting LNG Production BP Tangguh ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
@@ -525,7 +535,7 @@ def main():
 
 
         ##### LINEAR REGRESSION MODEL #####
-        logMessage("Linear Regression Model Forecasting ...")
+        logMessage("Create Linear Regression Forecasting LNG Production BP Tangguh ...")
         # Get best parameter from database
         sql_linreg_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
@@ -565,7 +575,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
-        logMessage("Polynomial Regression Deg=2 Model Forecasting ...")
+        logMessage("Create Polynomial Regression Degree=2 Forecasting LNG Production BP Tangguh ...")
         # Get best parameter from database
         sql_poly2_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
@@ -606,7 +616,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
-        logMessage("Polynomial Regression Deg=3 Model Forecasting ...")
+        logMessage("Create Polynomial Regression Degree=3 Forecasting LNG Production BP Tangguh ...")
         # Get best parameter from database
         sql_poly3_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 
@@ -646,7 +656,7 @@ def main():
         y_pred_poly3.rename(columns={0:'forecast_h'}, inplace=True)
 
         ##### JOIN PREDICTION RESULT TO DATAFRAME #####
-        
+        logMessage("Creating all model prediction result data frame ...")
         y_all_pred = pd.concat([y_pred_arimax[['forecast_a']],
                                 y_pred_sarimax[['forecast_b']],
                                 y_pred_prophet[['forecast_c']],

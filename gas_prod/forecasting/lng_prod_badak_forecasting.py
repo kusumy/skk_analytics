@@ -44,7 +44,7 @@ from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
-from polyfit import PolynomRegressor, Constraints
+#from polyfit import PolynomRegressor, Constraints
 
 
 # %%
@@ -71,6 +71,7 @@ def main():
     data = data.reset_index()
     
     #%%
+    logMessage("LNG Production PT Badak Null Value Cleaning ...")
     data_null_cleaning = data[['date', 'lng_production']].copy()
     data_null_cleaning['lng_production_copy'] = data[['lng_production']].copy()
     ds_null_cleaning = 'date'
@@ -130,9 +131,10 @@ def main():
         # update value at specific location
         new_s.at[index,'lng_production'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
     
     #%%
+    logMessage("LNG Production PT Badak Prepare Data ...")
     #prepare data
     data_cleaned = new_s[['lng_production']].copy()
     data_cleaned = data_cleaned.reset_index()
@@ -164,19 +166,22 @@ def main():
 
     #%%
     #Ad Fuller Test
-    ad_test(train_df)
+    #ad_test(train_df)
 
     #%%
+    logMessage("Create Exogenous Features for Training ...")
     #CREATE EXOGENOUS VARIABLES
     df_cleaned['fg_exog'] = data['fg_exog'].values
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    df_cleaned['fg_exog'].fillna(method='ffill', inplace=True)
     train_exog = df_cleaned.iloc[:,1:]
 
     from sktime.forecasting.base import ForecastingHorizon
     #time_predict = pd.period_range('2022-11-11', periods=51, freq='D')
 
     #%%
+    logMessage("Create Exogenous Features for Future Dates ...")
     query_exog = os.path.join('gas_prod/sql','lng_prod_badak_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     data_exog = get_sql_data(query_2, conn)
@@ -195,6 +200,7 @@ def main():
     future_exog['fg_exog'] = future_exog['fg_exog']
     future_exog['month'] = [i.month for i in future_exog.index]
     future_exog['day'] = [i.day for i in future_exog.index]
+    future_exog['fg_exog'].fillna(method='ffill', inplace=True)
 
     #Create Forecasting Horizon
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
@@ -211,6 +217,7 @@ def main():
         ##### FORECASTING #####
         #%%
         ##### ARIMAX MODEL #####
+        logMessage("Create Arimax Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
                         FROM lng_analytics_model_param 
@@ -254,6 +261,7 @@ def main():
 
         #%%
         ##### SARIMAX MODEL #####
+        logMessage("Create Sarimax Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
         sql_sarimax_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
@@ -303,7 +311,8 @@ def main():
         y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
 
         #%%
-        ##### PROPHET MODEL #####      
+        ##### PROPHET MODEL #####
+        logMessage("Create Prophet Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
         sql_prophet_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
@@ -355,6 +364,7 @@ def main():
 
 
         ##### RANDOM FOREST MODEL #####
+        logMessage("Create Random Forest Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
@@ -394,7 +404,8 @@ def main():
         y_pred_ranfor.rename(columns={0:'forecast_d'}, inplace=True)
 
 
-        ##### XGBOOST MODEL #####      
+        ##### XGBOOST MODEL #####
+        logMessage("Create XGBoost Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
@@ -433,6 +444,7 @@ def main():
 
 
         ##### LINEAR REGRESSION MODEL #####
+        logMessage("Create Linear Regression Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
         sql_linreg_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
@@ -471,6 +483,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
+        logMessage("Create Polynomial Regression Degree=2 Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
         sql_poly2_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
@@ -510,6 +523,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
+        logMessage("Create Polynomial Regression Degree=3 Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
         sql_poly3_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 

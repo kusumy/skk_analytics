@@ -43,7 +43,7 @@ from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
-from polyfit import PolynomRegressor, Constraints
+#from polyfit import PolynomRegressor, Constraints
 
 
 #%%
@@ -71,6 +71,7 @@ def main():
     data = data.reset_index()
 
     #%%
+    logMessage("Feed Gas PT Badak Null Value Cleaning ...")
     data_null_cleaning = data[['date', 'feed_gas']].copy()
     data_null_cleaning['feed_gas_copy'] = data[['feed_gas']].copy()
     ds_null_cleaning = 'date'
@@ -131,9 +132,10 @@ def main():
         # update value at specific location
         new_s.at[index,'feed_gas'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
     
     #%%
+    logMessage("Feed Gas PT Badak Prepare Data ...")
     #prepare data
     data_cleaned = new_s[['feed_gas']].copy()
     data_cleaned = data_cleaned.reset_index()
@@ -145,6 +147,7 @@ def main():
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
+    logMessage("Feed Gas PT Badak Data Smoothing ...")
     # Smooth time series signal using polynomial smoothing
     from tsmoothie.smoother import PolynomialSmoother,  LowessSmoother
 
@@ -206,19 +209,21 @@ def main():
 
     #%%
     #Ad Fuller Test
-    ad_test(df_smoothed['feed_gas'])
+    #ad_test(df_smoothed['feed_gas'])
 
     #%%
     #Select target column after smoothing data
     train_df = df_smoothed['feed_gas']
 
     #%%
+    logMessage("Create Exogenous Features for Training ...")
     # create features from date
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
     train_exog = df_cleaned.iloc[:,1:]
 
     #%%
+    logMessage("Create Exogenous Features for Future Dates ...")
     query_exog = os.path.join('gas_prod/sql','feed_gas_badak_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     data_exog = get_sql_data(query_2, conn)
@@ -236,13 +241,13 @@ def main():
 
     #%%
     from sktime.forecasting.base import ForecastingHorizon
-    time_predict = pd.period_range('2022-11-11', periods=51, freq='D')
+    #time_predict = pd.period_range('2022-11-11', periods=51, freq='D')
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
 
     # %%
     try:
         ##### FORECASTING #####
-
+        logMessage("Create Arimax Forecasting Feed Gas PT Badak ...")
         ##### ARIMAX MODEL #####
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
@@ -286,6 +291,7 @@ def main():
 
 
         ##### SARIMAX MODEL #####
+        logMessage("Create Sarimax Forecasting Feed Gas PT Badak ...")
         # Get best parameter from database
         sql_sarimax_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
@@ -333,6 +339,7 @@ def main():
 
 
         ##### PROPHET MODEL #####
+        logMessage("Create Prophet Forecasting Feed Gas PT Badak ...")
         # Get best parameter from database
         sql_prophet_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
@@ -385,6 +392,7 @@ def main():
 
 
         ##### RANDOM FOREST MODEL #####
+        logMessage("Create Random Forest Forecasting Feed Gas PT Badak ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
@@ -426,6 +434,7 @@ def main():
 
 
         ##### XGBOOST MODEL #####
+        logMessage("Create XGBoost Forecasting Feed Gas PT Badak ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
@@ -465,6 +474,7 @@ def main():
 
 
         #### LINEAR REGRESSION MODEL #####
+        logMessage("Create Linear Regression Forecasting Feed Gas PT Badak ...")
         # Get best parameter from database
         sql_linreg_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
@@ -504,6 +514,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
+        logMessage("Create Polynomial Regression Degree=2 Forecasting Feed Gas PT Badak ...")
         # Get best parameter from database
         sql_poly2_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
@@ -544,6 +555,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
+        logMessage("Create Polynomial Regression Degree=3 Forecasting Feed Gas PT Badak ...")
         # Get best parameter from database
         sql_poly3_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 
