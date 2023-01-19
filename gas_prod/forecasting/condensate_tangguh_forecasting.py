@@ -18,8 +18,8 @@ from tracemalloc import start
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 plt.style.use('fivethirtyeight')
-from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import *
+#from connection import config, retrieve_data, create_db_connection, get_sql_data
+#from utils import *
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
@@ -41,7 +41,7 @@ from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
-from polyfit import PolynomRegressor, Constraints
+#from polyfit import PolynomRegressor, Constraints
 
 #%%
 def main():
@@ -124,7 +124,6 @@ def main():
     #anomalies_data = new_s[new_s['anomaly'].isnull()]
     
     #%%
-    
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month
@@ -152,6 +151,7 @@ def main():
     #new_s[new_s['anomaly'].isnull()]
     
     #%%
+    logMessage("Unplanned Shutdown Cleaning ...")
     data_unplanned_cleaning = new_s[['condensate', 'wpnb_oil', 'unplanned_shutdown', 'planned_shutdown']].copy()
     #ds_cleaning2 = 'date'
     #data_unplanned_cleaning = data_unplanned_cleaning.set_index(ds_cleaning2)
@@ -227,6 +227,7 @@ def main():
     anomaly_upd2 = new_s2[new_s2['anomaly'] == False]
 
     #%%
+    logMessage("Prepare final data")
     #prepare data
     data_cleaned = new_s2[['condensate']].copy()
     data_cleaned = data_cleaned.reset_index()
@@ -258,10 +259,12 @@ def main():
     # plt.close()
 
     #%%
+    logMessage("AD-Fuller Testing")
     #Ad Fuller Test
     ad_test(train_df)
 
     #%%
+    logMessage("Create Exogenous Features for Training")
     #Create Exogenous Features for Training
     df_cleaned['planned_shutdown'] = data['planned_shutdown'].values
     df_cleaned['wpnb_oil'] = data['wpnb_oil'].values
@@ -274,6 +277,7 @@ def main():
     #time_predict = pd.period_range('2022-09-14', periods=109, freq='D')
 
     #%%
+    logMessage("Load Exogenous Data")
     #Load Data from Database
     query_exog = os.path.join('gas_prod/sql','condensate_tangguh_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
@@ -292,6 +296,7 @@ def main():
     future_exog = future_exog.set_index(ds_exog)
     future_exog.index = pd.DatetimeIndex(future_exog.index, freq='D')
 
+    logMessage("Create Exogenous Features for future")
     #Create exogenous date index
     future_exog['month'] = [i.month for i in future_exog.index]
     future_exog['day'] = [i.day for i in future_exog.index]
@@ -315,6 +320,7 @@ def main():
     try:
         ##### FORECASTING #####
         ##### ARIMAX MODEL #####
+        logMessage("Arimax Model Forecasting ...")
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
                         FROM lng_analytics_model_param 
@@ -355,6 +361,7 @@ def main():
 
 
         ##### SARIMAX MODEL #####
+        logMessage("Sarimax Model Forecasting ...")
         # Get best parameter from database
         sql_sarimax_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
@@ -404,6 +411,7 @@ def main():
 
         ##### PROPHET MODEL #####
         # Get best parameter from database
+        logMessage("Prophet Model Forecasting ...")
         sql_prophet_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
                         WHERE lng_plant = 'BP Tangguh' 
@@ -454,6 +462,7 @@ def main():
 
 
         ##### RANDOM FOREST MODEL #####
+        logMessage("Random Forest Model Forecasting ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
@@ -494,6 +503,7 @@ def main():
 
 
         ##### XGBOOST MODEL #####
+        logMessage("XGBoost Model Forecasting ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
@@ -532,6 +542,7 @@ def main():
 
 
         ##### LINEAR REGRESSION MODEL #####
+        logMessage("Linear Regression Model Forecasting ...")
         # Get best parameter from database
         sql_linreg_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
@@ -570,6 +581,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
+        logMessage("Polynomial Regression Deg=2 Model Forecasting ...")
         # Get best parameter from database
         sql_poly2_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
@@ -609,6 +621,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
+        logMessage("Polynomial Regression Deg=3 Model Forecasting ...")
         # Get best parameter from database
         sql_poly3_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 

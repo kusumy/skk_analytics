@@ -42,7 +42,7 @@ from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
-from polyfit import PolynomRegressor, Constraints
+#from polyfit import PolynomRegressor, Constraints
 
 # %%
 def main():
@@ -148,7 +148,7 @@ def main():
         # update value at specific location
         new_s.at[index,'lng_production'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
 
     # Check if updated
     #new_s[new_s['anomaly'].isnull()]    
@@ -189,8 +189,8 @@ def main():
     yesterday_date = str(yesterday_date[0])
     prev_date_year = str(prev_date_year[0])
 
-    print(yesterday_date)
-    print(prev_date_year)
+    #print(yesterday_date)
+    #print(prev_date_year)
 
     #%%
     for index, row in anomalies_data2.iterrows():
@@ -220,7 +220,7 @@ def main():
         # update value at specific location
         new_s2.at[index,'lng_production'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
 
     # Check if updated
     new_s2[new_s2['anomaly'] == False]
@@ -304,6 +304,7 @@ def main():
     try:
         ##### FORECASTING #####
         ##### ARIMAX MODEL #####
+        logMessage("Arimax Model Forecasting ...")
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
                         FROM lng_analytics_model_param 
@@ -345,6 +346,7 @@ def main():
 
 
         ##### SARIMAX MODEL #####
+        logMessage("Sarimax Model Forecasting ...")
         # Get best parameter from database
         sql_sarimax_model_param = """SELECT model_param_b 
                         FROM lng_analytics_model_param 
@@ -380,7 +382,7 @@ def main():
         logMessage(sarimax_model.summary())
         
         logMessage("SARIMAX Model Prediction ..")
-        future_exog = future_exog.sort_index()
+        #future_exog = future_exog.sort_index()
         #orde (1,0,1)(0,1,1)[12]
         sarimax_forecast = sarimax_model.predict(fh, X=future_exog)
         y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
@@ -393,6 +395,7 @@ def main():
         y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
 
         ##### PROPHET MODEL #####
+        logMessage("Prophet Model Forecasting ...")
         # Get best parameter from database
         sql_prophet_model_param = """SELECT model_param_c 
                         FROM lng_analytics_model_param 
@@ -441,6 +444,7 @@ def main():
 
 
         ##### RANDOM FOREST MODEL #####
+        logMessage("Random Forest Model Forecasting ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT model_param_d 
                         FROM lng_analytics_model_param 
@@ -481,6 +485,7 @@ def main():
 
 
         ##### XGBOOST MODEL #####
+        logMessage("XGBoost Model Forecasting ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT model_param_e 
                         FROM lng_analytics_model_param 
@@ -520,6 +525,7 @@ def main():
 
 
         ##### LINEAR REGRESSION MODEL #####
+        logMessage("Linear Regression Model Forecasting ...")
         # Get best parameter from database
         sql_linreg_model_param = """SELECT model_param_f 
                         FROM lng_analytics_model_param 
@@ -559,6 +565,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
+        logMessage("Polynomial Regression Deg=2 Model Forecasting ...")
         # Get best parameter from database
         sql_poly2_model_param = """SELECT model_param_g 
                         FROM lng_analytics_model_param 
@@ -599,6 +606,7 @@ def main():
 
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
+        logMessage("Polynomial Regression Deg=3 Model Forecasting ...")
         # Get best parameter from database
         sql_poly3_model_param = """SELECT model_param_h 
                         FROM lng_analytics_model_param 

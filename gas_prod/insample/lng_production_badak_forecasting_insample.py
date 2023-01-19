@@ -40,6 +40,7 @@
 
 ##### HOW TO USE THIS SCRIPT #####
 # We can run this script using command prompt (directory same with this python script). But in this case, we can run this script using main_lng.py.
+# For example : We will run this script only, we can comment (#) script main_lng_insample.py on other script .py (example: feed_gas_tangguh_forecasting_insample.py etc.)
 
 
 # %%

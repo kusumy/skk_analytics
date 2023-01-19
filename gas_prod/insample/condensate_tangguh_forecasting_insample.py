@@ -760,7 +760,7 @@ def main():
                         'model_param_f': [linreg_best_params_str],
                         'model_param_g': [poly2_best_params_str],
                         'model_param_h': [poly3_best_params_str],
-                        'lng_plant' : 'PT Tangguh',
+                        'lng_plant' : 'BP Tangguh',
                         'product' : 'Condensate'}
 
     all_model_param = pd.DataFrame(all_model_param)
