@@ -353,7 +353,7 @@ def main():
     ##### FORECASTING #####
 
     ##### ARIMAX MODEL #####
-
+    logMessage("Creating Arimax Model Forecasting Insample LPG C3 PT Badak ...")
     #Set parameters
     arimax_differencing = 1
     arimax_trace = True
@@ -388,7 +388,7 @@ def main():
 
     #%%
     ##### SARIMAX MODEL #####
-
+    logMessage("Creating Sarimax Model Forecasting Insample LPG C3 PT Badak ...")
     #Set parameters
     sarimax_differencing = 1
     sarimax_seasonal_differencing = 0
@@ -426,6 +426,7 @@ def main():
 
     #%%
     ##### PROPHET MODEL #####
+    logMessage("Creating Prophet Model Forecasting Insample LPG C3 PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
                         ,'n_changepoints':[2, 5, 6, 12, 18]
@@ -477,6 +478,7 @@ def main():
 
     #%%
     ##### RANDOM FOREST MODEL #####
+    logMessage("Creating Random Forest Model Forecasting Insample LPG C3 PT Badak ...")
     # Create Random Forest Parameter Grid
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
@@ -517,6 +519,7 @@ def main():
 
     #%%
     ##### XGBOOST MODEL #####
+    logMessage("Creating XGBoost Model Forecasting Insample LPG C3 PT Badak ...")
     # Create XGBoost Parameter Grid
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
@@ -556,6 +559,7 @@ def main():
 
     #%%
     ##### LINEAR REGRESSION MODEL #####
+    logMessage("Creating Linear Regression Model Forecasting Insample LPG C3 PT Badak ...")
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
 
@@ -591,6 +595,7 @@ def main():
 
     #%%
     ##### POLYNOMIAL REGRESSION DEGREE=2 #####
+    logMessage("Creating Polynomial Regression Degree=2 Model Forecasting Insample LPG C3 PT Badak ...")
     # Create Polynomial Regression Degree=2 Parameter Grid
     poly2_regularization = None
     poly2_interactions = False
@@ -628,6 +633,7 @@ def main():
 
     #%%
     ##### POLYNOMIAL REGRESSION DEGREE=3 #####
+    logMessage("Creating Polynomial Regression Degree=3 Model Forecasting Insample LPG C3 PT Badak ...")
     # Create Polynomial Regression Degree=3 Parameter Grid
     poly3_regularization = None
     poly3_interactions = False

@@ -238,7 +238,7 @@ def main():
     # %%
     ##### FORECASTING #####
     ##### ARIMAX MODEL #####
-
+    logMessage("Creating Arimax Model Forecasting Insample Feed Gas PT Badak ...")
     # Create ARIMAX Model
     #arimax_model = auto_arima(df_smoothed, X_train, d=1, trace=True, error_action="ignore", suppress_warnings=True)
     arimax_model = AutoARIMA(d=1, suppress_warnings=True, error_action='ignore', trace=True)
@@ -261,6 +261,7 @@ def main():
     logMessage("Arimax Model Parameters "+arimax_param)
 
     #%%
+    logMessage("Creating Sarimax Model Forecasting Insample Feed Gas PT Badak ...")
     ##### SARIMAX MODEL (forecast_b) #####  
     #Set parameters
     sarimax_differencing = 1
@@ -298,6 +299,7 @@ def main():
 
     ##### PROPHET MODEL (forecast_c) #####
     #%%
+    logMessage("Creating Prophet Model Forecasting Insample Feed Gas PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
                         ,'n_changepoints':[8, 18, 28]
@@ -340,6 +342,7 @@ def main():
 
     ##### RANDOM FOREST MODEL (forecast_d) #####
     #%%
+    logMessage("Creating Random Forest Model Forecasting Insample Feed Gas PT Badak ...")
     # Create Random Forest Parameter Grid
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
@@ -380,6 +383,7 @@ def main():
 
     ##### XGBOOST MODEL (forecast_e) #####
     #%%
+    logMessage("Creating XGBoost Model Forecasting Insample Feed Gas PT Badak ...")
     # Create XGBoost Parameter Grid
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
@@ -418,6 +422,7 @@ def main():
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
     #%%
+    logMessage("Creating Linear Regression Model Forecasting Insample Feed Gas PT Badak ...")
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
 
@@ -453,6 +458,7 @@ def main():
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
     #%%
+    logMessage("Creating Polynomial Regression Degree=2 Model Forecasting Insample Feed Gas PT Badak ...")
     # Create Polynomial Regression Degree=2 Parameter Grid
     poly2_regularization = None
     poly2_interactions = False
@@ -490,6 +496,7 @@ def main():
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
     #%%
+    logMessage("Creating Polynomial Regression Degree=3 Model Forecasting Insample Feed Gas PT Badak ...")
     # Create Polynomial Regression Degree=3 Parameter Grid
     poly3_regularization = None
     poly3_interactions = False

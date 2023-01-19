@@ -175,7 +175,7 @@ def main():
         # update value at specific location
         new_s.at[index,'lng_production'] = mean_month
         
-        print(sql), print(mean_month)
+        #print(sql), print(mean_month)
 
     # Check if updated
     anomaly_upd = new_s[new_s['anomaly'].isnull()]
@@ -240,8 +240,8 @@ def main():
     yesterday_date = str(yesterday_date[0])
     prev_date_year = str(prev_date_year[0])
 
-    print(yesterday_date)
-    print(prev_date_year)
+    #print(yesterday_date)
+    #print(prev_date_year)
     
     #%%
     # Plot data and its anomalies
@@ -288,7 +288,7 @@ def main():
         # update value at specific location
         new_s2.at[index,'lng_production'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
 
     # Check if updated
     new_s2[new_s2['anomaly'] == False]
@@ -320,6 +320,7 @@ def main():
     plt.close()
 
     #%%
+    logMessage("Final Data Prepare ...")
     data_cleaned = new_s2[['lng_production', 'planned_shutdown']].copy()
     data_cleaned = data_cleaned.reset_index()
 
@@ -387,8 +388,9 @@ def main():
     plt.close()
 
 
+    ###### FORECASTING ######
     ##### ARIMAX MODEL (forecast_a) #####
-    #ARIMA(1,1,1)
+    logMessage("Creating Arimax Model Forecasting Insample LNG Production BP Tangguh ...")
     # %%
     # Create ARIMAX (forecast_a) Model
     arimax_model = AutoARIMA(d=1, suppress_warnings=True, error_action='ignore', trace=True) #If using SKTime AutoArima
@@ -414,7 +416,7 @@ def main():
 
     #%%
     ##### SARIMAX MODEL (forecast_b) #####
-    ##### ARIMA(1,0,2)(0,1,1)[4] #####
+    logMessage("Creating Sarimax Model Forecasting Insample LNG Production BP Tangguh ...")
     #%%
     #Set parameters
     sarimax_differencing = 0
@@ -452,6 +454,7 @@ def main():
 
 
     ##### PROPHET MODEL (forecast_c) #####
+    logMessage("Creating Prophet Model Forecasting Insample LNG Production BP Tangguh ...")
     #%%
     #Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
@@ -494,6 +497,7 @@ def main():
 
 
     ##### RANDOM FOREST MODEL (forecast_d) #####
+    logMessage("Creating Random Forest Model Forecasting Insample LNG Production BP Tangguh ...")
     #%%
     #Create Random Forest Parameter Grid
     ranfor_random_state = 0
@@ -534,6 +538,7 @@ def main():
 
 
     ##### XGBOOST MODEL (forecast_e) #####
+    logMessage("Creating XGBoost Model Forecasting Insample LNG Production BP Tangguh ...")
     #%%
     #Create XGBoost Parameter Grid
     xgb_objective = 'reg:squarederror'
@@ -572,6 +577,7 @@ def main():
 
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
+    logMessage("Creating Linear Regression Model Forecasting Insample LNG Production BP Tangguh ...")
     #%%
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
@@ -606,6 +612,7 @@ def main():
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
+    logMessage("Creating Polynomial Regression Degree=2 Model Forecasting Insample LNG Production BP Tangguh ...")
     #%%
     # Create Polynomial Regression Degree=2 Parameter Grid
     poly2_regularization = None
@@ -643,6 +650,7 @@ def main():
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
+    logMessage("Creating Polynomial Regression Degree=3 Model Forecasting Insample LNG Production BP Tangguh ...")
     #%%
     # Create Polynomial Regression Degree=3 Parameter Grid
     poly3_regularization = None

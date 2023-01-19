@@ -96,7 +96,7 @@ from sktime.performance_metrics.forecasting import (
     MeanAbsolutePercentageError, MeanSquaredError)
 from xgboost import XGBRegressor
 
-from polyfit import Constraints, PolynomRegressor
+#from polyfit import Constraints, PolynomRegressor
 
 #import warnings
 #warnings.filterwarnings(action='ignore', category=FutureWarning)
@@ -372,6 +372,7 @@ def main():
     plt.close()
 
     #%%
+    logMessage("Final Data Prepare ...")
     data_cleaned = new_s2[['feed_gas', 'wpnb_gas', 'planned_shutdown']].copy()
     data_cleaned = data_cleaned.reset_index()
 
@@ -441,8 +442,11 @@ def main():
     ax.set_xlabel("Datestamp")
     ax.legend(loc='best')
     plt.close()
-   
+    
+    
+    ###### FORECASTING ######
     ##### ARIMAX MODEL (forecast_a) #####
+    logMessage("Creating Arimax Model Forecasting Insample Feed Gas BP Tangguh ...")
     # %%
     # Create ARIMAX (forecast_a) Model
     arimax_model = AutoARIMA(d=0, suppress_warnings=True, error_action='ignore')
@@ -466,7 +470,7 @@ def main():
 
 
     ##### SARIMAX MODEL (forecast_b) #####
-    ##### ARIMA(2,0,0)(2,1,0)[12] #####
+    logMessage("Creating Sarimax Model Forecasting Insample Feed Gas BP Tangguh ...")
     #%%
     #Set parameters
     sarimax_differencing = 0
@@ -505,6 +509,7 @@ def main():
     
 
     ##### PROPHET MODEL (forecast_c) #####
+    logMessage("Creating Prophet Model Forecasting Insample Feed Gas BP Tangguh ...")
     #%%
     #Set Parameters
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
@@ -547,6 +552,7 @@ def main():
 
 
     ##### RANDOM FOREST MODEL (forecast_d) #####
+    logMessage("Creating Random Forest Model Forecasting Insample Feed Gas BP Tangguh ...")
     #%%
     #Set Parameters
     ranfor_random_state = 0
@@ -587,6 +593,7 @@ def main():
 
 
     ##### XGBOOST MODEL (forecast_e) #####
+    logMessage("Creating XGBoost Model Forecasting Insample Feed Gas BP Tangguh ...")
     #%%
     #Set Parameters
     xgb_objective = 'reg:squarederror'
@@ -625,6 +632,7 @@ def main():
 
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
+    logMessage("Creating Linear Regression Model Forecasting Insample Feed Gas BP Tangguh ...")
     #%%
     #Set Parameters
     linreg_strategy = "recursive"
@@ -659,6 +667,7 @@ def main():
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
+    logMessage("Creating Polynomial Regression Degree=2 Model Forecasting Insample Feed Gas BP Tangguh ...")
     #%%
     #Set Parameters
     poly2_regularization = None
@@ -696,6 +705,7 @@ def main():
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
+    logMessage("Creating Polynomial Regression Degree=3 Model Forecasting Insample Feed Gas BP Tangguh ...")
     #%%
     #Set Parameters
     poly3_regularization = None

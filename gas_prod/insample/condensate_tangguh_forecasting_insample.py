@@ -451,6 +451,7 @@ def main():
 
     ##### FORECASTING METHODS #####
     # %%
+    logMessage("Creating Arimax Model Forecasting Insample Condensate BP Tangguh ...")
     # Create ARIMAX (forecast_a) Model
     arimax_model = AutoARIMA(d=0, suppress_warnings=True, error_action='ignore')
     logMessage("Creating ARIMAX Model ...")
@@ -472,7 +473,8 @@ def main():
     logMessage("Arimax Model Parameters "+arimax_param)
 
     ##### SARIMAX MODEL (forecast_b) #####
-    #%%  
+    #%%
+    logMessage("Creating Sarimax Model Forecasting Insample Condensate BP Tangguh ...")
     #Set parameters
     sarimax_differencing = 0
     sarimax_seasonal_differencing = 1
@@ -508,6 +510,7 @@ def main():
 
     ##### PROPHET MODEL (forecast_c) #####
     #%%
+    logMessage("Creating Prophet Model Forecasting Insample Condensate BP Tangguh ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
                         ,'n_changepoints':[3, 6, 9, 18, 27]
@@ -549,6 +552,7 @@ def main():
     
     ##### RANDOM FOREST MODEL (forecast_d) #####
     #%%
+    logMessage("Creating Random Forest Model Forecasting Insample Condensate BP Tangguh ...")
     # Create Random Forest Parameter Grid
     ranfor_random_state = 0
     ranfor_criterion = "squared_error"
@@ -589,6 +593,7 @@ def main():
 
     ##### XGBOOST MODEL (forecast_e) #####
     #%%
+    logMessage("Creating XGBoost Model Forecasting Insample Condensate BP Tangguh ...")
     # Create XGBoost Parameter Grid
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
@@ -627,6 +632,7 @@ def main():
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
     #%%
+    logMessage("Creating Linear Regression Model Forecasting Insample Condensate BP Tangguh ...")
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
     linreg_forecaster_param_grid = {"window_length": [3, 6, 9, 18, 27]}
@@ -661,6 +667,7 @@ def main():
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
     #%%
+    logMessage("Creating Polynomial Regression Degree=2 Model Forecasting Insample Condensate BP Tangguh ...")
     # Create Polynomial Regression Degree=2 Parameter Grid
     poly2_lags = 3 #3, 9, 18
     poly2_regularization = None
@@ -700,6 +707,7 @@ def main():
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
     #%%
+    logMessage("Creating Polynomial Regression Degree=3 Model Forecasting Insample Condensate BP Tangguh ...")
     # Create Polynomial Regression Degree=3 Parameter Grid
     poly3_regularization = None
     poly3_interactions = False
