@@ -1,47 +1,40 @@
-2023-01-13 09:35:54,610 Connecting to database ...
-2023-01-13 09:35:54,731 1. ADF : -0.37339984519550595
-2023-01-13 09:35:54,731 2. P-Value : 0.9144462141783269
-2023-01-13 09:35:54,732 3. Num Of Lags : 2
-2023-01-13 09:35:54,732 4. Num Of Observations Used For ADF Regression: 7
-2023-01-13 09:35:54,732 5. Critical Values : 
-2023-01-13 09:35:54,732 	 1%: -4.9386902332361515
-2023-01-13 09:35:54,732 	 5%: -3.477582857142857
-2023-01-13 09:35:54,732 	 10%: -2.8438679591836733
-2023-01-13 09:35:56,130 Creating ARIMAX Model ...
-2023-01-13 09:35:56,258 ARIMAX Model Summary
-2023-01-13 09:35:56,263                                SARIMAX Results                                
+2023-01-20 10:10:02,455 Connecting to database ...
+2023-01-20 10:10:02,937 1. ADF : -0.3342950725929689
+2023-01-20 10:10:02,937 2. P-Value : 0.9205047225576606
+2023-01-20 10:10:02,938 3. Num Of Lags : 2
+2023-01-20 10:10:02,938 4. Num Of Observations Used For ADF Regression: 7
+2023-01-20 10:10:02,938 5. Critical Values : 
+2023-01-20 10:10:02,938 	 1%: -4.9386902332361515
+2023-01-20 10:10:02,938 	 5%: -3.477582857142857
+2023-01-20 10:10:02,938 	 10%: -2.8438679591836733
+2023-01-20 10:10:03,983 Creating ARIMAX Model ...
+2023-01-20 10:10:04,144 ARIMAX Model Summary
+2023-01-20 10:10:04,148                                SARIMAX Results                                
 ==============================================================================
 Dep. Variable:                      y   No. Observations:                   10
-Model:               SARIMAX(0, 1, 2)   Log Likelihood                   9.778
-Date:                Fri, 13 Jan 2023   AIC                            -11.556
-Time:                        09:35:56   BIC                            -10.768
-Sample:                    12-31-2013   HQIC                           -13.259
+Model:               SARIMAX(2, 1, 1)   Log Likelihood                   9.664
+Date:                Fri, 20 Jan 2023   AIC                             -9.328
+Time:                        10:10:04   BIC                             -8.342
+Sample:                    12-31-2013   HQIC                           -11.456
                          - 12-31-2022                                         
 Covariance Type:                  opg                                         
 ==============================================================================
                  coef    std err          z      P>|z|      [0.025      0.975]
 ------------------------------------------------------------------------------
-intercept     -0.0779      0.007    -11.269      0.000      -0.091      -0.064
-ma.L1         -1.8538     12.452     -0.149      0.882     -26.259      22.552
-ma.L2          0.9786     12.946      0.076      0.940     -24.396      26.353
-sigma2         0.0037      0.049      0.076      0.940      -0.092       0.100
+intercept     -0.1854      0.102     -1.816      0.069      -0.385       0.015
+ar.L1         -0.9011      0.641     -1.407      0.160      -2.157       0.355
+ar.L2         -0.4410      0.535     -0.825      0.409      -1.489       0.607
+ma.L1         -0.9839     16.691     -0.059      0.953     -33.697      31.729
+sigma2         0.0041      0.067      0.061      0.951      -0.126       0.135
 ===================================================================================
-Ljung-Box (L1) (Q):                   1.81   Jarque-Bera (JB):                 0.80
-Prob(Q):                              0.18   Prob(JB):                         0.67
-Heteroskedasticity (H):               1.64   Skew:                             0.47
-Prob(H) (two-sided):                  0.69   Kurtosis:                         1.88
+Ljung-Box (L1) (Q):                   0.19   Jarque-Bera (JB):                 0.56
+Prob(Q):                              0.66   Prob(JB):                         0.76
+Heteroskedasticity (H):               1.76   Skew:                             0.23
+Prob(H) (two-sided):                  0.66   Kurtosis:                         1.87
 ===================================================================================
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2023-01-13 09:35:56,269 ARIMAX Model Prediction ..
-2023-01-13 09:35:56,325 Creating XGBoost Model ....
-2023-01-13 09:35:56,406 XGBoost Model Prediction ...
-2023-01-13 09:35:56,424 Creating Random Forest Model ...
-2023-01-13 09:35:56,577 Random Forest Model Prediction ...
-2023-01-13 09:35:56,613 Creating Linear Regression Model ...
-2023-01-13 09:35:56,623 Linear Regression Model Prediction ...
-2023-01-13 09:35:56,736 Creating Polynomial Regression Orde 2 Model ...
-2023-01-13 09:35:56,762 Polynomial Regression Orde 2 Model Prediction ...
-2023-01-13 09:35:56,773 Creating Polynomial Regression Orde 3 Model ...
-2023-01-13 09:35:56,792 Polynomial Regression Orde 3 Model Prediction ...
+2023-01-20 10:10:04,154 ARIMAX Model Prediction ..
+2023-01-20 10:10:04,208 Creating XGBoost Model ....
+2023-01-20 10:10:04,277 XGBoost Model Prediction ...

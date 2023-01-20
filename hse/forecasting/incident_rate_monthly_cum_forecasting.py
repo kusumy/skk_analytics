@@ -161,7 +161,7 @@ def main():
 
     #%%
     # Create forecasting Horizon
-    time_predict = pd.period_range('2022-12', periods=13, freq='M')
+    time_predict = pd.period_range('2022-11', periods=14, freq='M')
     # Create forecasting Horizon
     fh = ForecastingHorizon(time_predict, is_relative=False)
 
@@ -198,7 +198,7 @@ def main():
     future_exog.index = pd.PeriodIndex(future_exog.index, freq='M')
     #future_exog.sort_index(inplace=True)
     future_exog.drop(['date'], axis=1, inplace=True)
-    future_exog = future_exog.iloc[-13:]
+    future_exog = future_exog.iloc[-14:]
     future_exog['bulan'] = [i.month for i in future_exog.index]
 
     # %%
