@@ -56,16 +56,9 @@ from sktime.performance_metrics.forecasting import (
     MeanAbsolutePercentageError, MeanSquaredError)
 from xgboost import XGBRegressor
 
-from polyfit import Constraints, PolynomRegressor
-
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
 mse = MeanSquaredError()
-
-from warnings import simplefilter
-
-simplefilter(action='ignore', category=FutureWarning)
-
 
 def stationarity_check(ts):
             
