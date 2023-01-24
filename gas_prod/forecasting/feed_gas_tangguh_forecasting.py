@@ -70,6 +70,11 @@ def main():
     data['wpnb_gas'].fillna(method='ffill', inplace=True)
     data = data.reset_index()
     
+    # get date to start forecasting
+    #default_end_train_date = data[data[feed_gas].isnull() == False]['date'][-1:].item()
+    #default_start_forecast_date = data[feed_gas].isnull() == True['date'][:1].item()
+    #default_end_forecast_date = data[feed_gas].isnull() == True['date'][-1:].item()
+    
     #%%
     logMessage("Feed Gas BP Tangguh Null Value Cleaning ...")
     data_null_cleaning = data[['date', 'feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
@@ -238,6 +243,7 @@ def main():
     df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
     df_cleaned = df_cleaned.set_index(ds_cleaned)
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
+    
 
     #Select column target
     train_df = df_cleaned['feed_gas']

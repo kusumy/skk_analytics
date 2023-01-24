@@ -99,7 +99,7 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 
 def main():
     # Configure logging
-    configLogging("incident_rate_trir.log")
+    #configLogging("incident_rate_trir.log")
     
     # %%
     # Connect to database

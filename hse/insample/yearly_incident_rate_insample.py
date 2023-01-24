@@ -22,9 +22,6 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import configLogging, logMessage, ad_test
-
 import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
@@ -102,6 +99,11 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 
 # %%
 def main():
+    
+    from connection import config, retrieve_data, create_db_connection, get_sql_data
+    from utils import configLogging, logMessage, ad_test
+    from polyfit import PolynomRegressor, Constraints
+    
     # Configure logging
     #configLogging("ir_yearly_insample.log")
     
@@ -337,8 +339,6 @@ def main():
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
-    from polyfit import PolynomRegressor, Constraints
-
     #Set parameters
     poly2_regularization = None
     poly2_interactions = False
@@ -370,8 +370,6 @@ def main():
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
-    from polyfit import PolynomRegressor, Constraints
-
     #Set parameters
     poly3_regularization = None
     poly3_interactions = False
@@ -414,7 +412,8 @@ def main():
     
     #CREATE PARAMETERS TO DATAFRAME
     logMessage("Creating all model params result data frame ...")
-    all_model_param =  {'model_param_b': [xgb_param],
+    all_model_param =  {'model_param_a': [arimax_param],
+                        'model_param_b': [xgb_param],
                         'model_param_c': [ranfor_param],
                         'model_param_d': [linreg_param],
                         'model_param_e': [poly2_param],
@@ -452,10 +451,10 @@ def insert_param(conn, all_model_param):
     total_updated_rows = 0
     for index, row in all_model_param.iterrows():
         ir_type = row['ir_type']
-        model_param_b, model_param_c, model_param_d, model_param_e, model_param_f = row[0], row[1], row[2], row[3], row[4]
+        model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f = row[0], row[1], row[2], row[3], row[4], row[5]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        updated_rows = update_param_value(conn, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, ir_type)
+        updated_rows = update_param_value(conn, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, ir_type)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
@@ -496,11 +495,11 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
 
     return updated_rows
 
-def update_param_value(conn, model_param_b, model_param_c, 
+def update_param_value(conn, model_param_a, model_param_b, model_param_c, 
                         model_param_d, model_param_e, model_param_f, ir_type):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -510,6 +509,7 @@ def update_param_value(conn, model_param_b, model_param_c,
     sql = """ INSERT INTO hse_analytics_param
                     (ir_type,
                     running_date,
+                    best_param_a,
                     best_param_b,
                     best_param_c,
                     best_param_d,
@@ -526,7 +526,7 @@ def update_param_value(conn, model_param_b, model_param_c,
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (ir_type, date_now, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f,
+        cur.execute(sql, (ir_type, date_now, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f,
                           date_now, created_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
@@ -535,9 +535,27 @@ def update_param_value(conn, model_param_b, model_param_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
 
     return updated_rows
+
+if __name__ == "__main__":
+    # getting the name of the directory
+    # where the this file is present.
+    current = os.path.dirname(os.path.abspath("__file__"))
+
+    # Getting the parent directory name
+    # where the current directory is present.
+    parent = os.path.dirname(current)
+
+    # Getting the parent directory name
+    gr_parent = os.path.dirname(parent)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(current)
+
+    main()
 
 
 

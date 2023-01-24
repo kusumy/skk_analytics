@@ -1,9 +1,262 @@
-2023-01-17 09:56:22,668 Connecting to database ...
-2023-01-17 09:56:23,206 1. ADF : -1.4794367420058536
-2023-01-17 09:56:23,206 2. P-Value : 0.5436580595807815
-2023-01-17 09:56:23,206 3. Num Of Lags : 0
-2023-01-17 09:56:23,206 4. Num Of Observations Used For ADF Regression: 117
-2023-01-17 09:56:23,206 5. Critical Values : 
-2023-01-17 09:56:23,206 	 1%: -3.487517288664615
-2023-01-17 09:56:23,206 	 5%: -2.8865777180380032
-2023-01-17 09:56:23,207 	 10%: -2.5801239192052012
+2023-01-24 13:42:59,485 Connecting to database ...
+2023-01-24 13:42:59,850 1. ADF : -1.4794367420058536
+2023-01-24 13:42:59,850 2. P-Value : 0.5436580595807815
+2023-01-24 13:42:59,850 3. Num Of Lags : 0
+2023-01-24 13:42:59,850 4. Num Of Observations Used For ADF Regression: 117
+2023-01-24 13:42:59,850 5. Critical Values : 
+2023-01-24 13:42:59,850 	 1%: -3.487517288664615
+2023-01-24 13:42:59,850 	 5%: -2.8865777180380032
+2023-01-24 13:42:59,850 	 10%: -2.5801239192052012
+2023-01-24 13:42:59,909 Creating ARIMAX Model ...
+2023-01-24 13:43:00,230 ARIMAX Model Summary
+2023-01-24 13:43:00,232                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                  109
+Model:               SARIMAX(0, 1, 0)   Log Likelihood                 136.936
+Date:                Tue, 24 Jan 2023   AIC                           -257.873
+Time:                        13:43:00   BIC                           -236.416
+Sample:                    01-31-2013   HQIC                          -249.173
+                         - 01-31-2022                                         
+Covariance Type:                  opg                                         
+=======================================================================================
+                          coef    std err          z      P>|z|      [0.025      0.975]
+---------------------------------------------------------------------------------------
+intercept              -0.0067      0.011     -0.602      0.547      -0.028       0.015
+drilling_explor_cum     0.0004      0.001      0.493      0.622      -0.001       0.002
+drilling_explot_cum     0.0003      0.000      2.261      0.024    3.58e-05       0.001
+workover_cum           -0.0001   9.62e-05     -1.159      0.246      -0.000     7.7e-05
+wellservice_cum      5.004e-06   2.19e-06      2.287      0.022    7.15e-07    9.29e-06
+survei_seismic_cum     -0.0033      0.002     -1.367      0.172      -0.008       0.001
+bulan                  -0.0087      0.011     -0.799      0.424      -0.030       0.013
+sigma2                  0.0046      0.000     15.306      0.000       0.004       0.005
+===================================================================================
+Ljung-Box (L1) (Q):                   0.13   Jarque-Bera (JB):               858.95
+Prob(Q):                              0.72   Prob(JB):                         0.00
+Heteroskedasticity (H):               3.24   Skew:                             0.89
+Prob(H) (two-sided):                  0.00   Kurtosis:                        16.70
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2023-01-24 13:43:00,236 ARIMAX Model Prediction ..
+2023-01-24 13:43:00,244 ARIMAX Model MAPE: 0.1177
+2023-01-24 13:43:00,245 Arimax Model Parameters (0, 1, 0)
+2023-01-24 13:43:00,254 Creating XGBoost Model ....
+2023-01-24 13:43:00,319 XGBoost Model Prediction ...
+2023-01-24 13:43:00,332 XGBoost Model MAPE: 0.1403
+2023-01-24 13:43:00,333 XGBoost Model Parameters {'estimator__objective': 'reg:squarederror', 'estimator__base_score': None, 'estimator__booster': None, 'estimator__callbacks': None, 'estimator__colsample_bylevel': None, 'estimator__colsample_bynode': None, 'estimator__colsample_bytree': None, 'estimator__early_stopping_rounds': None, 'estimator__enable_categorical': False, 'estimator__eval_metric': None, 'estimator__gamma': None, 'estimator__gpu_id': None, 'estimator__grow_policy': None, 'estimator__importance_type': None, 'estimator__interaction_constraints': None, 'estimator__learning_rate': None, 'estimator__max_bin': None, 'estimator__max_cat_to_onehot': None, 'estimator__max_delta_step': None, 'estimator__max_depth': None, 'estimator__max_leaves': None, 'estimator__min_child_weight': None, 'estimator__missing': nan, 'estimator__monotone_constraints': None, 'estimator__n_estimators': 100, 'estimator__n_jobs': None, 'estimator__num_parallel_tree': None, 'estimator__predictor': None, 'estimator__random_state': None, 'estimator__reg_alpha': None, 'estimator__reg_lambda': None, 'estimator__sampling_method': None, 'estimator__scale_pos_weight': None, 'estimator__subsample': None, 'estimator__tree_method': None, 'estimator__validate_parameters': None, 'estimator__verbosity': None, 'estimator': XGBRegressor(base_score=None, booster=None, callbacks=None,
+             colsample_bylevel=None, colsample_bynode=None,
+             colsample_bytree=None, early_stopping_rounds=None,
+             enable_categorical=False, eval_metric=None, gamma=None,
+             gpu_id=None, grow_policy=None, importance_type=None,
+             interaction_constraints=None, learning_rate=None, max_bin=None,
+             max_cat_to_onehot=None, max_delta_step=None, max_depth=None,
+             max_leaves=None, min_child_weight=None, missing=nan,
+             monotone_constraints=None, n_estimators=100, n_jobs=None,
+             num_parallel_tree=None, predictor=None, random_state=None,
+             reg_alpha=None, reg_lambda=None, ...), 'pooling': 'local', 'transformers': None, 'window_length': 8}
+2023-01-24 13:43:00,333 Creating Random Forest Model ...
+2023-01-24 13:43:00,555 Random Forest Model Prediction ...
+2023-01-24 13:43:00,602 Random Forest Model MAPE: 0.1189
+2023-01-24 13:43:00,622 Random Forest Model Parameters {'estimator': RandomForestRegressor(random_state=0), 'transformers': None, 'window_length': 19, 'estimator__base_estimator': DecisionTreeRegressor(), 'estimator__estimators': [DecisionTreeRegressor(max_features=1.0, random_state=209652396), DecisionTreeRegressor(max_features=1.0, random_state=398764591), DecisionTreeRegressor(max_features=1.0, random_state=924231285), DecisionTreeRegressor(max_features=1.0, random_state=1478610112), DecisionTreeRegressor(max_features=1.0, random_state=441365315), DecisionTreeRegressor(max_features=1.0, random_state=1537364731), DecisionTreeRegressor(max_features=1.0, random_state=192771779), DecisionTreeRegressor(max_features=1.0, random_state=1491434855), DecisionTreeRegressor(max_features=1.0, random_state=1819583497), DecisionTreeRegressor(max_features=1.0, random_state=530702035), DecisionTreeRegressor(max_features=1.0, random_state=626610453), DecisionTreeRegressor(max_features=1.0, random_state=1650906866), DecisionTreeRegressor(max_features=1.0, random_state=1879422756), DecisionTreeRegressor(max_features=1.0, random_state=1277901399), DecisionTreeRegressor(max_features=1.0, random_state=1682652230), DecisionTreeRegressor(max_features=1.0, random_state=243580376), DecisionTreeRegressor(max_features=1.0, random_state=1991416408), DecisionTreeRegressor(max_features=1.0, random_state=1171049868), DecisionTreeRegressor(max_features=1.0, random_state=1646868794), DecisionTreeRegressor(max_features=1.0, random_state=2051556033), DecisionTreeRegressor(max_features=1.0, random_state=1252949478), DecisionTreeRegressor(max_features=1.0, random_state=1340754471), DecisionTreeRegressor(max_features=1.0, random_state=124102743), DecisionTreeRegressor(max_features=1.0, random_state=2061486254), DecisionTreeRegressor(max_features=1.0, random_state=292249176), DecisionTreeRegressor(max_features=1.0, random_state=1686997841), DecisionTreeRegressor(max_features=1.0, random_state=1827923621), DecisionTreeRegressor(max_features=1.0, random_state=1443447321), DecisionTreeRegressor(max_features=1.0, random_state=305097549), DecisionTreeRegressor(max_features=1.0, random_state=1449105480), DecisionTreeRegressor(max_features=1.0, random_state=374217481), DecisionTreeRegressor(max_features=1.0, random_state=636393364), DecisionTreeRegressor(max_features=1.0, random_state=86837363), DecisionTreeRegressor(max_features=1.0, random_state=1581585360), DecisionTreeRegressor(max_features=1.0, random_state=1428591347), DecisionTreeRegressor(max_features=1.0, random_state=1963466437), DecisionTreeRegressor(max_features=1.0, random_state=1194674174), DecisionTreeRegressor(max_features=1.0, random_state=602801999), DecisionTreeRegressor(max_features=1.0, random_state=1589190063), DecisionTreeRegressor(max_features=1.0, random_state=1589512640), DecisionTreeRegressor(max_features=1.0, random_state=2055650130), DecisionTreeRegressor(max_features=1.0, random_state=2034131043), DecisionTreeRegressor(max_features=1.0, random_state=1284876248), DecisionTreeRegressor(max_features=1.0, random_state=1292401841), DecisionTreeRegressor(max_features=1.0, random_state=1982038771), DecisionTreeRegressor(max_features=1.0, random_state=87950109), DecisionTreeRegressor(max_features=1.0, random_state=1204863635), DecisionTreeRegressor(max_features=1.0, random_state=768281747), DecisionTreeRegressor(max_features=1.0, random_state=507984782), DecisionTreeRegressor(max_features=1.0, random_state=947610023), DecisionTreeRegressor(max_features=1.0, random_state=600956192), DecisionTreeRegressor(max_features=1.0, random_state=352272321), DecisionTreeRegressor(max_features=1.0, random_state=615697673), DecisionTreeRegressor(max_features=1.0, random_state=160516793), DecisionTreeRegressor(max_features=1.0, random_state=1909838463), DecisionTreeRegressor(max_features=1.0, random_state=1110745632), DecisionTreeRegressor(max_features=1.0, random_state=93837855), DecisionTreeRegressor(max_features=1.0, random_state=454869706), DecisionTreeRegressor(max_features=1.0, random_state=1780959476), DecisionTreeRegressor(max_features=1.0, random_state=2034098327), DecisionTreeRegressor(max_features=1.0, random_state=1136257699), DecisionTreeRegressor(max_features=1.0, random_state=800291326), DecisionTreeRegressor(max_features=1.0, random_state=1177824715), DecisionTreeRegressor(max_features=1.0, random_state=1017555826), DecisionTreeRegressor(max_features=1.0, random_state=1959150775), DecisionTreeRegressor(max_features=1.0, random_state=930076700), DecisionTreeRegressor(max_features=1.0, random_state=293921570), DecisionTreeRegressor(max_features=1.0, random_state=580757632), DecisionTreeRegressor(max_features=1.0, random_state=80701568), DecisionTreeRegressor(max_features=1.0, random_state=1392175012), DecisionTreeRegressor(max_features=1.0, random_state=505240629), DecisionTreeRegressor(max_features=1.0, random_state=642848645), DecisionTreeRegressor(max_features=1.0, random_state=481447462), DecisionTreeRegressor(max_features=1.0, random_state=954863080), DecisionTreeRegressor(max_features=1.0, random_state=502227700), DecisionTreeRegressor(max_features=1.0, random_state=1659957521), DecisionTreeRegressor(max_features=1.0, random_state=1905883471), DecisionTreeRegressor(max_features=1.0, random_state=1729147268), DecisionTreeRegressor(max_features=1.0, random_state=780912233), DecisionTreeRegressor(max_features=1.0, random_state=1932520490), DecisionTreeRegressor(max_features=1.0, random_state=1544074682), DecisionTreeRegressor(max_features=1.0, random_state=485603871), DecisionTreeRegressor(max_features=1.0, random_state=1877037944), DecisionTreeRegressor(max_features=1.0, random_state=1728073985), DecisionTreeRegressor(max_features=1.0, random_state=848819521), DecisionTreeRegressor(max_features=1.0, random_state=426405863), DecisionTreeRegressor(max_features=1.0, random_state=258666409), DecisionTreeRegressor(max_features=1.0, random_state=2017814585), DecisionTreeRegressor(max_features=1.0, random_state=716257571), DecisionTreeRegressor(max_features=1.0, random_state=657731430), DecisionTreeRegressor(max_features=1.0, random_state=732884087), DecisionTreeRegressor(max_features=1.0, random_state=734051083), DecisionTreeRegressor(max_features=1.0, random_state=903586222), DecisionTreeRegressor(max_features=1.0, random_state=1538251858), DecisionTreeRegressor(max_features=1.0, random_state=553734235), DecisionTreeRegressor(max_features=1.0, random_state=1076688768), DecisionTreeRegressor(max_features=1.0, random_state=1354754446), DecisionTreeRegressor(max_features=1.0, random_state=463129187), DecisionTreeRegressor(max_features=1.0, random_state=1562125877), DecisionTreeRegressor(max_features=1.0, random_state=1396067212)], 'estimator__feature_importances': array([1.04861673e-03, 1.37219619e-04, 1.78506386e-03, 6.04556595e-04,
+       1.46510186e-03, 5.62563173e-03, 1.57651901e-03, 2.90304799e-03,
+       2.39835364e-03, 3.98747503e-04, 1.17218044e-03, 2.64173640e-04,
+       3.59817293e-04, 8.66172032e-04, 6.83097159e-04, 1.38587703e-03,
+       7.98104401e-03, 1.27703043e-01, 7.38759505e-01, 5.46488050e-03,
+       1.11116304e-03, 2.83894547e-04, 2.54651092e-04, 3.11333325e-04,
+       6.05446149e-04, 4.20074220e-04, 3.51921946e-03, 6.03250832e-03,
+       9.70655501e-04, 3.84176118e-04, 1.55476592e-04, 3.07666476e-04,
+       9.11981846e-04, 2.85386735e-04, 3.87226570e-05, 1.13184572e-03,
+       1.42607058e-04, 2.50804984e-03, 1.47404507e-03, 1.11847520e-03,
+       6.12799271e-04, 1.97149879e-04, 5.90943860e-04, 1.61072619e-04,
+       2.42638208e-04, 7.95433754e-04, 2.90956638e-04, 2.43134662e-04,
+       1.13837164e-04, 7.47792901e-04, 1.49689936e-04, 9.00894714e-04,
+       3.65705700e-04, 4.14821591e-04, 5.39389895e-04, 5.33556317e-05,
+       1.16573737e-03, 3.64336150e-05, 1.09264640e-04, 3.15470946e-05,
+       9.80030263e-05, 4.57931668e-04, 1.47548963e-04, 1.05152783e-04,
+       1.07345169e-02, 5.73351487e-04, 1.01985997e-04, 2.61462616e-04,
+       7.81141597e-05, 1.23372958e-03, 1.01081527e-03, 1.80152032e-04,
+       8.83307349e-05, 1.55719945e-03, 1.37570522e-03, 1.96553145e-04,
+       3.65597413e-04, 3.73615834e-04, 1.99725103e-03, 2.20854270e-03,
+       1.69590181e-03, 2.20244401e-03, 2.27098416e-03, 7.34624791e-03,
+       9.77663428e-04, 3.06253547e-04, 3.83491967e-04, 2.12376758e-03,
+       1.21437103e-04, 3.50407260e-04, 8.38550170e-05, 7.65712223e-05,
+       2.09231654e-04, 5.81760997e-05, 3.63524912e-03, 5.41781287e-05,
+       1.82754922e-04, 4.39616834e-05, 1.19644463e-04, 3.05053947e-04,
+       1.73986026e-04, 1.39301388e-03, 9.63192360e-03, 1.06813346e-03,
+       1.78474167e-04, 4.75368739e-05, 7.70290031e-04, 2.60048051e-04,
+       1.06981595e-03, 3.90490545e-05, 1.36874862e-03, 1.49432985e-03,
+       7.10957360e-04, 1.32363410e-04, 5.61693245e-05, 1.86265798e-04,
+       1.95038647e-04, 2.78258876e-05, 1.21816470e-04, 4.56526956e-04,
+       7.41488746e-04, 6.74535608e-04, 5.49520902e-05, 3.97930814e-05,
+       8.24645039e-05, 1.93661291e-05, 1.06339805e-04, 1.18297117e-04,
+       7.06984354e-05, 5.14253828e-05, 5.40790198e-05, 4.12496104e-05,
+       5.57535349e-04]), 'estimator__n_features': 133, 'estimator__n_features_in': 133, 'estimator__n_outputs': 1}
+2023-01-24 13:43:00,622 Creating Linear Regression Model ...
+2023-01-24 13:43:00,628 Linear Regression Model Prediction ...
+2023-01-24 13:43:00,633 Linear Regression Model MAPE: 0.1347
+2023-01-24 13:43:00,633 Linear Regression Model Parameters {'estimator': LinearRegression(normalize=True), 'transformers': None, 'window_length': 1, 'estimator__coef': array([ 9.30815852e-01,  3.66084573e-04, -4.69288090e-05,  1.85456187e-05,
+       -3.67791208e-07, -8.84813194e-04, -1.31862491e-03]), 'estimator__intercept': 0.05022919575339324, 'estimator__n_features_in': 7, 'estimator__rank': 7, 'estimator__singular': array([2.16738836, 1.14935646, 0.72037346, 0.44668069, 0.37174228,
+       0.33740481, 0.10445821])}
+2023-01-24 13:43:00,669 Creating Polynomial Regression Orde 2 Model ...
+2023-01-24 13:43:00,680 Polynomial Regression Orde 2 Model Prediction ...
+2023-01-24 13:43:00,686 Polynomial Regression Orde 2 Model MAPE: 0.0599
+2023-01-24 13:43:00,686 Polynomial Regression Orde 2 Model Parameters {'estimator': PolynomRegressor(deg=2), 'transformers': None, 'window_length': 1, 'estimator__coeffs': array([ 9.41679814e-02,  7.04366725e-01,  1.76944259e-01,  7.87962677e-04,
+       -3.64900719e-06, -7.43990828e-06, -3.86819697e-09,  2.97153219e-04,
+       -1.35794950e-07,  4.43191367e-06, -5.56917692e-11, -7.16692253e-03,
+        1.04197577e-04, -1.27402439e-02, -4.75175172e-05])}
+2023-01-24 13:43:00,686 Creating Polynomial Regression Orde 3 Model ...
+2023-01-24 13:43:00,696 Polynomial Regression Orde 3 Model Prediction ...
+2023-01-24 13:43:00,701 Polynomial Regression Orde 3 Model MAPE: 0.7395
+2023-01-24 13:43:00,702 Polynomial Regression Orde 3 Model Parameters {'estimator': PolynomRegressor(deg=3), 'transformers': None, 'window_length': 1, 'estimator__coeffs': array([ 3.62712100e-02,  1.42537725e+00, -1.25274616e+00,  8.38011207e-01,
+       -2.45861201e-03,  2.36449603e-05, -5.42967674e-08,  1.31379362e-04,
+       -2.70159068e-07,  9.16114435e-11,  2.06427400e-04,  2.70000331e-08,
+       -1.14790415e-10,  6.88192657e-06, -4.14163648e-11, -8.79868469e-16,
+       -2.61733721e-02,  9.13797318e-04, -9.78822424e-06,  5.63852505e-02,
+       -1.07036943e-02,  4.83050799e-04])}
+2023-01-24 13:43:00,702 Creating all model mape result data frame ...
+2023-01-24 13:43:00,702 Creating all model params result data frame ...
+2023-01-24 13:43:00,702 Updating MAPE result to database ...
+2023-01-24 13:43:00,746 Updated rows: 1
+2023-01-24 13:43:00,746 Updating Model Parameter result to database ...
+2023-01-24 13:43:01,055 Updated rows: 1
+2023-01-24 13:43:01,055 Done
+2023-01-24 13:43:01,056 Connecting to database ...
+2023-01-24 13:43:01,271 1. ADF : -0.3342950725929689
+2023-01-24 13:43:01,271 2. P-Value : 0.9205047225576606
+2023-01-24 13:43:01,271 3. Num Of Lags : 2
+2023-01-24 13:43:01,271 4. Num Of Observations Used For ADF Regression: 7
+2023-01-24 13:43:01,271 5. Critical Values : 
+2023-01-24 13:43:01,271 	 1%: -4.9386902332361515
+2023-01-24 13:43:01,271 	 5%: -3.477582857142857
+2023-01-24 13:43:01,271 	 10%: -2.8438679591836733
+2023-01-24 13:43:01,593 Creating ARIMAX Model ...
+2023-01-24 13:43:01,653 ARIMAX Model Summary
+2023-01-24 13:43:01,654                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                    9
+Model:               SARIMAX(0, 1, 0)   Log Likelihood                   4.319
+Date:                Tue, 24 Jan 2023   AIC                              5.362
+Time:                        13:43:01   BIC                              5.918
+Sample:                    12-31-2013   HQIC                             1.612
+                         - 12-31-2021                                         
+Covariance Type:                  opg                                         
+===================================================================================
+                      coef    std err          z      P>|z|      [0.025      0.975]
+-----------------------------------------------------------------------------------
+intercept          -0.0436      0.132     -0.330      0.742      -0.303       0.216
+survey_seismic     -0.0084      0.011     -0.753      0.452      -0.030       0.014
+bor_eksplorasi      0.0016      0.014      0.115      0.908      -0.026       0.029
+bor_eksploitasi     0.0003      0.002      0.117      0.907      -0.004       0.005
+workover            0.0001      0.002      0.043      0.966      -0.005       0.005
+wellservice      9.008e-06   6.74e-05      0.134      0.894      -0.000       0.000
+sigma2              0.0199      0.015      1.284      0.199      -0.010       0.050
+===================================================================================
+Ljung-Box (L1) (Q):                   3.23   Jarque-Bera (JB):                 0.20
+Prob(Q):                              0.07   Prob(JB):                         0.90
+Heteroskedasticity (H):               5.94   Skew:                            -0.39
+Prob(H) (two-sided):                  0.18   Kurtosis:                         2.97
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2023-01-24 13:43:01,658 ARIMAX Model Prediction ..
+2023-01-24 13:43:01,663 ARIMAX Model MAPE: 0.1687
+2023-01-24 13:43:01,663 Arimax Model Parameters (0, 1, 0)
+2023-01-24 13:43:01,663 Creating XGBoost Model ....
+2023-01-24 13:43:01,679 XGBoost Model Prediction ...
+2023-01-24 13:43:01,685 XGBoost Model MAPE: 0.1774
+2023-01-24 13:43:01,686 XGBoost Model Parameters {'estimator__objective': 'reg:squarederror', 'estimator__base_score': None, 'estimator__booster': None, 'estimator__callbacks': None, 'estimator__colsample_bylevel': None, 'estimator__colsample_bynode': None, 'estimator__colsample_bytree': None, 'estimator__early_stopping_rounds': None, 'estimator__enable_categorical': False, 'estimator__eval_metric': None, 'estimator__gamma': None, 'estimator__gpu_id': None, 'estimator__grow_policy': None, 'estimator__importance_type': None, 'estimator__interaction_constraints': None, 'estimator__learning_rate': None, 'estimator__max_bin': None, 'estimator__max_cat_to_onehot': None, 'estimator__max_delta_step': None, 'estimator__max_depth': None, 'estimator__max_leaves': None, 'estimator__min_child_weight': None, 'estimator__missing': nan, 'estimator__monotone_constraints': None, 'estimator__n_estimators': 100, 'estimator__n_jobs': None, 'estimator__num_parallel_tree': None, 'estimator__predictor': None, 'estimator__random_state': None, 'estimator__reg_alpha': None, 'estimator__reg_lambda': None, 'estimator__sampling_method': None, 'estimator__scale_pos_weight': None, 'estimator__subsample': None, 'estimator__tree_method': None, 'estimator__validate_parameters': None, 'estimator__verbosity': None, 'estimator': XGBRegressor(base_score=None, booster=None, callbacks=None,
+             colsample_bylevel=None, colsample_bynode=None,
+             colsample_bytree=None, early_stopping_rounds=None,
+             enable_categorical=False, eval_metric=None, gamma=None,
+             gpu_id=None, grow_policy=None, importance_type=None,
+             interaction_constraints=None, learning_rate=None, max_bin=None,
+             max_cat_to_onehot=None, max_delta_step=None, max_depth=None,
+             max_leaves=None, min_child_weight=None, missing=nan,
+             monotone_constraints=None, n_estimators=100, n_jobs=None,
+             num_parallel_tree=None, predictor=None, random_state=None,
+             reg_alpha=None, reg_lambda=None, ...), 'pooling': 'local', 'transformers': None, 'window_length': 6}
+2023-01-24 13:43:01,686 Creating Random Forest Model ...
+2023-01-24 13:43:01,750 Random Forest Model Prediction ...
+2023-01-24 13:43:01,759 Random Forest Model MAPE: 0.1818
+2023-01-24 13:43:01,768 Random Forest Model Parameters {'estimator': RandomForestRegressor(random_state=0), 'transformers': None, 'window_length': 8, 'estimator__base_estimator': DecisionTreeRegressor(), 'estimator__estimators': [DecisionTreeRegressor(max_features=1.0, random_state=209652396), DecisionTreeRegressor(max_features=1.0, random_state=398764591), DecisionTreeRegressor(max_features=1.0, random_state=924231285), DecisionTreeRegressor(max_features=1.0, random_state=1478610112), DecisionTreeRegressor(max_features=1.0, random_state=441365315), DecisionTreeRegressor(max_features=1.0, random_state=1537364731), DecisionTreeRegressor(max_features=1.0, random_state=192771779), DecisionTreeRegressor(max_features=1.0, random_state=1491434855), DecisionTreeRegressor(max_features=1.0, random_state=1819583497), DecisionTreeRegressor(max_features=1.0, random_state=530702035), DecisionTreeRegressor(max_features=1.0, random_state=626610453), DecisionTreeRegressor(max_features=1.0, random_state=1650906866), DecisionTreeRegressor(max_features=1.0, random_state=1879422756), DecisionTreeRegressor(max_features=1.0, random_state=1277901399), DecisionTreeRegressor(max_features=1.0, random_state=1682652230), DecisionTreeRegressor(max_features=1.0, random_state=243580376), DecisionTreeRegressor(max_features=1.0, random_state=1991416408), DecisionTreeRegressor(max_features=1.0, random_state=1171049868), DecisionTreeRegressor(max_features=1.0, random_state=1646868794), DecisionTreeRegressor(max_features=1.0, random_state=2051556033), DecisionTreeRegressor(max_features=1.0, random_state=1252949478), DecisionTreeRegressor(max_features=1.0, random_state=1340754471), DecisionTreeRegressor(max_features=1.0, random_state=124102743), DecisionTreeRegressor(max_features=1.0, random_state=2061486254), DecisionTreeRegressor(max_features=1.0, random_state=292249176), DecisionTreeRegressor(max_features=1.0, random_state=1686997841), DecisionTreeRegressor(max_features=1.0, random_state=1827923621), DecisionTreeRegressor(max_features=1.0, random_state=1443447321), DecisionTreeRegressor(max_features=1.0, random_state=305097549), DecisionTreeRegressor(max_features=1.0, random_state=1449105480), DecisionTreeRegressor(max_features=1.0, random_state=374217481), DecisionTreeRegressor(max_features=1.0, random_state=636393364), DecisionTreeRegressor(max_features=1.0, random_state=86837363), DecisionTreeRegressor(max_features=1.0, random_state=1581585360), DecisionTreeRegressor(max_features=1.0, random_state=1428591347), DecisionTreeRegressor(max_features=1.0, random_state=1963466437), DecisionTreeRegressor(max_features=1.0, random_state=1194674174), DecisionTreeRegressor(max_features=1.0, random_state=602801999), DecisionTreeRegressor(max_features=1.0, random_state=1589190063), DecisionTreeRegressor(max_features=1.0, random_state=1589512640), DecisionTreeRegressor(max_features=1.0, random_state=2055650130), DecisionTreeRegressor(max_features=1.0, random_state=2034131043), DecisionTreeRegressor(max_features=1.0, random_state=1284876248), DecisionTreeRegressor(max_features=1.0, random_state=1292401841), DecisionTreeRegressor(max_features=1.0, random_state=1982038771), DecisionTreeRegressor(max_features=1.0, random_state=87950109), DecisionTreeRegressor(max_features=1.0, random_state=1204863635), DecisionTreeRegressor(max_features=1.0, random_state=768281747), DecisionTreeRegressor(max_features=1.0, random_state=507984782), DecisionTreeRegressor(max_features=1.0, random_state=947610023), DecisionTreeRegressor(max_features=1.0, random_state=600956192), DecisionTreeRegressor(max_features=1.0, random_state=352272321), DecisionTreeRegressor(max_features=1.0, random_state=615697673), DecisionTreeRegressor(max_features=1.0, random_state=160516793), DecisionTreeRegressor(max_features=1.0, random_state=1909838463), DecisionTreeRegressor(max_features=1.0, random_state=1110745632), DecisionTreeRegressor(max_features=1.0, random_state=93837855), DecisionTreeRegressor(max_features=1.0, random_state=454869706), DecisionTreeRegressor(max_features=1.0, random_state=1780959476), DecisionTreeRegressor(max_features=1.0, random_state=2034098327), DecisionTreeRegressor(max_features=1.0, random_state=1136257699), DecisionTreeRegressor(max_features=1.0, random_state=800291326), DecisionTreeRegressor(max_features=1.0, random_state=1177824715), DecisionTreeRegressor(max_features=1.0, random_state=1017555826), DecisionTreeRegressor(max_features=1.0, random_state=1959150775), DecisionTreeRegressor(max_features=1.0, random_state=930076700), DecisionTreeRegressor(max_features=1.0, random_state=293921570), DecisionTreeRegressor(max_features=1.0, random_state=580757632), DecisionTreeRegressor(max_features=1.0, random_state=80701568), DecisionTreeRegressor(max_features=1.0, random_state=1392175012), DecisionTreeRegressor(max_features=1.0, random_state=505240629), DecisionTreeRegressor(max_features=1.0, random_state=642848645), DecisionTreeRegressor(max_features=1.0, random_state=481447462), DecisionTreeRegressor(max_features=1.0, random_state=954863080), DecisionTreeRegressor(max_features=1.0, random_state=502227700), DecisionTreeRegressor(max_features=1.0, random_state=1659957521), DecisionTreeRegressor(max_features=1.0, random_state=1905883471), DecisionTreeRegressor(max_features=1.0, random_state=1729147268), DecisionTreeRegressor(max_features=1.0, random_state=780912233), DecisionTreeRegressor(max_features=1.0, random_state=1932520490), DecisionTreeRegressor(max_features=1.0, random_state=1544074682), DecisionTreeRegressor(max_features=1.0, random_state=485603871), DecisionTreeRegressor(max_features=1.0, random_state=1877037944), DecisionTreeRegressor(max_features=1.0, random_state=1728073985), DecisionTreeRegressor(max_features=1.0, random_state=848819521), DecisionTreeRegressor(max_features=1.0, random_state=426405863), DecisionTreeRegressor(max_features=1.0, random_state=258666409), DecisionTreeRegressor(max_features=1.0, random_state=2017814585), DecisionTreeRegressor(max_features=1.0, random_state=716257571), DecisionTreeRegressor(max_features=1.0, random_state=657731430), DecisionTreeRegressor(max_features=1.0, random_state=732884087), DecisionTreeRegressor(max_features=1.0, random_state=734051083), DecisionTreeRegressor(max_features=1.0, random_state=903586222), DecisionTreeRegressor(max_features=1.0, random_state=1538251858), DecisionTreeRegressor(max_features=1.0, random_state=553734235), DecisionTreeRegressor(max_features=1.0, random_state=1076688768), DecisionTreeRegressor(max_features=1.0, random_state=1354754446), DecisionTreeRegressor(max_features=1.0, random_state=463129187), DecisionTreeRegressor(max_features=1.0, random_state=1562125877), DecisionTreeRegressor(max_features=1.0, random_state=1396067212)], 'estimator__feature_importances': array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+       0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+       0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]), 'estimator__n_features': 48, 'estimator__n_features_in': 48, 'estimator__n_outputs': 1}
+2023-01-24 13:43:01,768 Creating Linear Regression Model ...
+2023-01-24 13:43:01,772 Linear Regression Model Prediction ...
+2023-01-24 13:43:01,776 Linear Regression Model MAPE: 0.4223
+2023-01-24 13:43:01,777 Linear Regression Model Parameters {'estimator': LinearRegression(normalize=True), 'transformers': None, 'window_length': 4, 'estimator__coef': array([ 3.22452044e-02, -2.89066616e-04,  2.69878933e-01, -2.92390590e-01,
+        1.21334925e-02,  7.45445076e-03,  3.12999225e-03,  4.65176401e-03,
+       -1.35483186e-03,  1.49687053e-03, -7.50421971e-04, -5.63752886e-05,
+        2.82571043e-05,  1.02356902e-05, -8.30534693e-05, -5.94937470e-04,
+        5.13716327e-05,  1.65783325e-04,  1.51748096e-05,  5.87155314e-05,
+       -5.38313598e-07, -4.11944999e-07, -2.16738952e-06, -9.19436045e-07]), 'estimator__intercept': -0.5574219879984142, 'estimator__n_features_in': 24, 'estimator__rank': 5, 'estimator__singular': array([3.59946636e+00, 2.42306317e+00, 1.98999761e+00, 1.10114319e+00,
+       9.79112107e-16])}
+2023-01-24 13:43:01,777 Creating Polynomial Regression Orde 2 Model ...
+2023-01-24 13:43:01,785 Polynomial Regression Orde 2 Model Prediction ...
+2023-01-24 13:43:01,790 Polynomial Regression Orde 2 Model MAPE: 0.1345
+2023-01-24 13:43:01,791 Polynomial Regression Orde 2 Model Parameters {'estimator': PolynomRegressor(deg=2), 'transformers': None, 'window_length': 7, 'estimator__coeffs': array([ 2.14140702e-03,  1.46335398e-03,  6.51685067e-04,  7.09759883e-03,
+        1.23402953e-02,  1.43376450e-02,  2.86288057e-02,  2.54557679e-03,
+        2.56527772e-03, -1.83069549e-03, -9.76566183e-03,  2.93036022e-02,
+        6.47001125e-02, -2.13129276e-02, -6.89569037e-02,  1.25399141e-04,
+        3.51405081e-06,  2.36110705e-04,  7.69207828e-06, -1.37944492e-04,
+       -5.92671369e-06,  4.55618515e-05,  9.69401096e-07,  2.86702372e-04,
+        9.58212015e-06, -5.42419374e-05, -4.31532534e-06,  2.24413287e-04,
+        1.00261596e-05,  3.60978063e-05,  2.25476668e-07,  1.13222547e-05,
+        5.95042738e-08,  5.77939283e-05,  4.49151363e-07,  3.21751863e-05,
+        3.24904514e-07,  7.89820763e-05,  9.17421121e-07,  9.29488006e-05,
+        1.43950293e-06,  1.37116290e-04,  2.67499716e-06, -1.57961474e-06,
+       -3.41514856e-09,  1.17917882e-05,  1.39617896e-08,  2.25522494e-05,
+        4.07746927e-08,  4.46076410e-05,  1.46224546e-07, -2.17108674e-05,
+       -1.52904492e-07, -8.71139320e-06, -6.49083654e-08, -8.74894875e-06,
+       -5.25821614e-08,  5.09855613e-06,  7.22553009e-09, -6.03367739e-06,
+       -8.29431717e-09,  9.43442915e-07,  2.71697616e-10,  1.05122273e-05,
+        1.15153326e-08,  1.38900466e-05,  2.42521165e-08, -1.07624933e-05,
+       -1.98286273e-08,  7.32511439e-06,  1.20224822e-08, -5.36262067e-08,
+       -4.80125667e-12,  6.71552098e-09, -1.28564629e-12,  3.76727691e-08,
+        4.45473190e-13, -2.05244699e-07, -6.19087324e-12,  5.17877303e-08,
+        1.13568497e-12,  3.40673077e-07,  8.85573110e-12,  1.20039965e-07,
+        5.59752096e-12])}
+2023-01-24 13:43:01,791 Creating Polynomial Regression Orde 3 Model ...
+2023-01-24 13:43:01,799 Polynomial Regression Orde 3 Model Prediction ...
+2023-01-24 13:43:01,803 Polynomial Regression Orde 3 Model MAPE: 0.1528
+2023-01-24 13:43:01,804 Polynomial Regression Orde 3 Model Parameters {'estimator': PolynomRegressor(deg=3), 'transformers': None, 'window_length': 7, 'estimator__coeffs': array([ 2.17623319e-03,  1.97430322e-03,  1.72120049e-03,  1.40953068e-03,
+        4.44126107e-03,  6.83819225e-03,  9.40608741e-03,  7.75263860e-03,
+        1.43068603e-02,  2.21398564e-02,  3.14726377e-03,  4.45908918e-03,
+        6.14303333e-03,  9.18018746e-04, -1.88689446e-03, -7.37453003e-03,
+        1.45382710e-02,  3.07798812e-02,  5.34673365e-02, -7.82065129e-03,
+       -2.83072350e-02, -6.85425875e-02,  7.61153436e-05,  1.90190081e-06,
+        4.19126951e-08,  1.27447480e-04,  3.83983398e-06,  9.69428712e-08,
+       -3.97259459e-05, -2.24777571e-06, -7.06876995e-08,  4.63028339e-05,
+        9.85166679e-07,  2.09609932e-08,  1.50350971e-04,  4.70019563e-06,
+        1.21754822e-07,  7.13583089e-06, -1.11847226e-06, -6.35852197e-08,
+        1.31667207e-04,  5.29249383e-06,  1.84870434e-07,  2.04348739e-05,
+        1.16094189e-07,  5.64165617e-10,  1.10264539e-05,  5.52733537e-08,
+        2.76704045e-10,  3.10484161e-05,  2.23554362e-07,  1.34618498e-09,
+        2.23075538e-05,  1.96693589e-07,  1.61214248e-09,  4.31602053e-05,
+        4.61534682e-07,  4.15711318e-09,  5.21594178e-05,  7.36832069e-07,
+        8.86919527e-09,  7.44441909e-05,  1.34021943e-06,  2.02673273e-08,
+        1.61260996e-07, -9.07353805e-10, -1.40115091e-12,  6.05073612e-06,
+        6.76315920e-09,  6.22197031e-12,  1.12615550e-05,  1.94624121e-08,
+        2.75819200e-11,  2.20756806e-05,  6.94760189e-08,  1.79478451e-10,
+       -6.12166851e-06, -5.76462602e-08, -2.96849889e-10, -5.84453343e-07,
+       -1.99831587e-08, -1.06628213e-10, -1.13362859e-06, -1.71370858e-08,
+       -7.40244080e-11,  3.34709019e-06,  4.16539312e-09,  4.72147967e-12,
+       -1.98033744e-06, -3.27462511e-09, -3.32335775e-12,  1.27196574e-06,
+        7.14545811e-10,  3.77189561e-13,  5.42174911e-06,  5.59420780e-09,
+        4.75743485e-12,  7.37431209e-06,  1.19838584e-08,  1.62110276e-11,
+       -3.84066055e-06, -8.05752217e-09, -1.10602367e-11,  4.44992086e-06,
+        6.51098128e-09,  8.40499221e-12,  1.02028492e-08, -1.18534152e-12,
+       -7.59622139e-17,  3.66625802e-08,  3.55381441e-13, -8.62079426e-18,
+        5.04527341e-08,  1.12606050e-12,  2.36925858e-17, -7.58359057e-08,
+       -2.54790172e-12, -5.75911263e-17,  4.41822951e-08,  8.69638514e-13,
+        1.68446948e-17,  1.69234508e-07,  4.21570478e-12,  8.61477870e-17,
+        9.47101953e-08,  3.88139855e-12,  1.53853712e-16])}
+2023-01-24 13:43:01,805 Creating all model params result data frame ...
+2023-01-24 13:43:01,805 Updating MAPE result to database ...
+2023-01-24 13:43:01,850 Updated rows: 1
+2023-01-24 13:43:01,850 Updating Model Parameter result to database ...
+2023-01-24 13:43:01,850 not all arguments converted during string formatting
+2023-01-24 13:43:01,850 Updated rows: 0
+2023-01-24 13:43:01,850 Done

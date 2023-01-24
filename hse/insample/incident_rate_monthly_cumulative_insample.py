@@ -18,9 +18,6 @@ from tracemalloc import start
 
 from pmdarima.arima.auto import auto_arima
 
-from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import configLogging, logMessage, ad_test
-
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
@@ -105,6 +102,11 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 
 #%%
 def main():
+    
+    from connection import config, retrieve_data, create_db_connection, get_sql_data
+    from utils import configLogging, logMessage, ad_test
+    from polyfit import PolynomRegressor, Constraints
+    
     # Configure logging
     #configLogging("ir_monthly_cum_insample.log")
     
@@ -352,8 +354,6 @@ def main():
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
-    from polyfit import PolynomRegressor, Constraints
-
     #Set parameters
     poly2_regularization = None
     poly2_interactions = False
@@ -385,8 +385,6 @@ def main():
     
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
-    from polyfit import PolynomRegressor, Constraints
-
     #Set parameters
     poly3_regularization = None
     poly3_interactions = False
@@ -558,3 +556,21 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
         logMessage(error)
 
     return updated_rows
+
+if __name__ == "__main__":
+    # getting the name of the directory
+    # where the this file is present.
+    current = os.path.dirname(os.path.abspath("__file__"))
+
+    # Getting the parent directory name
+    # where the current directory is present.
+    parent = os.path.dirname(current)
+
+    # Getting the parent directory name
+    gr_parent = os.path.dirname(parent)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(current)
+
+    main()

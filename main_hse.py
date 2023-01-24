@@ -7,6 +7,7 @@ import arrow
 import sys
 import time
 from humanfriendly import format_timespan
+from utils import configLogging, logMessage, ad_test
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -29,6 +30,9 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 #startDate = str(args['startdate'])
 #endDate = str(args['enddate'])
 # do whatever the script does
+
+# Configure logging
+configLogging("main_hse.log")
 
 t0 = time.process_time()
 ir_monthly_cum.main()

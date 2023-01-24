@@ -101,7 +101,7 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 # %%
 def main():
     #Configure logging
-    configLogging("yearly_incident_rate.log")
+    #configLogging("yearly_incident_rate.log")
     
     # Connect to database
     # Exit program if not connected to database
