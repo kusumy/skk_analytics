@@ -1,6 +1,6 @@
 ###### LPG C3 PT BADAK FORECASTING INSAMPLE ######
 # This python script is used to perform forecasting on testing data from each method.
-# Data source from the SKK Migas (188.166.239.112) database in the lng_production_daily table with lng_plant = 'PT Badak'.
+# Data source from the SKK Migas (188.166.239.112) database in the lng_lpg_c3_daily table.
 
 ##### METHODS FOR TIME SERIES FORECASTING #####
 # There are many methods that we can use for this forecasting, such as ARIMAX, SARIMAX, PROPHET, RANDOM FOREST, XGBOOST, LINEAR REGRESSION, POLYNOMIAL REGRESSION DEGREE 2, POLYNOMIAL REGRESSION DEGREE 3.
@@ -12,7 +12,7 @@
 # 4. Data Preprocessing (Replace null values in lng_c3 with value before null.
 # 5. Split data after cleaning process to train and test.
 # 6. Define the Forecasting Horizon. In this case, length for horizon is 0.2 from total data.
-# 7. Create exogenous variables to support the forecasting process. In this case, we use the data of month and day index and fg_exog data.
+# 7. Create exogenous variables to support the forecasting process. In this case, we use the data of day index.
 # 8. Split exogenous data to train and test. Train test proportion is same with train test data.
 # 9. Forecasting process using 8 methods (Arimax, Sarimax, Prophet, Random Forest, XGBoost, Linear Regression, Polynomial Regression Degree=2, Polynomial Regression Degree=3).
 # 10. For each methods, there are several steps :
