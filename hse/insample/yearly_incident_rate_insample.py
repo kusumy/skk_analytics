@@ -269,7 +269,8 @@ def main():
     logMessage("XGBoost Model "+mape_xgb_str)
     
     #Get Parameters
-    xgb_param = str(xgb_forecaster.get_params())
+    xgb_param_lags = xgb_forecaster.get_params()['window_length']
+    xgb_param = str({'window_length': xgb_param_lags})
     logMessage("XGBoost Model Parameters "+xgb_param)
 
     ##### RANDOM FOREST MODEL #####
@@ -302,7 +303,9 @@ def main():
     logMessage("Random Forest Model "+mape_ranfor_str)
     
     #Get Parameters
-    ranfor_param = str(ranfor_forecaster.get_fitted_params())
+    ranfor_n_estimator = ranfor_forecaster.get_params()['estimator__n_estimators']
+    ranfor_window_length = ranfor_forecaster.get_params()['window_length']
+    ranfor_param = str({'estimator__n_estimators': ranfor_n_estimator, 'window_length': ranfor_window_length})
     logMessage("Random Forest Model Parameters "+ranfor_param)
 
 
@@ -334,7 +337,8 @@ def main():
     logMessage("Linear Regression Model "+mape_linreg_str)
     
     #Get parameters
-    linreg_param = str(linreg_forecaster.get_fitted_params())
+    linreg_window_length = linreg_forecaster.get_params()['window_length']
+    linreg_param = str({'window_length': linreg_window_length})
     logMessage("Linear Regression Model Parameters "+linreg_param)
 
 
@@ -342,7 +346,7 @@ def main():
     #Set parameters
     poly2_regularization = None
     poly2_interactions = False
-    poly2_lags = 7 #6, 7, 8
+    poly2_lags = 3 #6, 7, 8
     poly2_strategy = "recursive"
 
     #Create regressor object
@@ -365,7 +369,8 @@ def main():
     logMessage("Polynomial Regression Orde 2 Model "+mape_poly2_str)
     
     #Get parameters
-    poly2_param = str(poly2_forecaster.get_fitted_params())
+    poly2_window_length = poly2_forecaster.get_params()['window_length']
+    poly2_param = str({'window_length': poly2_window_length})
     logMessage("Polynomial Regression Orde 2 Model Parameters "+poly2_param)
 
 
@@ -373,7 +378,7 @@ def main():
     #Set parameters
     poly3_regularization = None
     poly3_interactions = False
-    poly3_lags = 7 #6, 7, 8
+    poly3_lags = 3 #6, 7, 8
     poly3_strategy = "recursive"
 
     #Create regressor object
@@ -396,7 +401,8 @@ def main():
     logMessage("Polynomial Regression Orde 3 Model "+mape_poly3_str)
     
     #Get parameters
-    poly3_param = str(poly3_forecaster.get_fitted_params())
+    poly3_window_length = poly3_forecaster.get_params()['window_length']
+    poly3_param = str({'window_length': poly3_window_length})
     logMessage("Polynomial Regression Orde 3 Model Parameters "+poly3_param)
 
     # %%
@@ -517,7 +523,7 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
                     best_param_f,
                     created_at,
                     created_by)
-                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
           """
     
     #conn = None

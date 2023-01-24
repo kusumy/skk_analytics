@@ -11,7 +11,7 @@ import plotly.express as px
 import pmdarima as pm
 import psycopg2
 import seaborn as sns
-#import mlflow
+import ast
 
 plt.style.use('fivethirtyeight')
 from datetime import datetime
@@ -20,14 +20,21 @@ from tracemalloc import start
 from pmdarima.arima import auto_arima
 from pmdarima.arima.auto import auto_arima
 from pmdarima import model_selection
-from connection import config, retrieve_data, create_db_connection, get_sql_data
-from utils import configLogging, logMessage, ad_test
+#from connection import config, retrieve_data, create_db_connection, get_sql_data
+#from utils import configLogging, logMessage, ad_test
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-# %%
+from sktime.forecasting.arima import AutoARIMA, ARIMA
+from pmdarima.arima.utils import ndiffs, nsdiffs
+import statsmodels.api as sm
+from xgboost import XGBRegressor
+from sktime.forecasting.compose import make_reduction
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+
 def stationarity_check(ts):
             
     # Calculate rolling statistics
@@ -100,6 +107,11 @@ def plot_acf_pacf(ts, figsize=(10,8),lags=24):
 
 # %%
 def main():
+    
+    from connection import config, retrieve_data, create_db_connection, get_sql_data
+    from utils import configLogging, logMessage, ad_test
+    from polyfit import PolynomRegressor, Constraints
+    
     #Configure logging
     #configLogging("yearly_incident_rate.log")
     
@@ -175,182 +187,251 @@ def main():
     fh = ForecastingHorizon(time_predict, is_relative=False)
 
     #%%
-    ##### ARIMAX MODEL #####
-    from pmdarima.arima.utils import ndiffs, nsdiffs
-    from sklearn.metrics import mean_squared_error
-    import statsmodels.api as sm
+    try :
+        ##### FORECASTING #####
+        ##### ARIMAX MODEL #####
+        # Get best parameter from database
+        sql_arimax_model_param = """SELECT best_param_a 
+                                FROM hse_analytics_param 
+                                WHERE ir_type = 'ir yearly' 
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
+                    
+        arimax_model_param = get_sql_data(sql_arimax_model_param, conn)
+        arimax_model_param = arimax_model_param['best_param_a'][0]
+        
+        # Convert string to tuple
+        arimax_model_param = ast.literal_eval(arimax_model_param)
 
-    #Set parameters
-    arimax_trace = True
-    arimax_error_action = "ignore"
-    arimax_suppress_warnings = True
+        #Set parameters
+        arimax_suppress_warnings = True
 
-    # Create ARIMAX Model
-    arimax_model = auto_arima(train_df, exogenous=train_exog, d=1, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
-    logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(train_df, exogenous=train_exog)
-    logMessage("ARIMAX Model Summary")
-    logMessage(arimax_model.summary())
-    
-    logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(len(fh), exogenous=future_exog)
-    y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:,.2f}'.format)
-    y_pred_arimax['year_num'] = [i.year for i in arimax_forecast.index]
-    #Rename colum 0
-    y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
-
-
-    ##### XGBOOST MODEL #####
-    from xgboost import XGBRegressor
-    from sktime.forecasting.compose import make_reduction
-
-    #Set Parameters
-    xgb_objective = 'reg:squarederror'
-    xgb_lags = 6
-
-    # Create regressor object
-    xgb_regressor = XGBRegressor(objective='reg:squarederror')
-    xgb_forecaster = make_reduction(xgb_regressor, window_length=6, strategy="recursive")
-    
-    logMessage("Creating XGBoost Model ....")
-    xgb_forecaster.fit(train_df, X=train_exog) #, X=train_exog
-    
-    logMessage("XGBoost Model Prediction ...")
-    xgb_forecast = xgb_forecaster.predict(fh, X=future_exog) #, X=future_exog
-    y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:,.2f}'.format)
-    y_pred_xgb['year_num'] = [i.year for i in xgb_forecast.index]
-    #Rename colum 0
-    y_pred_xgb.rename(columns={0:'forecast_b'}, inplace=True)
+        # Create ARIMAX Model
+        #arimax_model = auto_arima(train_df, exogenous=train_exog, d=1, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
+        arimax_model = ARIMA(order=arimax_model_param, suppress_warnings=arimax_suppress_warnings)
+        logMessage("Creating ARIMAX Model ...")
+        arimax_model.fit(train_df, X=train_exog)
+        logMessage("ARIMAX Model Summary")
+        logMessage(arimax_model.summary())
+        
+        logMessage("ARIMAX Model Prediction ..")
+        arimax_forecast = arimax_model.predict(fh, X=future_exog) #len(fh)
+        y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:,.2f}'.format)
+        y_pred_arimax['year_num'] = [i.year for i in arimax_forecast.index]
+        #Rename colum 0
+        y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
 
 
-    ##### RANDOM FOREST MODEL #####
-    from sklearn.ensemble import RandomForestRegressor
+        ##### XGBOOST MODEL #####
+        # Get best parameter from database
+        sql_xgb_model_param = """SELECT best_param_b 
+                                FROM hse_analytics_param 
+                                WHERE ir_type = 'ir yearly' 
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
+                    
+        xgb_model_param = get_sql_data(sql_xgb_model_param, conn)
+        xgb_model_param = xgb_model_param['best_param_b'][0]
+       
+        # Convert string to tuple
+        xgb_model_param = ast.literal_eval(xgb_model_param)
 
-    #Set parameters
-    ranfor_n_estimators = 100
-    ranfor_random_state = 0
-    ranfor_criterion = "squared_error"
-    ranfor_lags = 0.8
-    ranfor_strategy = "recursive"
+        #Set Parameters
+        xgb_lags = xgb_model_param['window_length']
+        xgb_objective = 'reg:squarederror'
+        xgb_strategy = "recursive"
 
-    # create regressor object
-    ranfor_regressor = RandomForestRegressor(n_estimators = ranfor_n_estimators, random_state=ranfor_random_state, criterion=ranfor_criterion)
-    ranfor_forecaster = make_reduction(ranfor_regressor, window_length= ranfor_lags, strategy=ranfor_strategy)
-    
-    logMessage("Creating Random Forest Model ...")
-    ranfor_forecaster.fit(train_df, X=train_exog) #, X=train_exog
-    
-    logMessage("Random Forest Model Prediction ...")
-    ranfor_forecast = ranfor_forecaster.predict(fh, X=future_exog) #, X=future_exog
-    y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:,.2f}'.format)
-    y_pred_ranfor['year_num'] = [i.year for i in ranfor_forecast.index]
-    #Rename colum 0
-    y_pred_ranfor.rename(columns={0:'forecast_c'}, inplace=True)
-
-
-    ##### LINEAR REGRESSION MODEL #####
-    from sklearn.linear_model import LinearRegression
-
-    #Set parameters
-    linreg_normalize = True
-    linreg_lags = 0.8
-    linreg_strategy = "recursive"
-
-    # Create regressor object
-    linreg_regressor = LinearRegression(normalize=linreg_normalize)
-    linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
-    
-    logMessage("Creating Linear Regression Model ...")
-    linreg_forecaster.fit(train_df, X=train_exog) #, X=train_exog
-    
-    logMessage("Linear Regression Model Prediction ...")
-    linreg_forecast = linreg_forecaster.predict(fh, X=future_exog) #, X=future_exog
-    y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:,.2f}'.format)
-    y_pred_linreg['year_num'] = [i.year for i in linreg_forecast.index]
-    #Rename colum 0
-    y_pred_linreg.rename(columns={0:'forecast_d'}, inplace=True)
+        # Create regressor object
+        xgb_regressor = XGBRegressor(objective=xgb_objective)
+        xgb_forecaster = make_reduction(xgb_regressor, window_length=xgb_lags, strategy=xgb_strategy)
+        
+        logMessage("Creating XGBoost Model ....")
+        xgb_forecaster.fit(train_df, X=train_exog) #, X=train_exog
+        
+        logMessage("XGBoost Model Prediction ...")
+        xgb_forecast = xgb_forecaster.predict(fh, X=future_exog) #, X=future_exog
+        y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:,.2f}'.format)
+        y_pred_xgb['year_num'] = [i.year for i in xgb_forecast.index]
+        #Rename colum 0
+        y_pred_xgb.rename(columns={0:'forecast_b'}, inplace=True)
 
 
-    ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
-    from polyfit import PolynomRegressor, Constraints
+        ##### RANDOM FOREST MODEL #####
+        # Get best parameter from database
+        sql_ranfor_model_param = """SELECT best_param_c
+                                FROM hse_analytics_param 
+                                WHERE ir_type = 'ir yearly' 
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
+                    
+        ranfor_model_param = get_sql_data(sql_ranfor_model_param, conn)
+        ranfor_model_param = ranfor_model_param['best_param_c'][0]
+       
+        # Convert string to tuple
+        ranfor_model_param = ast.literal_eval(ranfor_model_param)
 
-    #Set parameters
-    poly2_regularization = None
-    poly2_interactions = False
-    poly2_lags = 0.7
-    poly2_strategy = "recursive"
+        #Set parameters
+        ranfor_n_estimators = ranfor_model_param['estimator__n_estimators']
+        ranfor_random_state = 0
+        ranfor_criterion = "squared_error"
+        ranfor_lags = ranfor_model_param['window_length']
+        ranfor_strategy = "recursive"
 
-    # Create regressor object
-    poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
-    poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy)
-    
-    logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_forecaster.fit(train_df, X=train_exog) #, X=train_exog
-    
-    logMessage("Polynomial Regression Orde 2 Model Prediction ...") 
-    poly2_forecast = poly2_forecaster.predict(fh, X=future_exog) #, X=future_exog
-    y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:,.2f}'.format)
-    y_pred_poly2['year_num'] = [i.year for i in poly2_forecast.index]
-    #Rename colum 0
-    y_pred_poly2.rename(columns={0:'forecast_e'}, inplace=True)
-
-
-    ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
-    #Set parameters
-    poly3_regularization = None
-    poly3_interactions = False
-    poly3_lags = 0.6
-    poly3_strategy = "recursive"
-
-    # Create regressor object
-    poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
-    poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy)
-    
-    logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_forecaster.fit(train_df, X=train_exog) #, X=train_exog
-    
-    logMessage("Polynomial Regression Orde 3 Model Prediction ...")
-    poly3_forecast = poly3_forecaster.predict(fh, X=future_exog) #, X=future_exog
-    y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:,.2f}'.format)
-    y_pred_poly3['year_num'] = [i.year for i in poly3_forecast.index]
-    #Rename colum 0
-    y_pred_poly3.rename(columns={0:'forecast_f'}, inplace=True)
+        # create regressor object
+        ranfor_regressor = RandomForestRegressor(n_estimators = ranfor_n_estimators, random_state=ranfor_random_state, criterion=ranfor_criterion)
+        ranfor_forecaster = make_reduction(ranfor_regressor, window_length= ranfor_lags, strategy=ranfor_strategy)
+        
+        logMessage("Creating Random Forest Model ...")
+        ranfor_forecaster.fit(train_df, X=train_exog) #, X=train_exog
+        
+        logMessage("Random Forest Model Prediction ...")
+        ranfor_forecast = ranfor_forecaster.predict(fh, X=future_exog) #, X=future_exog
+        y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:,.2f}'.format)
+        y_pred_ranfor['year_num'] = [i.year for i in ranfor_forecast.index]
+        #Rename colum 0
+        y_pred_ranfor.rename(columns={0:'forecast_c'}, inplace=True)
 
 
-    ##### JOIN PREDICTION RESULT TO DATAFRAME #####
-    logMessage("Creating all model prediction result data frame ...")
-    y_all_pred = pd.concat([y_pred_arimax[['forecast_a']],
-                            y_pred_xgb[['forecast_b']],
-                            y_pred_ranfor[['forecast_c']],
-                            y_pred_linreg[['forecast_d']],
-                            y_pred_poly2[['forecast_e']],
-                            y_pred_poly3[['forecast_f']]], axis=1)
-    #y_all_pred['year_num'] = future_exog.index.values
+        ##### LINEAR REGRESSION MODEL #####
+        # Get best parameter from database
+        sql_linreg_model_param = """SELECT best_param_d
+                                FROM hse_analytics_param 
+                                WHERE ir_type = 'ir yearly' 
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
+                    
+        linreg_model_param = get_sql_data(sql_linreg_model_param, conn)
+        linreg_model_param = linreg_model_param['best_param_d'][0]
+       
+        # Convert string to tuple
+        linreg_model_param = ast.literal_eval(linreg_model_param)
 
-    #%%
-    ##### PLOT PREDICTION #####
-    fig, ax = plt.subplots(figsize=(20,8))
-    ax.plot(train_df.to_timestamp(), label='train')
-    ax.plot(arimax_forecast.to_timestamp(), label='pred_arimax')
-    ax.plot(ranfor_forecast.to_timestamp(), label='pred_ranfor')
-    ax.plot(xgb_forecast.to_timestamp(), label='pred_xgb')
-    ax.plot(linreg_forecast.to_timestamp(), label='pred_linreg')
-    ax.plot(poly2_forecast.to_timestamp(), label='pred_poly2')
-    ax.plot(poly3_forecast.to_timestamp(), label='pred_poly3')
-    title = 'Feed Gas BP Tangguh Forecasting with Exogenous Variable and Cleaning Data'
-    ax.set_title(title)
-    ax.set_ylabel("Feed Gas")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    plt.close()
-    
-    #%%
-    # Save forecast result to database
-    logMessage("Updating forecast result to database ...")
-    total_updated_rows = insert_forecast(conn, y_all_pred)
-    logMessage("Updated rows: {}".format(total_updated_rows))
+        #Set parameters
+        linreg_normalize = True
+        linreg_lags = linreg_model_param['window_length']
+        linreg_strategy = "recursive"
 
-    logMessage("Done")
+        # Create regressor object
+        linreg_regressor = LinearRegression(normalize=linreg_normalize)
+        linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
+        
+        logMessage("Creating Linear Regression Model ...")
+        linreg_forecaster.fit(train_df, X=train_exog) #, X=train_exog
+        
+        logMessage("Linear Regression Model Prediction ...")
+        linreg_forecast = linreg_forecaster.predict(fh, X=future_exog) #, X=future_exog
+        y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:,.2f}'.format)
+        y_pred_linreg['year_num'] = [i.year for i in linreg_forecast.index]
+        #Rename colum 0
+        y_pred_linreg.rename(columns={0:'forecast_d'}, inplace=True)
+
+
+        ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
+        # Get best parameter from database
+        sql_poly2_model_param = """SELECT best_param_e
+                                FROM hse_analytics_param 
+                                WHERE ir_type = 'ir yearly' 
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
+                    
+        poly2_model_param = get_sql_data(sql_poly2_model_param, conn)
+        poly2_model_param = poly2_model_param['best_param_e'][0]
+       
+        # Convert string to tuple
+        poly2_model_param = ast.literal_eval(poly2_model_param)
+
+        #Set parameters
+        poly2_regularization = None
+        poly2_interactions = False
+        poly2_lags = poly2_model_param['window_length']
+        poly2_strategy = "recursive"
+
+        # Create regressor object
+        poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
+        poly2_forecaster = make_reduction(poly2_regressor, window_length=poly2_lags, strategy=poly2_strategy)
+        
+        logMessage("Creating Polynomial Regression Orde 2 Model ...")
+        poly2_forecaster.fit(train_df, X=train_exog) #, X=train_exog
+        
+        logMessage("Polynomial Regression Orde 2 Model Prediction ...") 
+        poly2_forecast = poly2_forecaster.predict(fh, X=future_exog) #, X=future_exog
+        y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:,.2f}'.format)
+        y_pred_poly2['year_num'] = [i.year for i in poly2_forecast.index]
+        #Rename colum 0
+        y_pred_poly2.rename(columns={0:'forecast_e'}, inplace=True)
+
+
+        ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
+        # Get best parameter from database
+        sql_poly3_model_param = """SELECT best_param_f
+                                FROM hse_analytics_param 
+                                WHERE ir_type = 'ir yearly' 
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
+                    
+        poly3_model_param = get_sql_data(sql_poly3_model_param, conn)
+        poly3_model_param = poly3_model_param['best_param_f'][0]
+       
+        # Convert string to tuple
+        poly3_model_param = ast.literal_eval(poly3_model_param)
+        
+        #Set parameters
+        poly3_regularization = None
+        poly3_interactions = False
+        poly3_lags = poly3_model_param['window_length']
+        poly3_strategy = "recursive"
+
+        # Create regressor object
+        poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
+        poly3_forecaster = make_reduction(poly3_regressor, window_length=poly3_lags, strategy=poly3_strategy)
+        
+        logMessage("Creating Polynomial Regression Orde 3 Model ...")
+        poly3_forecaster.fit(train_df, X=train_exog) #, X=train_exog
+        
+        logMessage("Polynomial Regression Orde 3 Model Prediction ...")
+        poly3_forecast = poly3_forecaster.predict(fh, X=future_exog) #, X=future_exog
+        y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:,.2f}'.format)
+        y_pred_poly3['year_num'] = [i.year for i in poly3_forecast.index]
+        #Rename colum 0
+        y_pred_poly3.rename(columns={0:'forecast_f'}, inplace=True)
+
+
+        ##### JOIN PREDICTION RESULT TO DATAFRAME #####
+        logMessage("Creating all model prediction result data frame ...")
+        y_all_pred = pd.concat([y_pred_arimax[['forecast_a']],
+                                y_pred_xgb[['forecast_b']],
+                                y_pred_ranfor[['forecast_c']],
+                                y_pred_linreg[['forecast_d']],
+                                y_pred_poly2[['forecast_e']],
+                                y_pred_poly3[['forecast_f']]], axis=1)
+        #y_all_pred['year_num'] = future_exog.index.values
+
+        #%%
+        ##### PLOT PREDICTION #####
+        fig, ax = plt.subplots(figsize=(20,8))
+        ax.plot(train_df.to_timestamp(), label='train')
+        ax.plot(arimax_forecast.to_timestamp(), label='pred_arimax')
+        ax.plot(ranfor_forecast.to_timestamp(), label='pred_ranfor')
+        ax.plot(xgb_forecast.to_timestamp(), label='pred_xgb')
+        ax.plot(linreg_forecast.to_timestamp(), label='pred_linreg')
+        ax.plot(poly2_forecast.to_timestamp(), label='pred_poly2')
+        ax.plot(poly3_forecast.to_timestamp(), label='pred_poly3')
+        title = 'Feed Gas BP Tangguh Forecasting with Exogenous Variable and Cleaning Data'
+        ax.set_title(title)
+        ax.set_ylabel("Feed Gas")
+        ax.set_xlabel("Datestamp")
+        ax.legend(loc='best')
+        plt.close()
+        
+        #%%
+        # Save forecast result to database
+        logMessage("Updating forecast result to database ...")
+        total_updated_rows = insert_forecast(conn, y_all_pred)
+        logMessage("Updated rows: {}".format(total_updated_rows))
+
+        logMessage("Done")
+    except Exception as e:
+        logMessage(e)
 
 # %%
 def insert_forecast(conn, y_pred):
@@ -403,3 +484,21 @@ def update_value(conn, forecast_a, forecast_b, forecast_c,
         #logging.error(error)
 
     return updated_rows
+
+if __name__ == "__main__":
+    # getting the name of the directory
+    # where the this file is present.
+    current = os.path.dirname(os.path.abspath("__file__"))
+
+    # Getting the parent directory name
+    # where the current directory is present.
+    parent = os.path.dirname(current)
+
+    # Getting the parent directory name
+    gr_parent = os.path.dirname(parent)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(current)
+
+    main()

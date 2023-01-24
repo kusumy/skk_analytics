@@ -20,8 +20,6 @@ from pmdarima.arima.auto import auto_arima
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-#from connection import config, retrieve_data, create_db_connection, get_sql_data
-#from utils import *
 
 from sktime.forecasting.base import ForecastingHorizon
 from statsmodels.tsa.seasonal import seasonal_decompose
@@ -31,7 +29,6 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
-#import mlflow
 plt.style.use('fivethirtyeight')
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
@@ -47,8 +44,6 @@ from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
-#from polyfit import PolynomRegressor, Constraints
-
 
 # %%
 def main():
@@ -212,7 +207,6 @@ def main():
     from sktime.forecasting.base import ForecastingHorizon
     time_predict = pd.period_range('2022-11-11', periods=51, freq='D')
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
-
 
     # %%
     try:

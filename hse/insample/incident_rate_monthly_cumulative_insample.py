@@ -283,7 +283,8 @@ def main():
     logMessage("XGBoost Model "+mape_xgb_str)
     
     #Get Parameters
-    xgb_param = str(xgb_forecaster.get_params())
+    xgb_param_lags = xgb_forecaster.get_params()['window_length']
+    xgb_param = str({'window_length': xgb_param_lags})
     logMessage("XGBoost Model Parameters "+xgb_param)
 
 
@@ -317,7 +318,9 @@ def main():
     logMessage("Random Forest Model "+mape_ranfor_str)
     
     #Get Parameters
-    ranfor_param = str(ranfor_forecaster.get_fitted_params())
+    ranfor_n_estimator = ranfor_forecaster.get_params()['estimator__n_estimators']
+    ranfor_window_length = ranfor_forecaster.get_params()['window_length']
+    ranfor_param = str({'estimator__n_estimators': ranfor_n_estimator, 'window_length': ranfor_window_length})
     logMessage("Random Forest Model Parameters "+ranfor_param)
 
 
@@ -349,7 +352,8 @@ def main():
     logMessage("Linear Regression Model "+mape_linreg_str)
     
     #Get parameters
-    linreg_param = str(linreg_forecaster.get_fitted_params())
+    linreg_window_length = linreg_forecaster.get_params()['window_length']
+    linreg_param = str({'window_length': linreg_window_length})
     logMessage("Linear Regression Model Parameters "+linreg_param)
 
 
@@ -380,7 +384,8 @@ def main():
     logMessage("Polynomial Regression Orde 2 Model "+mape_poly2_str)
     
     #Get parameters
-    poly2_param = str(poly2_forecaster.get_fitted_params())
+    poly2_window_length = poly2_forecaster.get_params()['window_length']
+    poly2_param = str({'window_length': poly2_window_length})
     logMessage("Polynomial Regression Orde 2 Model Parameters "+poly2_param)
     
 
@@ -411,7 +416,8 @@ def main():
     logMessage("Polynomial Regression Orde 3 Model "+mape_poly3_str)
     
     #Get parameters
-    poly3_param = str(poly3_forecaster.get_fitted_params())
+    poly3_window_length = poly3_forecaster.get_params()['window_length']
+    poly3_param = str({'window_length': poly3_window_length})
     logMessage("Polynomial Regression Orde 3 Model Parameters "+poly3_param)
 
     # %%
@@ -430,12 +436,12 @@ def main():
     #CREATE PARAMETERS TO DATAFRAME
     logMessage("Creating all model params result data frame ...")
     all_model_param =  {'model_param_a': [arimax_param],
-                            'model_param_b': [xgb_param],
-                            'model_param_c': [ranfor_param],
-                            'model_param_d': [linreg_param],
-                            'model_param_e': [poly2_param],
-                            'model_param_f': [poly3_param],
-                            'ir_type' : 'ir monthly cumulative'}
+                        'model_param_b': [xgb_param],
+                        'model_param_c': [ranfor_param],
+                        'model_param_d': [linreg_param],
+                        'model_param_e': [poly2_param],
+                        'model_param_f': [poly3_param],
+                        'ir_type' : 'ir monthly cumulative'}
 
     all_model_param = pd.DataFrame(all_model_param)
 
@@ -513,7 +519,7 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
 
     return updated_rows
 
@@ -553,7 +559,7 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
         # Close cursor
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        logMessage(error)
+        logging.error(error)
 
     return updated_rows
 
