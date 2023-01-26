@@ -1,6 +1,5 @@
 # %%
 import logging
-import configparser
 import os
 import sys
 import numpy as np
@@ -10,6 +9,7 @@ import pmdarima as pm
 import psycopg2
 import seaborn as sns
 import time
+from configparser import ConfigParser
 import ast
 
 from tokenize import Ignore
@@ -18,15 +18,12 @@ from tracemalloc import start
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 plt.style.use('fivethirtyeight')
-#from connection import config, retrieve_data, create_db_connection, get_sql_data
-#from utils import *
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 from pmdarima import model_selection 
-#import mlflow
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from adtk.data import validate_series
@@ -41,13 +38,40 @@ from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
-#from polyfit import PolynomRegressor, Constraints
 
 #%%
 def main():
-    from connection import create_db_connection, get_sql_data
-    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month
+    from connection import config, retrieve_data, create_db_connection, get_sql_data
+    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month, get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november
     from polyfit import PolynomRegressor
+    import datetime
+    
+    config = ConfigParser()
+    config.read('config_lng.ini')
+    section = config['config']
+
+    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+
+    TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_START_MONTH = section.getint('train_start_month')
+    TRAIN_START_DAY = section.getint('train_start_day')
+
+    TRAIN_END_YEAR= section.getint('train_end_year')
+    TRAIN_END_MONTH = section.getint('train_end_month')
+    TRAIN_END_DAY = section.getint('train_end_day')
+
+    FORECAST_START_YEAR= section.getint('forecast_start_year')
+    FORECAST_START_MONTH = section.getint('forecast_start_month')
+    FORECAST_START_DAY = section.getint('forecast_start_day')
+
+    FORECAST_END_YEAR= section.getint('forecast_end_year')
+    FORECAST_END_MONTH = section.getint('forecast_end_month')
+    FORECAST_END_DAY = section.getint('forecast_end_day')
+
+    TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
+    TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
+    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
+    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
     
     # Configure logging
     #configLogging("condensate_tangguh_forecasting.log")
@@ -63,9 +87,27 @@ def main():
     logMessage("Cleaning data ...")
     ##### CLEANING CONDENSATE DATA #####
     #Load Data from Database
+    from datetime import datetime
+    end_date = get_last_date_of_current_year()
+    end_date_april = end_day_forecast_april()
+    first_date_nov = get_first_date_of_november()
+    current_date = datetime.now()
+    date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
+    
     query = os.path.join('gas_prod/sql','condensate_tangguh_data_query.sql')
     query_1 = open(query, mode="rt").read()
-    data = get_sql_data(query_1, conn)
+    sql = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql = query_1.format('2016-01-01', end_date)
+        else :
+            sql = query_1.format('2016-01-01', end_date_april)
+    else :
+        sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
+
+    print(sql)
+    
+    data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data['wpnb_oil'].fillna(method='ffill', inplace=True)
     data = data.reset_index()
@@ -146,7 +188,7 @@ def main():
         # update value at specific location
         new_s.at[index,'condensate'] = mean_month
         
-        print(index), print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
     
     # Check if updated
     #new_s[new_s['anomaly'].isnull()]
@@ -280,9 +322,22 @@ def main():
     #%%
     logMessage("Load Exogenous Data")
     #Load Data from Database
+    from datetime import timedelta
+    exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
     query_exog = os.path.join('gas_prod/sql','condensate_tangguh_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
-    data_exog = get_sql_data(query_2, conn)
+    sql2 = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql2 = query_2.format(exog_forecast_start_date, end_date)
+        else :
+            sql2 = query_2.format(exog_forecast_start_date, end_date_april)
+    else :
+        sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
+        
+    print(sql2)
+    
+    data_exog = get_sql_data(sql2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')
     data_exog.sort_index(inplace=True)
     data_exog = data_exog.reset_index()
@@ -325,11 +380,11 @@ def main():
         logMessage("Create Arimax Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
-                        FROM lng_analytics_model_param 
-                        WHERE lng_plant = 'BP Tangguh' 
-                        AND product = 'Condensate'
-                        ORDER BY running_date DESC 
-                        LIMIT 1 OFFSET 0"""
+                            FROM lng_analytics_model_param 
+                            WHERE lng_plant = 'BP Tangguh' 
+                            AND product = 'Condensate'
+                            ORDER BY running_date DESC 
+                            LIMIT 1 OFFSET 0"""
                     
         arimax_model_param = get_sql_data(sql_arimax_model_param, conn)
         arimax_model_param = arimax_model_param['model_param_a'][0]
@@ -366,11 +421,11 @@ def main():
         logMessage("Create Sarimax Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_sarimax_model_param = """SELECT model_param_b 
-                        FROM lng_analytics_model_param 
-                        WHERE lng_plant = 'BP Tangguh' 
-                        AND product = 'Condensate'
-                        ORDER BY running_date DESC 
-                        LIMIT 1 OFFSET 0"""
+                                FROM lng_analytics_model_param 
+                                WHERE lng_plant = 'BP Tangguh' 
+                                AND product = 'Condensate'
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
                     
         sarimax_model_param = get_sql_data(sql_sarimax_model_param, conn)
         sarimax_model_param = sarimax_model_param['model_param_b'][0]
@@ -415,11 +470,11 @@ def main():
         # Get best parameter from database
         logMessage("Create Prophet Forecasting Condensate BP Tangguh ...")
         sql_prophet_model_param = """SELECT model_param_c 
-                        FROM lng_analytics_model_param 
-                        WHERE lng_plant = 'BP Tangguh' 
-                        AND product = 'Condensate'
-                        ORDER BY running_date DESC 
-                        LIMIT 1 OFFSET 0"""
+                                FROM lng_analytics_model_param 
+                                WHERE lng_plant = 'BP Tangguh' 
+                                AND product = 'Condensate'
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
                     
         prophet_model_param = get_sql_data(sql_prophet_model_param, conn)
         prophet_model_param = prophet_model_param['model_param_c'][0]
@@ -467,11 +522,11 @@ def main():
         logMessage("Create Random Forest Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT model_param_d 
-                        FROM lng_analytics_model_param 
-                        WHERE lng_plant = 'BP Tangguh' 
-                        AND product = 'Condensate'
-                        ORDER BY running_date DESC 
-                        LIMIT 1 OFFSET 0"""
+                                FROM lng_analytics_model_param 
+                                WHERE lng_plant = 'BP Tangguh' 
+                                AND product = 'Condensate'
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
                     
         ranfor_model_param = get_sql_data(sql_ranfor_model_param, conn)
         ranfor_model_param = ranfor_model_param['model_param_d'][0]
@@ -508,11 +563,11 @@ def main():
         logMessage("Create XGBoost Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT model_param_e 
-                        FROM lng_analytics_model_param 
-                        WHERE lng_plant = 'BP Tangguh' 
-                        AND product = 'Condensate'
-                        ORDER BY running_date DESC 
-                        LIMIT 1 OFFSET 0"""
+                            FROM lng_analytics_model_param 
+                            WHERE lng_plant = 'BP Tangguh' 
+                            AND product = 'Condensate'
+                            ORDER BY running_date DESC 
+                            LIMIT 1 OFFSET 0"""
                     
         xgb_model_param = get_sql_data(sql_xgb_model_param, conn)
         xgb_model_param = xgb_model_param['model_param_e'][0]
@@ -547,11 +602,11 @@ def main():
         logMessage("Create Linear Regression Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_linreg_model_param = """SELECT model_param_f 
-                        FROM lng_analytics_model_param 
-                        WHERE lng_plant = 'BP Tangguh' 
-                        AND product = 'Condensate'
-                        ORDER BY running_date DESC 
-                        LIMIT 1 OFFSET 0"""
+                                FROM lng_analytics_model_param 
+                                WHERE lng_plant = 'BP Tangguh' 
+                                AND product = 'Condensate'
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
                     
         linreg_model_param = get_sql_data(sql_linreg_model_param, conn)
         linreg_model_param = linreg_model_param['model_param_f'][0]
@@ -586,11 +641,11 @@ def main():
         logMessage("Create Polynomial Regression Degree=2 Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_poly2_model_param = """SELECT model_param_g 
-                        FROM lng_analytics_model_param 
-                        WHERE lng_plant = 'BP Tangguh' 
-                        AND product = 'Condensate'
-                        ORDER BY running_date DESC 
-                        LIMIT 1 OFFSET 0"""
+                                FROM lng_analytics_model_param 
+                                WHERE lng_plant = 'BP Tangguh' 
+                                AND product = 'Condensate'
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
                     
         poly2_model_param = get_sql_data(sql_poly2_model_param, conn)
         poly2_model_param = poly2_model_param['model_param_g'][0]
@@ -626,11 +681,11 @@ def main():
         logMessage("Create Polynomial Regression Degree=3 Forecasting Condensate BP Tangguh ...")
         # Get best parameter from database
         sql_poly3_model_param = """SELECT model_param_h 
-                        FROM lng_analytics_model_param 
-                        WHERE lng_plant = 'BP Tangguh' 
-                        AND product = 'Condensate'
-                        ORDER BY running_date DESC 
-                        LIMIT 1 OFFSET 0"""
+                                FROM lng_analytics_model_param 
+                                WHERE lng_plant = 'BP Tangguh' 
+                                AND product = 'Condensate'
+                                ORDER BY running_date DESC 
+                                LIMIT 1 OFFSET 0"""
                     
         poly3_model_param = get_sql_data(sql_poly3_model_param, conn)
         poly3_model_param = poly3_model_param['model_param_h'][0]

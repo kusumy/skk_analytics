@@ -207,3 +207,6 @@ def get_last_date_of_current_year():
 
 def end_day_forecast_april():
     return (datetime.now().date() + timedelta(days=365)).replace(month=4, day=30).strftime("%Y-%m-%d")
+
+def get_first_date_of_november():
+    return datetime.now().date().replace(month=11, day=1).strftime("%Y-%m-%d")
