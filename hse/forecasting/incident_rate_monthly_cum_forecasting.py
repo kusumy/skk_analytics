@@ -130,7 +130,13 @@ def main():
     data['year_num'] = data['year_num'].astype(int)
     data['month_num'] = data['month_num'].astype(int)
     data['date'] = data['year_num'].astype(str) + '-' + data['month_num'].astype(str)
-    #data
+    
+    #%%
+    import datetime
+    today = datetime.date.today()
+    first = today.replace(day=1)
+    last_month = (first - datetime.timedelta(days=1)).strftime("%Y-%m")
+    print(last_month.strftime("%Y-%m"))
 
     #%%
     # Prepare data
@@ -196,6 +202,8 @@ def main():
 
     #%%
     #import exogenous for predict
+    #df = pd.date_range('2022-10-01', '2022-12-01', freq='MS') 
+    #df = pd.DataFrame(df, columns=['date'])
     query_exog = open(os.path.join('hse/sql', 'query_month_cum3.sql'), mode="rt").read()
     data2 = get_sql_data(query_exog, conn)
     #data2 = retrieve_data(query_2, section='postgresql_ml_hse')
