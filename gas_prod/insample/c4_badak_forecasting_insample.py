@@ -369,7 +369,7 @@ def main():
     sarimax_n_fits = 50
 
     # Create SARIMA Model
-    sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_m, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+    sarimax_model = AutoARIMA(start_p = 0, max_p = 3, d=sarimax_differencing, max_q = 2, max_P = 2, max_Q = 2, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_m, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
     sarimax_model.fit(y_train.lpg_c4, X=X_train) #, X=X_train
     logMessage("SARIMAX Model Summary")

@@ -47,6 +47,23 @@
 import logging
 import os
 import sys
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import pmdarima as pm
+import psycopg2
+import seaborn as sns
+import time
+from configparser import ConfigParser
+import ast
+
+from humanfriendly import format_timespan
+from tokenize import Ignore
+from datetime import datetime
+from tracemalloc import start
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+plt.style.use('fivethirtyeight')
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -57,11 +74,6 @@ import plotly.express as px
 import pmdarima as pm
 import psycopg2
 import seaborn as sns
-
-plt.style.use('fivethirtyeight')
-from datetime import datetime
-from tokenize import Ignore
-from tracemalloc import start
 
 from adtk.data import validate_series
 from adtk.detector import ThresholdAD
@@ -96,11 +108,6 @@ from sktime.performance_metrics.forecasting import (
     MeanAbsolutePercentageError, MeanSquaredError)
 from xgboost import XGBRegressor
 
-#from polyfit import Constraints, PolynomRegressor
-
-#import warnings
-#warnings.filterwarnings(action='ignore', category=FutureWarning)
-
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
 mse = MeanSquaredError()
@@ -108,11 +115,39 @@ mse = MeanSquaredError()
 # %%
 def main():
     from connection import create_db_connection, get_sql_data
+    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+                       get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
-    from utils import (ad_test, get_first_date_of_prev_month,
-                       get_last_date_of_prev_month, logMessage)
+    import datetime
     import warnings
     warnings.filterwarnings(action='ignore')
+    
+    config = ConfigParser()
+    config.read('config_lng.ini')
+    section = config['config']
+
+    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+
+    TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_START_MONTH = section.getint('train_start_month')
+    TRAIN_START_DAY = section.getint('train_start_day')
+
+    TRAIN_END_YEAR= section.getint('train_end_year')
+    TRAIN_END_MONTH = section.getint('train_end_month')
+    TRAIN_END_DAY = section.getint('train_end_day')
+
+    FORECAST_START_YEAR= section.getint('forecast_start_year')
+    FORECAST_START_MONTH = section.getint('forecast_start_month')
+    FORECAST_START_DAY = section.getint('forecast_start_day')
+
+    FORECAST_END_YEAR= section.getint('forecast_end_year')
+    FORECAST_END_MONTH = section.getint('forecast_end_month')
+    FORECAST_END_DAY = section.getint('forecast_end_day')
+
+    TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
+    TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
+    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
+    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
 
     # Configure logging
     #configLogging("feed_gas_tangguh.log")
@@ -128,9 +163,27 @@ def main():
     logMessage("Cleaning data ...")
     ##### CLEANING FEED GAS DATA #####
     #Load Data from Database
-    query_1 = open(os.path.join('gas_prod/sql', 'fg_tangguh_data_query_insample.sql'), mode="rt").read()
-    data = get_sql_data(query_1, conn)
+    from datetime import datetime
+    end_date = get_last_date_of_current_year()
+    end_date_april = end_day_forecast_april()
+    first_date_nov = get_first_date_of_november()
+    current_date = datetime.now()
+    date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
+    
+    query = os.path.join('gas_prod/sql','fg_tangguh_data_query.sql')
+    query_1 = open(query, mode="rt").read()
+    sql = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql = query_1.format('2016-01-01', end_date)
+        else :
+            sql = query_1.format('2016-01-01', end_date_april)
+    else :
+        sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
 
+    print(sql)
+    
+    data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
     data['wpnb_gas'].fillna(method='ffill', inplace=True)
@@ -485,7 +538,8 @@ def main():
     sarimax_stepwise = True
     
     #sarimax_model = auto_arima(y=y_train_cleaned.feed_gas, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
-    sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+    sarimax_model = AutoARIMA(start_p = 0, max_p = 3, d=sarimax_differencing, max_q = 2, max_P = 2, max_Q = 2, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp,
+                              trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     #sarimax_model = ARIMA(order=(2, 0, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...") 
     sarimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])

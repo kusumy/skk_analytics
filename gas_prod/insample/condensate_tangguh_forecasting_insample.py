@@ -2,21 +2,22 @@
 import logging
 import os
 import sys
-
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-#import mlflow
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import pmdarima as pm
 import psycopg2
 import seaborn as sns
+import time
+from configparser import ConfigParser
+import ast
 
-plt.style.use('fivethirtyeight')
-from datetime import datetime
 from tokenize import Ignore
+from datetime import datetime
 from tracemalloc import start
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+plt.style.use('fivethirtyeight')
 
 from adtk.data import validate_series
 from adtk.detector import ThresholdAD
@@ -25,7 +26,6 @@ from pmdarima import model_selection
 from sklearn.metrics import (mean_absolute_error,
                              mean_absolute_percentage_error,
                              mean_squared_error, r2_score)
-
 
 pd.options.plotting.backend = "plotly"
 from cProfile import label
@@ -54,8 +54,6 @@ from sktime.performance_metrics.forecasting import (
     MeanAbsolutePercentageError, MeanSquaredError)
 from xgboost import XGBRegressor
 
-from polyfit import Constraints, PolynomRegressor
-
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
 mse = MeanSquaredError()
@@ -63,10 +61,37 @@ mse = MeanSquaredError()
 
 # %%
 def main():
-    from connection import create_db_connection, get_sql_data
+    from connection import config, retrieve_data, create_db_connection, get_sql_data
+    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month, get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november
     from polyfit import PolynomRegressor
-    from utils import (ad_test, get_first_date_of_prev_month,
-                       get_last_date_of_prev_month, logMessage)
+    import datetime
+    
+    config = ConfigParser()
+    config.read('config_lng.ini')
+    section = config['config']
+
+    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+
+    TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_START_MONTH = section.getint('train_start_month')
+    TRAIN_START_DAY = section.getint('train_start_day')
+
+    TRAIN_END_YEAR= section.getint('train_end_year')
+    TRAIN_END_MONTH = section.getint('train_end_month')
+    TRAIN_END_DAY = section.getint('train_end_day')
+
+    FORECAST_START_YEAR= section.getint('forecast_start_year')
+    FORECAST_START_MONTH = section.getint('forecast_start_month')
+    FORECAST_START_DAY = section.getint('forecast_start_day')
+
+    FORECAST_END_YEAR= section.getint('forecast_end_year')
+    FORECAST_END_MONTH = section.getint('forecast_end_month')
+    FORECAST_END_DAY = section.getint('forecast_end_day')
+
+    TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
+    TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
+    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
+    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
 
     # Configure logging
     #configLogging("condensate_tangguh.log")
@@ -79,13 +104,33 @@ def main():
     if conn == None:
         exit()
         
-    # Prepare data
-    query_1 = open(os.path.join('gas_prod/sql', 'condensate_tangguh_data_query_insample.sql'), mode="rt").read()
-    data = get_sql_data(query_1, conn)
+    logMessage("Cleaning data ...")
+    ##### CLEANING CONDENSATE DATA #####
+    #Load Data from Database
+    from datetime import datetime
+    end_date = get_last_date_of_current_year()
+    end_date_april = end_day_forecast_april()
+    first_date_nov = get_first_date_of_november()
+    current_date = datetime.now()
+    date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
+    
+    query = os.path.join('gas_prod/sql','condensate_tangguh_data_query.sql')
+    query_1 = open(query, mode="rt").read()
+    sql = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql = query_1.format('2016-01-01', end_date)
+        else :
+            sql = query_1.format('2016-01-01', end_date_april)
+    else :
+        sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
 
+    print(sql)
+    
+    data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
-    data = data.reset_index()
     data['wpnb_oil'].fillna(method='ffill', inplace=True)
+    data = data.reset_index()
 
     #%%
     ds = 'date'
@@ -141,92 +186,6 @@ def main():
     #anomalies_data.tail(100)
 
     #%%
-    # Plot data and its anomalies
-    fig = px.line(new_s, y='condensate')
-
-    # Add horizontal line for 3 sigma
-    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean + std", 
-                annotation_position="top right")
-    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean - 3*std", 
-                annotation_position="bottom right")
-    fig.add_scatter(x=anomalies_data.index, y=anomalies_data['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    fig.update_layout(title_text='Condensate BP Tangguh', title_font_size=24)
-
-    #fig.show()
-    plt.close()
-
-    #%%
-    #REPLACE ANOMALY VALUES
-    from datetime import date, datetime, timedelta
-
-    def get_first_date_of_current_month(year, month):
-        """Return the first date of the month.
-
-        Args:
-            year (int): Year
-            month (int): Month
-
-        Returns:
-            date (datetime): First date of the current month
-        """
-        first_date = datetime(year, month, 1)
-        return first_date.strftime("%Y-%m-%d")
-
-    def get_last_date_of_month(year, month):
-        """Return the last date of the month.
-        
-        Args:
-            year (int): Year, i.e. 2022
-            month (int): Month, i.e. 1 for January
-
-        Returns:
-            date (datetime): Last date of the current month
-        """
-        
-        if month == 12:
-            last_date = datetime(year, month, 31)
-        else:
-            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-        
-        return last_date.strftime("%Y-%m-%d")
-
-    
-    def get_first_date_of_prev_month(year, month, step=-1):
-        """Return the first date of the month.
-
-        Args:
-            year (int): Year
-            month (int): Month
-
-        Returns:
-            date (datetime): First date of the current month
-        """
-        first_date = datetime(year, month, 1)
-        first_date = first_date + relativedelta(months=step)
-        return first_date.strftime("%Y-%m-%d")
-
-    def get_last_date_of_prev_month(year, month, step=-1):
-        """Return the last date of the month.
-        
-        Args:
-            year (int): Year, i.e. 2022
-            month (int): Month, i.e. 1 for January
-
-        Returns:
-            date (datetime): Last date of the current month
-        """
-        
-        if month == 12:
-            last_date = datetime(year, month, 31)
-        else:
-            last_date = datetime(year, month + 1, 1) + timedelta(days=-1)
-            
-        last_date = last_date + relativedelta(months=step)
-        
-        return last_date.strftime("%Y-%m-%d")
-
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month
@@ -307,25 +266,17 @@ def main():
     anomalies_data2 = new_s2[new_s2['anomaly'] == False]
     
     #%%
-    # Plot data and its anomalies
-    from cProfile import label
-    from imaplib import Time2Internaldate
+    import datetime
+    yesterday_date = anomalies_data2.head(1).index - datetime.timedelta(days=1)
+    prev_date_year = yesterday_date - datetime.timedelta(days=364)
 
-    fig = px.line(new_s2, y='condensate')
+    yesterday_date = str(yesterday_date[0])
+    prev_date_year = str(prev_date_year[0])
 
-    # Add horizontal line for 3 sigma
-    fig.add_hline(y=high_limit2, line_color='red', line_dash="dot",
-                annotation_text="Mean + std", 
-                annotation_position="top right")
-    fig.add_hline(y=low_limit1, line_color='red', line_dash="dot",
-                annotation_text="Mean - 3*std", 
-                annotation_position="bottom right")
-    fig.add_scatter(x=anomalies_data2.index, y=anomalies_data2['condensate'], mode='markers', marker=dict(color='red'), name="Unplanned Shutdown", showlegend=True)
-    fig.update_layout(title_text='Condensate Tangguh', title_font_size=24)
+    print(yesterday_date)
+    print(prev_date_year)
 
-    #fig.show()
-    plt.close()
-    
+       
     #%%
     for index, row in anomalies_data2.iterrows():
         yr = index.year
@@ -336,19 +287,25 @@ def main():
         #end_month = str(get_last_date_of_month(yr, mt))
         
         # Get last year start date month
-        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        #start_month = get_first_date_of_prev_month(yr,mt,step=-12)
         
         # Get last month last date
-        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        #end_month = get_last_date_of_prev_month(yr,mt,step=-1)
         
         # Get mean fead gas data for the month
-        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
-        mean_month=new_s2['condensate'].reset_index().query(sql).mean().values[0]
+        #sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        yesterday_date = index - datetime.timedelta(days=1)
+        prev_date_year = yesterday_date - datetime.timedelta(days=364)
+        
+        yesterday_date = yesterday_date.strftime("%Y-%m-%d")
+        prev_date_year = prev_date_year.strftime("%Y-%m-%d")
+        sql = "date>='"+prev_date_year+ "' & "+ "date<='" +yesterday_date+"'"
+        mean_month=new_s2['condensate'].reset_index().query(sql).mean(skipna = True).values[0] 
         
         # update value at specific location
         new_s2.at[index,'condensate'] = mean_month
         
-        print(sql), print(mean_month)
+        #print(index), print(sql), print(mean_month)
 
     # Check if updated
     new_s2[new_s2['anomaly'] == False]
@@ -388,6 +345,7 @@ def main():
     df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
     df_cleaned = df_cleaned.set_index(ds_cleaned)
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
+    df_cleaned['condensate'].fillna(method='ffill', inplace=True)
 
     #Select column target
     train_df = df_cleaned['condensate']
@@ -487,7 +445,7 @@ def main():
     sarimax_n_fits = 50
     sarimax_stepwise = True
     
-    sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+    sarimax_model = AutoARIMA(start_p = 0, max_p = 3, d=sarimax_differencing, max_q = 2, max_P = 2, max_Q = 2, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
     sarimax_model.fit(y_train_cleaned, X=X_train)
     logMessage("SARIMAX Model Summary")

@@ -432,7 +432,7 @@ def main():
     sarimax_suppress_warnings = True
 
     # Create SARIMA Model
-    sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, sp=sarimax_sp, stationary=sarimax_stationary,
+    sarimax_model = AutoARIMA(start_p = 0, max_p = 3, d=sarimax_differencing, max_q = 2, max_P = 2, max_Q = 2, D=sarimax_seasonal_differencing, sp=sarimax_sp, stationary=sarimax_stationary,
                     seasonal=sarimax_seasonal, start_P=1, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...") 
     sarimax_model.fit(y_train.lng_production, X=X_train)
