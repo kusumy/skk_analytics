@@ -1,6 +1,5 @@
 # %%
 import logging
-import configparser
 import os
 import sys
 import numpy as np

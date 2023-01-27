@@ -19,8 +19,6 @@ from tracemalloc import start
 import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-#from connection import config, retrieve_data, create_db_connection, get_sql_data
-#from utils import *
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
@@ -29,7 +27,6 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 import pmdarima as pm
 from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
-#import mlflow
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from adtk.data import validate_series
@@ -44,7 +41,9 @@ from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
-#from polyfit import PolynomRegressor, Constraints
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 
 #%%

@@ -39,6 +39,9 @@ from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
+
 # %%
 def main():
     from connection import config, retrieve_data, create_db_connection, get_sql_data
