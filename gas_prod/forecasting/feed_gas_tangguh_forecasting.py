@@ -76,7 +76,6 @@ def main():
     FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
     
     # Configure logging
-    #configLogging("feed_gas_tangguh.log")
     logMessage("Forecasting Feed Gas BP Tangguh ...")
     
     # Connect to database
@@ -311,7 +310,6 @@ def main():
     from sktime.forecasting.base import ForecastingHorizon
     #time_predict = pd.period_range('2022-11-21', periods=109, freq='D')
 
-    #Load Data from Database
     #Load Data from Database
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")

@@ -9,6 +9,7 @@ import plotly.express as px
 import psycopg2
 import seaborn as sns
 import time
+from configparser import ConfigParser
 import ast
 
 from humanfriendly import format_timespan
@@ -19,8 +20,6 @@ import plotly.express as px
 from pmdarima.arima.auto import auto_arima
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-#from connection import config, retrieve_data, create_db_connection, get_sql_data
-#from utils import *
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
@@ -44,14 +43,44 @@ from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
-from polyfit import PolynomRegressor, Constraints
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 #%%
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month
+    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+                       get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
+    import datetime
+    
+    config = ConfigParser()
+    config.read('config_lng.ini')
+    section = config['config']
+
+    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+
+    TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_START_MONTH = section.getint('train_start_month')
+    TRAIN_START_DAY = section.getint('train_start_day')
+
+    TRAIN_END_YEAR= section.getint('train_end_year')
+    TRAIN_END_MONTH = section.getint('train_end_month')
+    TRAIN_END_DAY = section.getint('train_end_day')
+
+    FORECAST_START_YEAR= section.getint('forecast_start_year')
+    FORECAST_START_MONTH = section.getint('forecast_start_month')
+    FORECAST_START_DAY = section.getint('forecast_start_day')
+
+    FORECAST_END_YEAR= section.getint('forecast_end_year')
+    FORECAST_END_MONTH = section.getint('forecast_end_month')
+    FORECAST_END_DAY = section.getint('forecast_end_day')
+
+    TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
+    TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
+    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
+    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
     
     # Configure logging
     #configLogging("condensate_badak_forecasting.log")
@@ -64,10 +93,28 @@ def main():
     if conn == None:
         exit()
     
-    #Load data from database
+    #Load Data from Database
+    from datetime import datetime
+    end_date = get_last_date_of_current_year()
+    end_date_april = end_day_forecast_april()
+    first_date_nov = get_first_date_of_november()
+    current_date = datetime.now()
+    date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
+    
     query_data = os.path.join('gas_prod/sql','condensate_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
-    data = get_sql_data(query_1, conn)
+    sql = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql = query_1.format('2013-01-01', end_date)
+        else :
+            sql = query_1.format('2013-01-01', end_date_april)
+    else :
+        sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
+
+    print(sql)    
+    
+    data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
@@ -159,33 +206,11 @@ def main():
     # generate intervals
     low, up = smoother.get_intervals('prediction_interval')
 
-    # plotting for illustration
-    # plt.style.use('fivethirtyeight')
-    # fig1, ax = plt.subplots(figsize=(18,7))
-    # ax.plot(df.index, df[y], label='original')
-    # ax.plot(df.index, smoother.smooth_data[0], linewidth=3, color='blue', label='smoothed')
-    # ax.fill_between(df.index, low[0], up[0], alpha=0.3)
-    # ax.set_ylabel("Condensate")
-    # ax.set_xlabel("Datestamp")
-    # ax.legend(loc='best')
-    # title = ("PT Badak Condensate Production")
-    # ax.set_title(title)
-    # #plt.savefig("ptbadak_smoothed.jpg")
-    # #plt.show()
-    # plt.close()
-
     #%%
     # Copy data from original
     df_smoothed = df_cleaned.copy()
     # Replace original with smoothed data
     df_smoothed[y_cleaned] = smoother.smooth_data[0]
-
-    # import chart_studio.plotly
-    # import cufflinks as cf
-    # from plotly.offline import iplot
-    # cf.go_offline()
-    # cf.set_config_file(offline = False, world_readable = True)
-    #df_smoothed.iplot(title="Condensate PT Badak")
 
     #%%
     #stationarity_check(df_smoothed)
@@ -195,14 +220,6 @@ def main():
 
     #%%
     #plot_acf_pacf(df_smoothed)
-
-    #%%
-    # from chart_studio.plotly import plot_mpl
-    # from statsmodels.tsa.seasonal import seasonal_decompose
-    # result = seasonal_decompose(df_smoothed.condensate.values, model="multiplicative", period=365)
-    # fig = result.plot()
-    # #plt.show()
-    # plt.close()
 
     #%%
     #Ad Fuller Test
@@ -219,9 +236,22 @@ def main():
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
     train_exog = df_cleaned.iloc[:,1:]
 
+    from datetime import timedelta
+    exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
     query_exog = os.path.join('gas_prod/sql','condensate_badak_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
-    data_exog = get_sql_data(query_2, conn)
+    sql2 = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql2 = query_2.format(exog_forecast_start_date, end_date)
+        else :
+            sql2 = query_2.format(exog_forecast_start_date, end_date_april)
+    else :
+        sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
+        
+    print(sql2)
+    
+    data_exog = get_sql_data(sql2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')
     data_exog.sort_index(inplace=True)
     data_exog = data_exog.reset_index()
@@ -247,7 +277,7 @@ def main():
         # Get best parameter from database
         sql_arimax_model_param = """SELECT model_param_a 
                         FROM lng_analytics_model_param 
-                        WHERE lng_plant = 'PT Badak' 
+                        WHERE lng_plant = 'PT Badak'
                         AND product = 'Condensate'
                         ORDER BY running_date DESC 
                         LIMIT 1 OFFSET 0"""

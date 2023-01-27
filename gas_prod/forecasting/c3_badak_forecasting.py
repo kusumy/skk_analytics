@@ -9,6 +9,7 @@ import plotly.express as px
 import psycopg2
 import seaborn as sns
 import time
+from configparser import ConfigParser
 import ast
 
 from humanfriendly import format_timespan
@@ -19,7 +20,6 @@ import plotly.express as px
 from pmdarima.arima.auto import auto_arima
 import seaborn as sns
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 from sktime.forecasting.base import ForecastingHorizon
 from statsmodels.tsa.seasonal import seasonal_decompose
@@ -45,11 +45,43 @@ from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
+
 # %%
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month
+    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+                       get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
+    import datetime
+    
+    config = ConfigParser()
+    config.read('config_lng.ini')
+    section = config['config']
+
+    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+
+    TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_START_MONTH = section.getint('train_start_month')
+    TRAIN_START_DAY = section.getint('train_start_day')
+
+    TRAIN_END_YEAR= section.getint('train_end_year')
+    TRAIN_END_MONTH = section.getint('train_end_month')
+    TRAIN_END_DAY = section.getint('train_end_day')
+
+    FORECAST_START_YEAR= section.getint('forecast_start_year')
+    FORECAST_START_MONTH = section.getint('forecast_start_month')
+    FORECAST_START_DAY = section.getint('forecast_start_day')
+
+    FORECAST_END_YEAR= section.getint('forecast_end_year')
+    FORECAST_END_MONTH = section.getint('forecast_end_month')
+    FORECAST_END_DAY = section.getint('forecast_end_day')
+
+    TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
+    TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
+    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
+    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
     
     # Configure logging
     #configLogging("lpg_c3_badak_forecasting.log")
@@ -62,10 +94,29 @@ def main():
     if conn == None:
         exit()
     
-    #Load data from database
+    ##### CLEANING LPG C3 DATA #####
+    #Load Data from Database
+    from datetime import datetime
+    end_date = get_last_date_of_current_year()
+    end_date_april = end_day_forecast_april()
+    first_date_nov = get_first_date_of_november()
+    current_date = datetime.now()
+    date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
+    
     query_data = os.path.join('gas_prod/sql','c3_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
-    data = get_sql_data(query_1, conn)
+    sql = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql = query_1.format('2022-07-01', end_date)
+        else :
+            sql = query_1.format('2022-07-01', end_date_april)
+    else :
+        sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
+
+    print(sql)
+    
+    data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
@@ -150,16 +201,6 @@ def main():
     train_df = df_cleaned['lpg_c3']
 
     #%%
-    # import chart_studio.plotly
-    # import cufflinks as cf
-
-    # from plotly.offline import iplot
-    # cf.go_offline()
-    # cf.set_config_file(offline = False, world_readable = True)
-
-    #df.iplot(title="LPG C3 PT Badak")
-
-    #%%
     #stationarity_check(train_df)
 
     #%%
@@ -167,13 +208,6 @@ def main():
 
     #%%
     #plot_acf_pacf(train_df)
-
-    #%%
-    # from chart_studio.plotly import plot_mpl
-    # from statsmodels.tsa.seasonal import seasonal_decompose
-    # result = seasonal_decompose(train_df.values, model="additive", period=365)
-    # fig = result.plot()
-    # plt.close()
 
     #%%
     #Ad Fuller Test
@@ -188,10 +222,23 @@ def main():
     #train_exog
 
     #%%
+    from datetime import timedelta
+    exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
     logMessage("Create Exogenous Features for Future Dates ...")
     query_exog = os.path.join('gas_prod/sql',"c3_badak_exog_query.sql")
     query_2 = open(query_exog, mode="rt").read()
-    data_exog = get_sql_data(query_2, conn)
+    sql2 = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql2 = query_2.format(exog_forecast_start_date, end_date)
+        else :
+            sql2 = query_2.format(exog_forecast_start_date, end_date_april)
+    else :
+        sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
+        
+    print(sql2)
+    
+    data_exog = get_sql_data(sql2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')
     data_exog.sort_index(inplace=True)
     data_exog = data_exog.reset_index()
@@ -205,7 +252,7 @@ def main():
     future_exog.drop(['lpg_c3'], axis=1, inplace=True)
 
     from sktime.forecasting.base import ForecastingHorizon
-    time_predict = pd.period_range('2022-11-11', periods=51, freq='D')
+    #time_predict = pd.period_range('2022-11-11', periods=51, freq='D')
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
 
     # %%
