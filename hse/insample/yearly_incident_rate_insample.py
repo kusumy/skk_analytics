@@ -85,16 +85,6 @@ def main():
     df = data[[ds,y]]
     df = df.set_index(ds)
     df.index = pd.PeriodIndex(df.index, freq='Y')
-    #df
-
-    #import chart_studio.plotly
-    #import cufflinks as cf
-
-    from plotly.offline import iplot
-    #cf.go_offline()
-    #cf.set_config_file(offline = False, world_readable = True)
-
-    #df.iplot(title="Yearly Incident Rate SKK Migas")
 
     #%%
     #stationarity_check(df['trir'])
