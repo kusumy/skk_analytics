@@ -45,6 +45,7 @@ from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
 
 import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 #%%
@@ -82,9 +83,6 @@ def main():
     FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
     FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
     
-    # Configure logging
-    #configLogging("condensate_badak_forecasting.log")
-    logMessage("Forecasting Condensate PT Badak ...")
     
     # Connect to database
     # Exit program if not connected to database
@@ -112,7 +110,7 @@ def main():
     else :
         sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
 
-    print(sql)    
+    #print(sql)    
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')

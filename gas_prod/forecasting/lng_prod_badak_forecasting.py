@@ -40,6 +40,7 @@ from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
 
 import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 # %%
@@ -144,17 +145,7 @@ def main():
     # Create anomaly detection model
     #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
     #anomalies =  threshold_ad.detect(s)
-
-    # Copy data frame of anomalies
-    copy_anomalies =  anomalies.copy()
-    # Rename columns
-    copy_anomalies.rename(columns={'lng_production_copy':'anomaly'}, inplace=True)
-    # Merge original dataframe with anomalies
-    new_s = pd.concat([s, copy_anomalies], axis=1)
-
-    # Get only anomalies data
-    #anomalies_data = new_s[new_s['anomaly'].isnull()]
-    
+   
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month

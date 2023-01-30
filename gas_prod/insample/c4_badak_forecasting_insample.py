@@ -51,6 +51,8 @@ import time
 from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
+from configparser import ConfigParser
+import ast
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -105,84 +107,45 @@ from xgboost import XGBRegressor
 mape = MeanAbsolutePercentageError(symmetric=False)
 mse = MeanSquaredError()
 
-def stationarity_check(ts):
-            
-    # Calculate rolling statistics
-    roll_mean = ts.rolling(window=8, center=False).mean()
-    roll_std = ts.rolling(window=8, center=False).std()
-
-    # Perform the Dickey Fuller test
-    dftest = adfuller(ts) 
-    
-    # Plot rolling statistics:
-    fig = plt.figure(figsize=(12,6))
-    orig = plt.plot(ts, color='blue',label='Original')
-    mean = plt.plot(roll_mean, color='red', label='Rolling Mean')
-    std = plt.plot(roll_std, color='green', label = 'Rolling Std')
-    plt.legend(loc='best')
-    plt.title('Rolling Mean & Standard Deviation')
-    plt.show(block=False)
-    
-    # Print Dickey-Fuller test results
-
-    print('\nResults of Dickey-Fuller Test: \n')
-
-    dfoutput = pd.Series(dftest[0:4], index=['Test Statistic', 'p-value', 
-                                             '#Lags Used', 'Number of Observations Used'])
-    for key, value in dftest[4].items():
-        dfoutput['Critical Value (%s)'%key] = value
-    print(dfoutput)
-
-def decomposition_plot(ts):
-# Apply seasonal_decompose 
-    decomposition = seasonal_decompose(np.log(ts))
-    
-# Get trend, seasonality, and residuals
-    trend = decomposition.trend
-    seasonal = decomposition.seasonal
-    residual = decomposition.resid
-
-# Plotting
-    plt.figure(figsize=(12,8))
-    plt.subplot(411)
-    plt.plot(np.log(ts), label='Original', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(412)
-    plt.plot(trend, label='Trend', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(413)
-    plt.plot(seasonal,label='Seasonality', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(414)
-    plt.plot(residual, label='Residuals', color='blue')
-    plt.legend(loc='best')
-    plt.tight_layout()
-
-def plot_acf_pacf(ts, figsize=(10,8),lags=24):
-    
-    fig,ax = plt.subplots(nrows=3, figsize=figsize)
-    
-    # Plot ts
-    ts.plot(ax=ax[0])
-    
-    # Plot acf, pavf
-    plot_acf(ts, ax=ax[1], lags=lags)
-    plot_pacf(ts, ax=ax[2], lags=lags) 
-    fig.tight_layout()
-    
-    for a in ax[1:]:
-        a.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=lags, integer=True))
-        a.xaxis.grid()
-    return fig,ax
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 #%%
 def main():
     from connection import create_db_connection, get_sql_data
+    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+                       get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
-    from utils import (ad_test, get_first_date_of_prev_month,
-                       get_last_date_of_prev_month, logMessage)
+    import datetime
 
+    config = ConfigParser()
+    config.read('config_lng.ini')
+    section = config['config']
 
+    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+
+    TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_START_MONTH = section.getint('train_start_month')
+    TRAIN_START_DAY = section.getint('train_start_day')
+
+    TRAIN_END_YEAR= section.getint('train_end_year')
+    TRAIN_END_MONTH = section.getint('train_end_month')
+    TRAIN_END_DAY = section.getint('train_end_day')
+
+    FORECAST_START_YEAR= section.getint('forecast_start_year')
+    FORECAST_START_MONTH = section.getint('forecast_start_month')
+    FORECAST_START_DAY = section.getint('forecast_start_day')
+
+    FORECAST_END_YEAR= section.getint('forecast_end_year')
+    FORECAST_END_MONTH = section.getint('forecast_end_month')
+    FORECAST_END_DAY = section.getint('forecast_end_day')
+
+    TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
+    TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
+    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
+    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
+    
     # Configure logging
     #configLogging("lpg_c4_badak.log")
     
@@ -193,12 +156,33 @@ def main():
     if conn == None:
         exit()
 
+    from datetime import datetime
+    end_date = get_last_date_of_current_year()
+    end_date_april = end_day_forecast_april()
+    first_date_nov = get_first_date_of_november()
+    current_date = datetime.now()
+    date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
+    
     #Load data from database
-    query_1 = open(os.path.join('gas_prod/sql', 'c4_badak_data_query.sql'), mode="rt").read()
-    data = get_sql_data(query_1, conn)
+    query_data = os.path.join('gas_prod/sql','c4_badak_data_query.sql')
+    query_1 = open(query_data, mode="rt").read()
+    sql = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql = query_1.format('2022-07-01', end_date)
+        else :
+            sql = query_1.format('2022-07-01', end_date_april)
+    else :
+        sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
+
+    #print(sql)
+    
+    data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
+    #%%
+    logMessage("LPG C4 PT Badak Null Value Cleaning ...")
     data_null_cleaning = data[['date', 'lpg_c4']].copy()
     data_null_cleaning['lpg_c4_copy'] = data[['lpg_c4']].copy()
     ds_null_cleaning = 'date'
@@ -208,12 +192,7 @@ def main():
     #%%
     threshold_ad = ThresholdAD(data_null_cleaning['lpg_c4_copy'].isnull())
     anomalies = threshold_ad.detect(s)
-
     anomalies = anomalies.drop('lpg_c4', axis=1)
-
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
 
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
@@ -224,7 +203,6 @@ def main():
 
     # Get only anomalies data
     anomalies_data = new_s[new_s['anomaly'].isnull()]
-    #anomalies_data.tail(100)
 
     #%%
     #REPLACE ANOMALY VALUES
@@ -244,40 +222,18 @@ def main():
             
         # Get mean fead gas data for the month
         sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
-        mean_month=new_s['lpg_c4'].reset_index().query(sql).mean().values[0]
+        mean_month=new_s['lpg_c4'].reset_index().query(sql).mean(skipna = True).values[0]
             
         # update value at specific location
         new_s.at[index,'lpg_c4'] = mean_month
             
-        print(sql), print(mean_month)
+        #print(sql), print(mean_month)
 
     # Check if updated
     anomaly_upd = new_s[new_s['anomaly'].isnull()]
 
     #%%
     df_cleaned = new_s[['lpg_c4']].copy()
-    #df_cleaned = df_cleaned.reset_index()
-    #df_cleaned['date'] = pd.to_datetime(df_cleaned.date)
-    #df_cleaned.index = pd.DatetimeIndex(df_cleaned.date)
-
-    #ds_cleaned = 'date'
-    #y_cleaned = 'lpg_c4'
-    #df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
-    #df_cleaned = df_cleaned.set_index(ds_cleaned)
-    #df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
-    #df_cleaned
-    #Select column target
-    #train_df = data_cleaned['lpg_c4']
-
-    #%%
-    #import chart_studio.plotly
-    #import cufflinks as cf
-
-    #from plotly.offline import iplot
-    #cf.go_offline()
-    #cf.set_config_file(offline = False, world_readable = True)
-
-    #df.iplot(title="LPG C4 PT Badak")
 
     #%%
     #stationarity_check(train_df)

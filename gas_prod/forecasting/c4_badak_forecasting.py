@@ -48,6 +48,7 @@ from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
 
 import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 # %%
@@ -114,7 +115,7 @@ def main():
     else :
         sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
 
-    print(sql)
+    #print(sql)
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
@@ -131,10 +132,6 @@ def main():
     threshold_ad = ThresholdAD(data_null_cleaning['lpg_c4_copy'].isnull())
     anomalies =  threshold_ad.detect(s)
     anomalies = anomalies.drop('lpg_c4', axis=1)
-
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
 
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()

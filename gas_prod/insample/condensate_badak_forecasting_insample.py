@@ -51,6 +51,8 @@ import time
 from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
+from configparser import ConfigParser
+import ast
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -99,7 +101,11 @@ from sktime.performance_metrics.forecasting import (
 from tsmoothie.smoother import LowessSmoother, PolynomialSmoother
 from xgboost import XGBRegressor
 
-from polyfit import Constraints, PolynomRegressor
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
+warnings.filterwarnings("ignore", category=UserWarning, message="Non-invertible starting MA parameters found.")
+
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
@@ -108,15 +114,39 @@ mse = MeanSquaredError()
 
 #%%
 def main():
-
     from connection import create_db_connection, get_sql_data
+    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+                       get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
-    from utils import (ad_test, get_first_date_of_prev_month,
-                       get_last_date_of_prev_month, logMessage)
+    import datetime
 
-    # Configure logging
-    #configLogging("condensate_badak.log")
-    logMessage("Creating Condensate Badak Model ...")
+    config = ConfigParser()
+    config.read('config_lng.ini')
+    section = config['config']
+
+    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+
+    TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_START_MONTH = section.getint('train_start_month')
+    TRAIN_START_DAY = section.getint('train_start_day')
+
+    TRAIN_END_YEAR= section.getint('train_end_year')
+    TRAIN_END_MONTH = section.getint('train_end_month')
+    TRAIN_END_DAY = section.getint('train_end_day')
+
+    FORECAST_START_YEAR= section.getint('forecast_start_year')
+    FORECAST_START_MONTH = section.getint('forecast_start_month')
+    FORECAST_START_DAY = section.getint('forecast_start_day')
+
+    FORECAST_END_YEAR= section.getint('forecast_end_year')
+    FORECAST_END_MONTH = section.getint('forecast_end_month')
+    FORECAST_END_DAY = section.getint('forecast_end_day')
+
+    TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
+    TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
+    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
+    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
+    
     
     # Connect to database
     # Exit program if not connected to database
@@ -126,8 +156,27 @@ def main():
         exit()
 
     #Load data from database
-    query_1 = open(os.path.join('gas_prod/sql', 'condensate_badak_data_query.sql'), mode="rt").read()
-    data = get_sql_data(query_1, conn)
+    from datetime import datetime
+    end_date = get_last_date_of_current_year()
+    end_date_april = end_day_forecast_april()
+    first_date_nov = get_first_date_of_november()
+    current_date = datetime.now()
+    date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
+    
+    query_data = os.path.join('gas_prod/sql','condensate_badak_data_query.sql')
+    query_1 = open(query_data, mode="rt").read()
+    sql = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql = query_1.format('2013-01-01', end_date)
+        else :
+            sql = query_1.format('2013-01-01', end_date_april)
+    else :
+        sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
+
+    #print(sql)  
+    
+    data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
@@ -141,7 +190,6 @@ def main():
     #%%
     threshold_ad = ThresholdAD(data_null_cleaning['condensate_copy'].isnull())
     anomalies = threshold_ad.detect(s)
-
     anomalies = anomalies.drop('condensate', axis=1)
 
     # Create anomaly detection model
@@ -157,14 +205,34 @@ def main():
 
     # Get only anomalies data
     anomalies_data = new_s[new_s['anomaly'].isnull()]
-    #anomalies_data.tail(100)
+    
+    #%%
+    for index, row in anomalies_data.iterrows():
+        yr = index.year
+        mt = index.month
+        
+        # Get start month and end month
+        #start_month = str(get_first_date_of_current_month(yr, mt))
+        #end_month = str(get_last_date_of_month(yr, mt))
+        
+        # Get last year start date month
+        start_month = get_first_date_of_prev_month(yr,mt,step=-12)
+        
+        # Get last month last date
+        end_month = get_last_date_of_prev_month(yr,mt,step=-1)
+        
+        # Get mean fead gas data for the month
+        sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
+        mean_month=new_s['condensate'].reset_index().query(sql).mean(skipna = True).values[0]
+        
+        # update value at specific location
+        new_s.at[index,'condensate'] = mean_month
+        
+        #print(index), print(sql), print(mean_month)
 
     #%%
+    logMessage("Condensate PT Badak Prepare Data ...")
     #REPLACE ANOMALY VALUES
-    # Check if updated
-    anomaly_upd = new_s[new_s['anomaly'].isnull()]
-
-    #%%
     data_cleaned = new_s[['condensate']].copy()
     data_cleaned = data_cleaned.reset_index()
 
@@ -175,8 +243,8 @@ def main():
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
+    logMessage("Condensate PT Badak Data Smoothing ...")
     # Smooth time series signal using polynomial smoothing
-    
     #smoother = PolynomialSmoother(degree=1, copy=True)
     smoother = LowessSmoother(smooth_fraction=0.005, iterations=1)
     smoother.smooth(df_cleaned)
@@ -505,7 +573,7 @@ def main():
     poly2_strategy = "recursive"
 
     # Create regressor object
-    poly2_forecaster_param_grid = {"window_length": [1, 28]}
+    poly2_forecaster_param_grid = {"window_length": [1]}
 
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
     poly2_forecaster = make_reduction(poly2_regressor, strategy=poly2_strategy)
@@ -544,7 +612,7 @@ def main():
     poly3_strategy = "recursive"
 
     # Create regressor object
-    poly3_forecaster_param_grid = {"window_length": [1, 28]}
+    poly3_forecaster_param_grid = {"window_length": [1]}
 
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
     poly3_forecaster = make_reduction(poly3_regressor, strategy=poly3_strategy)

@@ -113,7 +113,7 @@ def main():
     else :
         sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
 
-    print(sql)
+    #print(sql)
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')

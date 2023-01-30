@@ -509,7 +509,7 @@ def main():
     poly2_interactions = False
     poly2_strategy = "recursive"
 
-    poly2_forecaster_param_grid = {"window_length": [1, 2, 3, 4]}
+    poly2_forecaster_param_grid = {"window_length": [1]}
 
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
     poly2_forecaster = make_reduction(poly2_regressor, strategy=poly2_strategy)
@@ -547,7 +547,7 @@ def main():
     poly3_interactions = False
     poly3_strategy = "recursive"
 
-    poly3_forecaster_param_grid = {"window_length": [1, 2, 3, 4]}
+    poly3_forecaster_param_grid = {"window_length": [1]}
 
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
     poly3_forecaster = make_reduction(poly3_regressor, strategy=poly3_strategy)
@@ -556,7 +556,7 @@ def main():
     gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, n_jobs=-1, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    gscv_poly3.fit(y_train_smoothed) #, X=X_train
+    gscv_poly3.fit(y_train_smoothed, X=X_train) #, X=X_train
     
     # Show top 10 best models based on scoring function
     gscv_poly3.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
@@ -568,7 +568,7 @@ def main():
     logMessage("Best Polynomial Regression Degree=3 Models "+poly3_best_params_str)
     
     logMessage("Polynomial Regression Degree=3 Model Prediction ...")
-    poly3_forecast = gscv_poly3.best_forecaster_.predict(fh) #, X=X_test
+    poly3_forecast = gscv_poly3.best_forecaster_.predict(fh, X=X_test) #, X=X_test
     y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
