@@ -1,6 +1,6 @@
 ###### LNG PRODUCTION PT BADAK FORECASTING INSAMPLE ######
 # This python script is used to perform forecasting on testing data from each method.
-# Data source from the SKK Migas (188.166.239.112) database in the lng_production_daily table with lng_plant = 'PT Badak'.
+# Data source from the SKK Migas (10.6.7.74) database in the lng_production_daily table with lng_plant = 'PT Badak'.
 
 ##### METHODS FOR TIME SERIES FORECASTING #####
 # There are many methods that we can use for this forecasting, such as ARIMAX, SARIMAX, PROPHET, RANDOM FOREST, XGBOOST, LINEAR REGRESSION, POLYNOMIAL REGRESSION DEGREE 2, POLYNOMIAL REGRESSION DEGREE 3.

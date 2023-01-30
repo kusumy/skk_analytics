@@ -1,3 +1,47 @@
+###### CONDENSATE PT BADAK FORECASTING INSAMPLE ######
+# This python script is used to perform forecasting on testing data from each method.
+# Data source from the SKK Migas (188.166.239.112) database in the lng_condensate_daily table with lng_plant = 'BP Tangguh'.
+
+##### METHODS FOR TIME SERIES FORECASTING #####
+# There are many methods that we can use for this forecasting, such as ARIMAX, SARIMAX, PROPHET, RANDOM FOREST, XGBOOST, LINEAR REGRESSION, POLYNOMIAL REGRESSION DEGREE 2, POLYNOMIAL REGRESSION DEGREE 3.
+
+##### FLOW PROCESS OF THIS ALGORITHM #####
+# 1. Import the required packages and defining functions that maybe used.
+# 2. Import data from database.
+# 3. EDA process (Search null values in column condensate, Stationary Check.
+# 4. Data Preprocessing (Replace null values in condensate with value before null.
+# 5. Split data after cleaning process to train and test.
+# 6. Define the Forecasting Horizon. In this case, length for horizon is 0.2 from total data.
+# 7. Create exogenous variables to support the forecasting process. In this case, we use the data of day index.
+# 8. Split exogenous data to train and test. Train test proportion is same with train test data.
+# 9. Forecasting process using 8 methods (Arimax, Sarimax, Prophet, Random Forest, XGBoost, Linear Regression, Polynomial Regression Degree=2, Polynomial Regression Degree=3).
+# 10. For each methods, there are several steps :
+#    10.1 Arimax - Sarimax
+#         - For Arimax and Sarimax use Auto Arima Algorithm to find best order and seasonal order.
+#         - Fitting best order or seasonal order. We can add exogenous variables to this fitting process.
+#         - See the summary of best model.
+#         - Predict the future data using parameter of forecasting horizon and exogenous testing data.
+#         - Calculate error between testing data and prediction data using Mean Absolute Percentage Error.
+#         - Save the parameters model
+#    10.2 Prophet, Random Forest, XGBoost, Linear Regression, Polynomial Regression Degree=2, Polynomial Regression Degree=2
+#         - Define some parameter options to find the best parameter.
+#         - Run each method regressors.
+#         - Create and run the SingleWindowSplitter and ForecastingGridSearchCV to find the best parameters for each methods.
+#         - Fitting best parameter model in training data.
+#         - Show top 10 best parameter model (optional) and show best parameter model.
+#         - Predict the future data using best parameter with forecasting and exogenous testing data.
+#         - Calculate error between testing data and prediction data using Mean Absolute Percentage Error.
+# 11. Create all model parameters to dataframe.
+# 12. Create all mape result to dataframe.
+# 13. Define function and query to save the model parameter and mape value to database.
+
+##### SCRIPT OUTPUT #####
+# The output for this script is best parameter and error value of each forecasting method. Which is best parameter and error value will be save in database table.
+
+##### HOW TO USE THIS SCRIPT #####
+# We can run this script using command prompt (directory same with this python script). But in this case, we can run this script using main_lng.py.
+# For example : We will run this script only, we can comment (#) script main_lng_insample.py on other script .py (example: feed_gas_tangguh_forecasting_insample.py etc.)
+
 # %%
 import logging
 import os
