@@ -600,7 +600,7 @@ def main():
     poly2_strategy = "recursive"
 
     # Create regressor object
-    poly2_forecaster_param_grid = {"window_length": [1, 2]}
+    poly2_forecaster_param_grid = {"window_length": [1]}
 
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
     poly2_forecaster = make_reduction(poly2_regressor, strategy=poly2_strategy)
@@ -639,7 +639,7 @@ def main():
     poly3_strategy = "recursive"
 
     # Create regressor object
-    poly3_forecaster_param_grid = {"window_length": [1, 2]}
+    poly3_forecaster_param_grid = {"window_length": [1]}
 
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
     poly3_forecaster = make_reduction(poly3_regressor, strategy=poly3_strategy)
