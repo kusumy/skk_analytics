@@ -151,7 +151,7 @@ def main():
 
     from sktime.forecasting.base import ForecastingHorizon
     time_predict = pd.period_range('2023', periods=2, freq='Y')
-    fh = ForecastingHorizon(time_predict, is_relative=False)
+    fh = ForecastingHorizon(future_exog.index, is_relative=False)
 
     #%%
     try :

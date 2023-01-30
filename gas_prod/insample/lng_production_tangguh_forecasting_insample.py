@@ -53,11 +53,15 @@ from xgboost import XGBRegressor
 mape = MeanAbsolutePercentageError(symmetric=False)
 mse = MeanSquaredError()
 
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 # %%
 def main():
-    from connection import config, retrieve_data, create_db_connection, get_sql_data
-    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month, get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november
+    from connection import create_db_connection, get_sql_data
+    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+                       get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
 
@@ -120,7 +124,7 @@ def main():
     else :
         sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
 
-    print(sql)
+    #print(sql)
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')

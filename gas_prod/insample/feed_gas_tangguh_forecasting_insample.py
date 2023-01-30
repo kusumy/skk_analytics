@@ -104,9 +104,12 @@ from sktime.forecasting.model_selection import (ForecastingGridSearchCV,
                                                 SingleWindowSplitter,
                                                 temporal_train_test_split)
 from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
-from sktime.performance_metrics.forecasting import (
-    MeanAbsolutePercentageError, MeanSquaredError)
+from sktime.performance_metrics.forecasting import (MeanAbsolutePercentageError, MeanSquaredError)
 from xgboost import XGBRegressor
+
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
@@ -119,8 +122,6 @@ def main():
                        get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
-    import warnings
-    warnings.filterwarnings(action='ignore')
     
     config = ConfigParser()
     config.read('config_lng.ini')

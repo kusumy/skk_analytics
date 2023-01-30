@@ -6,6 +6,8 @@ import time
 from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
+from configparser import ConfigParser
+import ast
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -33,8 +35,6 @@ from sktime.forecasting.model_selection import temporal_train_test_split
 from tsmoothie.smoother import LowessSmoother, PolynomialSmoother
 
 plt.style.use('fivethirtyeight')
-import warnings
-
 import statsmodels.api as sm
 from pmdarima.arima import auto_arima
 from pmdarima.arima.utils import ndiffs, nsdiffs
@@ -46,16 +46,14 @@ from sktime.forecasting.arima import ARIMA, AutoARIMA
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import make_reduction
 from sktime.forecasting.fbprophet import Prophet
-from sktime.forecasting.model_selection import (ForecastingGridSearchCV,
-                                                SingleWindowSplitter)
-from sktime.performance_metrics.forecasting import (
-    MeanAbsolutePercentageError, MeanSquaredError)
+from sktime.forecasting.model_selection import (ForecastingGridSearchCV, SingleWindowSplitter)
+from sktime.performance_metrics.forecasting import (MeanAbsolutePercentageError, MeanSquaredError)
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from xgboost import XGBRegressor
 
-from polyfit import Constraints, PolynomRegressor
-
-warnings.filterwarnings(action='ignore', category=FutureWarning)
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
@@ -65,9 +63,37 @@ mse = MeanSquaredError()
 # %%
 def main():
     from connection import create_db_connection, get_sql_data
+    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+                       get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
-    from utils import (ad_test, get_first_date_of_prev_month,
-                       get_last_date_of_prev_month, logMessage)
+    import datetime
+    
+    config = ConfigParser()
+    config.read('config_lng.ini')
+    section = config['config']
+
+    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+
+    TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_START_MONTH = section.getint('train_start_month')
+    TRAIN_START_DAY = section.getint('train_start_day')
+
+    TRAIN_END_YEAR= section.getint('train_end_year')
+    TRAIN_END_MONTH = section.getint('train_end_month')
+    TRAIN_END_DAY = section.getint('train_end_day')
+
+    FORECAST_START_YEAR= section.getint('forecast_start_year')
+    FORECAST_START_MONTH = section.getint('forecast_start_month')
+    FORECAST_START_DAY = section.getint('forecast_start_day')
+
+    FORECAST_END_YEAR= section.getint('forecast_end_year')
+    FORECAST_END_MONTH = section.getint('forecast_end_month')
+    FORECAST_END_DAY = section.getint('forecast_end_day')
+
+    TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
+    TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
+    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
+    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
 
     # Configure logging
     #configLogging("feed_gas_badak_forecasting.log")
@@ -80,9 +106,29 @@ def main():
     if conn == None:
         exit()
     
+    #Load Data from Database
+    from datetime import datetime
+    end_date = get_last_date_of_current_year()
+    end_date_april = end_day_forecast_april()
+    first_date_nov = get_first_date_of_november()
+    current_date = datetime.now()
+    date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
+    
     #Load data from database
-    query_1 = open(os.path.join('gas_prod/sql', 'feed_gas_badak_data_query.sql'), mode="rt").read()
-    data = get_sql_data(query_1, conn)
+    query_data = os.path.join('gas_prod/sql','feed_gas_badak_data_query.sql')
+    query_1 = open(query_data, mode="rt").read()
+    sql = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql = query_1.format('2013-01-01', end_date)
+        else :
+            sql = query_1.format('2013-01-01', end_date_april)
+    else :
+        sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
+
+    #print(sql)
+    
+    data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
 
@@ -131,12 +177,12 @@ def main():
             
         # Get mean fead gas data for the month
         sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
-        mean_month=new_s['feed_gas'].reset_index().query(sql).mean().values[0]
+        mean_month=new_s['feed_gas'].reset_index().query(sql).mean(skipna = True).values[0]
             
         # update value at specific location
         new_s.at[index,'feed_gas'] = mean_month
             
-        print(sql), print(mean_month)
+        #print(sql), print(mean_month)
 
     # Check if updated
     anomaly_upd = new_s[new_s['anomaly'].isnull()]
@@ -240,7 +286,6 @@ def main():
     ##### ARIMAX MODEL #####
     logMessage("Creating Arimax Model Forecasting Insample Feed Gas PT Badak ...")
     # Create ARIMAX Model
-    #arimax_model = auto_arima(df_smoothed, X_train, d=1, trace=True, error_action="ignore", suppress_warnings=True)
     arimax_model = AutoARIMA(d=1, suppress_warnings=True, error_action='ignore', trace=True)
     logMessage("Creating ARIMAX Model ...")
     arimax_model.fit(y_train_smoothed, X=X_train)

@@ -36,6 +36,9 @@ from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
+
 
 #%%
 def main():
@@ -75,7 +78,7 @@ def main():
     else :
         sql = query_1.format(TRAIN_START_YEAR, FORECAST_END_YEAR)
 
-    print(sql)
+    #print(sql)
     
     data = get_sql_data(sql, conn)
     #data = retrieve_data(query_1)

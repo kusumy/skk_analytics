@@ -1,5 +1,5 @@
 # %%
-import configparser
+from configparser import ConfigParser
 import logging 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -35,83 +35,25 @@ from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 plt.style.use('fivethirtyeight')
-    
-def stationarity_check(ts):
-            
-    # Calculate rolling statistics
-    roll_mean = ts.rolling(window=8, center=False).mean()
-    roll_std = ts.rolling(window=8, center=False).std()
 
-    # Perform the Dickey Fuller test
-    dftest = adfuller(ts) 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
     
-    # Plot rolling statistics:
-    fig = plt.figure(figsize=(12,6))
-    orig = plt.plot(ts, color='blue',label='Original')
-    mean = plt.plot(roll_mean, color='red', label='Rolling Mean')
-    std = plt.plot(roll_std, color='green', label = 'Rolling Std')
-    plt.legend(loc='best')
-    plt.title('Rolling Mean & Standard Deviation')
-    #plt.show(block=False)
-    
-    # Print Dickey-Fuller test results
-
-    print('\nResults of Dickey-Fuller Test: \n')
-
-    dfoutput = pd.Series(dftest[0:4], index=['Test Statistic', 'p-value', 
-                                             '#Lags Used', 'Number of Observations Used'])
-    for key, value in dftest[4].items():
-        dfoutput['Critical Value (%s)'%key] = value
-    print(dfoutput)
-
-def decomposition_plot(ts):
-# Apply seasonal_decompose 
-    decomposition = seasonal_decompose(np.log(ts))
-    
-# Get trend, seasonality, and residuals
-    trend = decomposition.trend
-    seasonal = decomposition.seasonal
-    residual = decomposition.resid
-
-# Plotting
-    plt.figure(figsize=(12,8))
-    plt.subplot(411)
-    plt.plot(np.log(ts), label='Original', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(412)
-    plt.plot(trend, label='Trend', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(413)
-    plt.plot(seasonal,label='Seasonality', color='blue')
-    plt.legend(loc='best')
-    plt.subplot(414)
-    plt.plot(residual, label='Residuals', color='blue')
-    plt.legend(loc='best')
-    plt.tight_layout()
-
-def plot_acf_pacf(ts, figsize=(10,8),lags=24):
-    
-    fig,ax = plt.subplots(nrows=3, figsize=figsize)
-    
-    # Plot ts
-    ts.plot(ax=ax[0])
-    
-    # Plot acf, pavf
-    plot_acf(ts, ax=ax[1], lags=lags)
-    plot_pacf(ts, ax=ax[2], lags=lags) 
-    fig.tight_layout()
-    
-    for a in ax[1:]:
-        a.xaxis.set_major_locator(mpl.ticker.MaxNLocator(min_n_ticks=lags, integer=True))
-        a.xaxis.grid()
-    return fig,ax
-
 def main():
+    from connection import create_db_connection, get_sql_data
+    from utils import (logMessage, ad_test)
+    from polyfit import PolynomRegressor
+    import datetime
     
-    from connection import config, retrieve_data, create_db_connection, get_sql_data
-    from utils import configLogging, logMessage, ad_test
-    from polyfit import PolynomRegressor, Constraints
+    config = ConfigParser()
+    config.read('config_hse.ini')
+    section = config['config']
     
+    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+    TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_END_YEAR= section.getint('train_end_year')
+    FORECAST_START_YEAR= section.getint('forecast_start_year')
+    FORECAST_END_YEAR= section.getint('forecast_end_year')
     # Configure logging
     #configLogging("incident_rate_trir.log")
     
@@ -124,8 +66,20 @@ def main():
         exit()
         
     # Load Data from Database
-    query_1 = open(os.path.join('hse/sql', 'query_month_cum.sql'), mode="rt").read()
-    data = get_sql_data(query_1, conn)
+    from datetime import datetime
+    current_year_month = datetime.now().strftime("%Y-%m")
+    current_year = datetime.now().year
+    query_data = os.path.join('hse/sql', 'query_month_cum.sql')
+    query_1 = open(query_data, mode="rt").read()
+    sql = ''
+    if USE_DEFAULT_DATE == True:
+        sql = query_1.format('2013', current_year)
+    else :
+        sql = query_1.format(TRAIN_START_YEAR, FORECAST_END_YEAR)
+
+    #print(sql)    
+    
+    data = get_sql_data(sql, conn)
     #data = retrieve_data(query_1, section='postgresql_ml_hse')
     data['year_num'] = data['year_num'].astype(int)
     data['month_num'] = data['month_num'].astype(int)
@@ -136,14 +90,11 @@ def main():
     today = datetime.date.today()
     first = today.replace(day=1)
     last_month = (first - datetime.timedelta(days=1)).strftime("%Y-%m")
-    print(last_month.strftime("%Y-%m"))
 
     #%%
     # Prepare data
     data['date'] = pd.to_datetime(data['date'], format='%Y-%m')
-    data = data[~(data['date'] > '2022-12')]
     data = data.rename(columns=str.lower)
-
     data['date'] = pd.PeriodIndex(data['date'], freq='M')
     data = data.reset_index()
     #data.head()
@@ -155,35 +106,19 @@ def main():
     df = data[[ds,y]]
     df = df.set_index(ds)
     df.index = pd.PeriodIndex(df.index, freq='M')
-    #df
 
     #%%
     train_df = df['trir_cum']
-    #train_df
-
-    #stationary check
-    #%%
-    #stationarity_check(df.to_timestamp())
-    #decomposition_plot(df.to_timestamp())
-    #plot_acf_pacf(df.to_timestamp())
 
     #%%
-    #from chart_studio.plotly import plot_mpl
-    from statsmodels.tsa.seasonal import seasonal_decompose
-
-    result = seasonal_decompose(df.trir_cum.values, model="additive", period=24)
-    #fig = result.plot()
-    #plt.show()
-
-    #%%
+    #AD-Fuller Testing
     ad_test(df['trir_cum'])
 
-
     #%%
     # Create forecasting Horizon
-    time_predict = pd.period_range('2022-11', periods=14, freq='M')
+    #time_predict = pd.period_range('2022-11', periods=14, freq='M')
     # Create forecasting Horizon
-    fh = ForecastingHorizon(time_predict, is_relative=False)
+    #fh = ForecastingHorizon(time_predict, is_relative=False)
 
     #%%
     ## Create Exogenous Variable
@@ -202,8 +137,6 @@ def main():
 
     #%%
     #import exogenous for predict
-    #df = pd.date_range('2022-10-01', '2022-12-01', freq='MS') 
-    #df = pd.DataFrame(df, columns=['date'])
     query_exog = open(os.path.join('hse/sql', 'query_month_cum3.sql'), mode="rt").read()
     data2 = get_sql_data(query_exog, conn)
     #data2 = retrieve_data(query_2, section='postgresql_ml_hse')
@@ -220,13 +153,17 @@ def main():
     future_exog.index = pd.PeriodIndex(future_exog.index, freq='M')
     #future_exog.sort_index(inplace=True)
     future_exog.drop(['date'], axis=1, inplace=True)
-    future_exog = future_exog.iloc[-14:]
+    horizon = len(future_exog) - len(train_df)
+    future_exog = future_exog.iloc[-horizon:]
     future_exog['bulan'] = [i.month for i in future_exog.index]
+    
+    fh = ForecastingHorizon(future_exog.index, is_relative=False)
 
     # %%
     try :
         ##### FORECASTING #####
         ##### ARIMAX MODEL #####
+        logMessage("ARIMAX Model IR Monthly Cumulative Forecasting ...")
         # Get best parameter from database
         sql_arimax_model_param = """SELECT best_param_a 
                                 FROM hse_analytics_param 
@@ -260,6 +197,7 @@ def main():
         
         #%%
         ##### XGBOOST MODEL #####
+        logMessage("XGBoost Model IR Monthly Cumulative Forecasting ...")
         # Get best parameter from database
         sql_xgb_model_param = """SELECT best_param_b 
                             FROM hse_analytics_param 
@@ -296,6 +234,7 @@ def main():
         
         #%%
         ##### RANDOM FOREST MODEL #####
+        logMessage("Random Forest Model IR Monthly Cumulative Forecasting ...")
         # Get best parameter from database
         sql_ranfor_model_param = """SELECT best_param_c 
                             FROM hse_analytics_param 
