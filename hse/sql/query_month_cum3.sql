@@ -43,5 +43,6 @@ select year_num, month_num, sum(rencana_bulanan_wp_b) as wellservice
 from drilling_ps_perbln dpp group by year_num, month_num
 ) ps on survei.year_num = ps.year_num and survei.month_num = ps.month_num
 ) drilling
+WHERE year_num between '{}' and '{}' and month_num BETWEEN '{}' and '{}'
 group by year_num, month_num
 order by year_num, month_num

@@ -75,7 +75,7 @@ def main():
     if USE_DEFAULT_DATE == True:
         sql = query_1.format('2013', current_year)
     else :
-        sql = query_1.format(TRAIN_START_YEAR, FORECAST_END_YEAR)
+        sql = query_1.format(TRAIN_START_YEAR, TRAIN_END_YEAR)
 
     #print(sql)    
     

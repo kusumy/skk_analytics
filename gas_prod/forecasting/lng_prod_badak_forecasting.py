@@ -107,7 +107,7 @@ def main():
         else :
             sql = query_1.format('2013-01-01', end_date_april)
     else :
-        sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
+        sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
 
     #print(sql)
     

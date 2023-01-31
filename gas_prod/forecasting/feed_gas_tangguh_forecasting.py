@@ -108,7 +108,7 @@ def main():
         else :
             sql = query_1.format('2016-01-01', end_date_april)
     else :
-        sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
+        sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
 
     #print(sql)
     
@@ -353,6 +353,7 @@ def main():
 
     #Create forecasting horizon
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
+    fh_train = ForecastingHorizon(train_df.index, is_relative=False)
 
     #Plotting for illustration
     # fig1, ax = plt.subplots(figsize=(20,8))
@@ -535,7 +536,7 @@ def main():
         logMessage("Creating Random Forest Model ...")
         ranfor_regressor = RandomForestRegressor(n_estimators = ranfor_n_estimators, random_state=ranfor_random_state, criterion=ranfor_criterion)
         ranfor_forecaster = make_reduction(ranfor_regressor, window_length=ranfor_lags, strategy=ranfor_strategy) #30, nonexog=30
-        ranfor_forecaster.fit(train_df, train_exog) #, X_train
+        ranfor_forecaster.fit(train_df, X=train_exog) #, X_train
         
         logMessage("Random Forest Model Prediction ...")
         ranfor_forecast = ranfor_forecaster.predict(fh, X=future_exog) #, X=X_test
