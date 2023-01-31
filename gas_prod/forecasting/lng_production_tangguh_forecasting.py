@@ -109,7 +109,7 @@ def main():
     else :
         sql = query_1.format(TRAIN_START_DATE, FORECAST_END_DATE)
 
-    print(sql)
+    #print(sql)
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
@@ -332,7 +332,7 @@ def main():
     else :
         sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
         
-    print(sql2)
+    #print(sql2)
     
     data_exog = get_sql_data(sql2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')

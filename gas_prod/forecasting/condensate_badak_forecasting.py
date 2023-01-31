@@ -247,7 +247,7 @@ def main():
     else :
         sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
         
-    print(sql2)
+    #print(sql2)
     
     data_exog = get_sql_data(sql2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')
