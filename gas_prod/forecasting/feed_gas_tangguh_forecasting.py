@@ -227,9 +227,6 @@ def main():
     yesterday_date = str(yesterday_date[0])
     prev_date_year = str(prev_date_year[0])
 
-    print(yesterday_date)
-    print(prev_date_year)
-
     #%%
     for index, row in anomalies_data2.iterrows():
         yr = index.year
