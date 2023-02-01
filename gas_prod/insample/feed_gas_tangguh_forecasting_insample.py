@@ -449,19 +449,12 @@ def main():
     #plot_acf_pacf(df_cleaned['feed_gas'])
 
     #%%
-    # from chart_studio.plotly import plot_mpl
-    # from statsmodels.tsa.seasonal import seasonal_decompose
-    # result = seasonal_decompose(train_df.values, model="additive", period=365)
-    # fig = result.plot()
-    # plt.close()
-
-    #%%
     logMessage("AD Fuller Test ...")
     ad_test(train_df)
 
     #%%
     # Test size
-    test_size = 0.2 #365
+    test_size = 365
     # Split data (original data)
     y_train, y_test = temporal_train_test_split(df, test_size=test_size)
     # Split data (original data)
@@ -539,28 +532,28 @@ def main():
     sarimax_stepwise = True
     
     #sarimax_model = auto_arima(y=y_train_cleaned.feed_gas, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
-#    sarimax_model = AutoARIMA(start_p = 0, max_p = 3, d=sarimax_differencing, max_q = 2, max_P = 2, max_Q = 2, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp,
-#                              trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+    sarimax_model = AutoARIMA(start_p = 0, max_p = 3, d=sarimax_differencing, max_q = 2, max_P = 2, max_Q = 2, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp,
+                              trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     #sarimax_model = ARIMA(order=(2, 0, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
-#    logMessage("Creating SARIMAX Model ...") 
-#    sarimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
-#    logMessage("SARIMAX Model Summary")
-#    logMessage(sarimax_model.summary())
+    logMessage("Creating SARIMAX Model ...") 
+    sarimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
+    logMessage("SARIMAX Model Summary")
+    logMessage(sarimax_model.summary())
     
-#    logMessage("SARIMAX Model Prediction ..")
-#    sarimax_forecast = sarimax_model.predict(fh, X=X_test[exogenous_features]) #len(fh)
-#    y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
+    logMessage("SARIMAX Model Prediction ..")
+    sarimax_forecast = sarimax_model.predict(fh, X=X_test[exogenous_features]) #len(fh)
+    y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-#    sarimax_mape = mean_absolute_percentage_error(y_test_cleaned.feed_gas, sarimax_forecast)
-#    sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
-#    logMessage("SARIMAX Model "+sarimax_mape_str)
+    sarimax_mape = mean_absolute_percentage_error(y_test_cleaned.feed_gas, sarimax_forecast)
+    sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
+    logMessage("SARIMAX Model "+sarimax_mape_str)
     
     #Get parameters
-#    sarimax_param_order = sarimax_model.get_fitted_params()['order']
-#    sarimax_param_order_seasonal = sarimax_model.get_fitted_params()['seasonal_order']
-#    sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
-#    logMessage("Sarimax Model Parameters "+sarimax_param)
+    sarimax_param_order = sarimax_model.get_fitted_params()['order']
+    sarimax_param_order_seasonal = sarimax_model.get_fitted_params()['seasonal_order']
+    sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
+    logMessage("Sarimax Model Parameters "+sarimax_param)
     
 
     ##### PROPHET MODEL (forecast_c) #####

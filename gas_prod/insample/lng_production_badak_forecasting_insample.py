@@ -340,8 +340,6 @@ def main():
     df_cleaned['fg_exog'] = data['fg_exog'].values
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
     df_cleaned['fg_exog'].fillna(method='ffill', inplace=True)
-    #df['day_of_year'] = [i.dayofyear for i in df.index]
-    #df['week_of_year'] = [i.weekofyear for i in df.index]
 
     #%%
     # Split into train and test

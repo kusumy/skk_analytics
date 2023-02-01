@@ -74,7 +74,7 @@ def main():
     if USE_DEFAULT_DATE == True:
         sql = query_1.format('2013', current_year)
     else :
-        sql = query_1.format(TRAIN_START_YEAR, FORECAST_END_YEAR)
+        sql = query_1.format(TRAIN_START_YEAR, TRAIN_END_YEAR)
 
     #print(sql)
     
@@ -150,7 +150,7 @@ def main():
     future_exog['wellservice'].fillna(method='ffill', inplace=True)
 
     from sktime.forecasting.base import ForecastingHorizon
-    time_predict = pd.period_range('2023', periods=2, freq='Y')
+    #time_predict = pd.period_range('2023', periods=2, freq='Y')
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
 
     #%%

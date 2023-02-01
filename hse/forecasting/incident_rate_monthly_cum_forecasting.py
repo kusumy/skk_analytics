@@ -162,7 +162,7 @@ def main():
     exog_forecast_start_date = (last_index_datetime + relativedelta(months=1)).strftime('%Y-%m-01')
     
     #Create End Date Forecasting
-    exog_forecast_end_date = (last_index_datetime + relativedelta(months=12)).strftime('%Y-%m-01')
+    exog_forecast_end_date = (last_index_datetime + relativedelta(months=24)).strftime('%Y-%m-01')
     
     query_exog = os.path.join('hse/sql','query_month_cum3.sql')
     query_2 = open(query_exog, mode="rt").read()
@@ -325,7 +325,7 @@ def main():
         linreg_strategy = "recursive"
 
         # create regressor object
-        linreg_regressor = LinearRegression(normalize=linreg_normalize)
+        linreg_regressor = LinearRegression()
         linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
         logMessage("Creating Linear Regression Model ...")
         linreg_forecaster.fit(train_df, X=train_exog) #, X=train_exog

@@ -276,24 +276,7 @@ def main():
 
     #Select column target
     train_df = df_cleaned['feed_gas']
-
-    #%%
-    #stationarity_check(train_df)
-
-    #%%
-    #decomposition_plot(train_df)
-
-    #%%
-    #plot_acf_pacf(train_df)
-
-    #%%
-    #from chart_studio.plotly import plot_mpl
-    #from statsmodels.tsa.seasonal import seasonal_decompose
-    #result = seasonal_decompose(train_df.values, model="additive", period=365)
-    #fig = result.plot()
-    #plt.show()
-    #plt.close()
-    
+   
     #%%
     #Ad Fuller Test
     #ad_test(train_df)
@@ -350,16 +333,6 @@ def main():
 
     #Create forecasting horizon
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
-    fh_train = ForecastingHorizon(train_df.index, is_relative=False)
-
-    #Plotting for illustration
-    # fig1, ax = plt.subplots(figsize=(20,8))
-    # ax.plot(train_df, label='train')
-    # ax.set_ylabel("Feed Gas")
-    # ax.set_xlabel("Datestamp")
-    # ax.legend(loc='best')
-    # plt.close()
-
 
     #%%
     try:
