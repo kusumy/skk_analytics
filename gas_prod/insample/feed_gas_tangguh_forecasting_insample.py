@@ -539,28 +539,28 @@ def main():
     sarimax_stepwise = True
     
     #sarimax_model = auto_arima(y=y_train_cleaned.feed_gas, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
-    sarimax_model = AutoARIMA(start_p = 0, max_p = 3, d=sarimax_differencing, max_q = 2, max_P = 2, max_Q = 2, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp,
-                              trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+#    sarimax_model = AutoARIMA(start_p = 0, max_p = 3, d=sarimax_differencing, max_q = 2, max_P = 2, max_Q = 2, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp,
+#                              trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     #sarimax_model = ARIMA(order=(2, 0, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
-    logMessage("Creating SARIMAX Model ...") 
-    sarimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
-    logMessage("SARIMAX Model Summary")
-    logMessage(sarimax_model.summary())
+#    logMessage("Creating SARIMAX Model ...") 
+#    sarimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
+#    logMessage("SARIMAX Model Summary")
+#    logMessage(sarimax_model.summary())
     
-    logMessage("SARIMAX Model Prediction ..")
-    sarimax_forecast = sarimax_model.predict(fh, X=X_test[exogenous_features]) #len(fh)
-    y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
+#    logMessage("SARIMAX Model Prediction ..")
+#    sarimax_forecast = sarimax_model.predict(fh, X=X_test[exogenous_features]) #len(fh)
+#    y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    sarimax_mape = mean_absolute_percentage_error(y_test_cleaned.feed_gas, sarimax_forecast)
-    sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
-    logMessage("SARIMAX Model "+sarimax_mape_str)
+#    sarimax_mape = mean_absolute_percentage_error(y_test_cleaned.feed_gas, sarimax_forecast)
+#    sarimax_mape_str = str('MAPE: %.4f' % sarimax_mape)
+#    logMessage("SARIMAX Model "+sarimax_mape_str)
     
     #Get parameters
-    sarimax_param_order = sarimax_model.get_fitted_params()['order']
-    sarimax_param_order_seasonal = sarimax_model.get_fitted_params()['seasonal_order']
-    sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
-    logMessage("Sarimax Model Parameters "+sarimax_param)
+#    sarimax_param_order = sarimax_model.get_fitted_params()['order']
+#    sarimax_param_order_seasonal = sarimax_model.get_fitted_params()['seasonal_order']
+#    sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
+#    logMessage("Sarimax Model Parameters "+sarimax_param)
     
 
     ##### PROPHET MODEL (forecast_c) #####
@@ -767,7 +767,7 @@ def main():
     poly3_interactions = False
     poly3_strategy = "recursive"
 
-    poly3_forecaster_param_grid = {"window_length": [1]}
+    poly3_forecaster_param_grid = {"window_length": [0.8]}
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
     poly3_forecaster = make_reduction(poly3_regressor, strategy=poly3_strategy)
 
@@ -775,7 +775,7 @@ def main():
     gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, n_jobs=-1, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    gscv_poly3.fit(y_train_cleaned) #, X=X_train
+    gscv_poly3.fit(y_train_cleaned, X=X_train) #, X=X_train
     
     # Show top 10 best models based on scoring function
     gscv_poly3.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
@@ -787,7 +787,7 @@ def main():
     logMessage("Best Polynomial Regression Degree=3 Models "+poly3_best_params_str)
     
     logMessage("Polynomial Regression Degree=3 Model Prediction ...")
-    poly3_forecast = gscv_poly3.best_forecaster_.predict(fh) #, X=X_test
+    poly3_forecast = gscv_poly3.best_forecaster_.predict(fh, X=X_test) #, X=X_test
     y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
@@ -799,7 +799,7 @@ def main():
     #CREATE DATAFRAME MAPE
     logMessage("Creating all model mape result data frame ...")
     all_mape_pred =  {'mape_forecast_a': [arimax_mape],
-                'mape_forecast_b': [sarimax_mape],
+#                'mape_forecast_b': [sarimax_mape],
                 'mape_forecast_c': [prophet_mape],
                 'mape_forecast_d': [ranfor_mape],
                 'mape_forecast_e': [xgb_mape],
@@ -814,7 +814,7 @@ def main():
     #CREATE PARAMETERS TO DATAFRAME
     logMessage("Creating all model params result data frame ...")
     all_model_param =  {'model_param_a': [arimax_param],
-                        'model_param_b': [sarimax_param],
+#                        'model_param_b': [sarimax_param],
                         'model_param_c': [prophet_best_params_str],
                         'model_param_d': [ranfor_best_params_str],
                         'model_param_e': [xgb_best_params_str],

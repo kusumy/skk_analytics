@@ -1,4 +1,6 @@
-select year_num, month_num,
+select * from
+(
+select year_num, month_num, to_date(year_num || '-' || month_num || '-01', 'YYYY-MM-DD') AS datestamp,
 max(survei_seismic) as survei_seismic,
 max(survei_seismic_cum) as survei_seismic_cum,
 max(drilling_explor) as drilling_explor,
@@ -43,6 +45,7 @@ select year_num, month_num, sum(rencana_bulanan_wp_b) as wellservice
 from drilling_ps_perbln dpp group by year_num, month_num
 ) ps on survei.year_num = ps.year_num and survei.month_num = ps.month_num
 ) drilling
-WHERE year_num between '{}' and '{}' and month_num BETWEEN '{}' and '{}'
 group by year_num, month_num
-order by year_num, month_num
+) as a
+where a.datestamp between '{}' and '{}'
+order by a.year_num, a.month_num

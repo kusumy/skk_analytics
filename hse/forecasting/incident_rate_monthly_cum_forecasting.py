@@ -50,10 +50,28 @@ def main():
     section = config['config']
     
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
+    
     TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_START_MONTH = section.getint('train_start_month')
+    TRAIN_START_DAY = 1
+    
     TRAIN_END_YEAR= section.getint('train_end_year')
+    TRAIN_END_MONTH = section.getint('train_end_month')
+    TRAIN_END_DAY = 1
+    
     FORECAST_START_YEAR= section.getint('forecast_start_year')
+    FORECAST_START_MONTH = section.getint('forecast_start_month')
+    FORECAST_START_DAY = 1
+    
     FORECAST_END_YEAR= section.getint('forecast_end_year')
+    FORECAST_END_MONTH = section.getint('forecast_end_month')
+    FORECAST_END_DAY = 1
+    
+    TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
+    TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
+    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
+    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
+    
     # Configure logging
     #configLogging("incident_rate_trir.log")
     
@@ -67,29 +85,23 @@ def main():
         
     # Load Data from Database
     from datetime import datetime
-    current_year_month = datetime.now().strftime("%Y-%m")
+    current_year_month = datetime.now().strftime("%Y-%m-01")
     current_year = datetime.now().year
     query_data = os.path.join('hse/sql', 'query_month_cum.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
-        sql = query_1.format('2013', current_year)
+        sql = query_1.format('2013-01-01', current_year_month)
     else :
-        sql = query_1.format(TRAIN_START_YEAR, TRAIN_END_YEAR)
+        sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
 
     #print(sql)    
     
     data = get_sql_data(sql, conn)
-    #data = retrieve_data(query_1, section='postgresql_ml_hse')
     data['year_num'] = data['year_num'].astype(int)
     data['month_num'] = data['month_num'].astype(int)
     data['date'] = data['year_num'].astype(str) + '-' + data['month_num'].astype(str)
     
-    #%%
-    import datetime
-    today = datetime.date.today()
-    first = today.replace(day=1)
-    last_month = (first - datetime.timedelta(days=1)).strftime("%Y-%m")
 
     #%%
     # Prepare data
@@ -137,9 +149,32 @@ def main():
 
     #%%
     #import exogenous for predict
-    query_exog = open(os.path.join('hse/sql', 'query_month_cum3.sql'), mode="rt").read()
-    data2 = get_sql_data(query_exog, conn)
-    #data2 = retrieve_data(query_2, section='postgresql_ml_hse')
+    from datetime import timedelta
+    from dateutil.relativedelta import relativedelta
+    
+    # Convert the Period object to a Timestamp object
+    last_index_timestamp = train_df.index[-1].to_timestamp()
+
+    # Convert Timestamp object to datetime
+    last_index_datetime = pd.to_datetime(last_index_timestamp)
+
+    #Create Start Date Forecasting
+    exog_forecast_start_date = (last_index_datetime + relativedelta(months=1)).strftime('%Y-%m-01')
+    
+    #Create End Date Forecasting
+    exog_forecast_end_date = (last_index_datetime + relativedelta(months=12)).strftime('%Y-%m-01')
+    
+    query_exog = os.path.join('hse/sql','query_month_cum3.sql')
+    query_2 = open(query_exog, mode="rt").read()
+    sql2 = ''
+    if USE_DEFAULT_DATE == True:
+        sql2 = query_2.format(exog_forecast_start_date, exog_forecast_end_date)
+    else :
+        sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
+        
+    #print(sql2)
+    
+    data2 = get_sql_data(sql2, conn)
     data2['year_num'] = data2['year_num'].astype(int)
     data2['month_num'] = data2['month_num'].astype(int)
     data2['date'] = data2['year_num'].astype(str) + '-' + data2['month_num'].astype(str)
@@ -151,10 +186,7 @@ def main():
                     'wellservice_cum', 'survei_seismic_cum']].copy()
     future_exog = future_exog.set_index(future_exog['date'])
     future_exog.index = pd.PeriodIndex(future_exog.index, freq='M')
-    #future_exog.sort_index(inplace=True)
     future_exog.drop(['date'], axis=1, inplace=True)
-    horizon = len(future_exog) - len(train_df)
-    future_exog = future_exog.iloc[-horizon:]
     future_exog['bulan'] = [i.month for i in future_exog.index]
     
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
