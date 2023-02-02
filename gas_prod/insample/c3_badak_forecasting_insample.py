@@ -1,6 +1,6 @@
 ###### LPG C3 PT BADAK FORECASTING INSAMPLE ######
 # This python script is used to perform forecasting on testing data from each method.
-# Data source from the SKK Migas (188.166.239.112) database in the lng_lpg_c3_daily table.
+# Data source from the SKK Migas (10.6.7.74) database in the lng_lpg_c3_daily table.
 
 ##### METHODS FOR TIME SERIES FORECASTING #####
 # There are many methods that we can use for this forecasting, such as ARIMAX, SARIMAX, PROPHET, RANDOM FOREST, XGBOOST, LINEAR REGRESSION, POLYNOMIAL REGRESSION DEGREE 2, POLYNOMIAL REGRESSION DEGREE 3.
@@ -39,7 +39,7 @@
 # The output for this script is best parameter and error value of each forecasting method. Which is best parameter and error value will be save in database table.
 
 ##### HOW TO USE THIS SCRIPT #####
-# We can run this script using command prompt (directory same with this python script). But in this case, we can run this script using main_lng.py.
+# We can run this script using command prompt (directory same with this python script). But in this case, we can run this script using main_lng_insample.py.
 # For example : We will run this script only, we can comment (#) script main_lng_insample.py on other script .py (example: feed_gas_tangguh_forecasting_insample.py etc.)
 
 
@@ -107,6 +107,8 @@ from xgboost import XGBRegressor
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
+warnings.filterwarnings("ignore", category=UserWarning, message="Non-invertible starting MA parameters found.")
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
@@ -120,32 +122,52 @@ def main():
     from polyfit import PolynomRegressor
     import datetime
     
+    # Connect to configuration file
     config = ConfigParser()
     config.read('config_lng.ini')
-    section = config['config']
+    
+    # Accessing sections
+    section_1 = config['config']
+    
+    # Get values from configuration
+    USE_DEFAULT_DATE = section_1.getboolean('use_default_date')
 
-    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+    TRAIN_START_YEAR= section_1.getint('train_start_year')
+    TRAIN_START_MONTH = section_1.getint('train_start_month')
+    TRAIN_START_DAY = section_1.getint('train_start_day')
 
-    TRAIN_START_YEAR= section.getint('train_start_year')
-    TRAIN_START_MONTH = section.getint('train_start_month')
-    TRAIN_START_DAY = section.getint('train_start_day')
+    TRAIN_END_YEAR= section_1.getint('train_end_year')
+    TRAIN_END_MONTH = section_1.getint('train_end_month')
+    TRAIN_END_DAY = section_1.getint('train_end_day')
 
-    TRAIN_END_YEAR= section.getint('train_end_year')
-    TRAIN_END_MONTH = section.getint('train_end_month')
-    TRAIN_END_DAY = section.getint('train_end_day')
+    FORECAST_START_YEAR= section_1.getint('forecast_start_year')
+    FORECAST_START_MONTH = section_1.getint('forecast_start_month')
+    FORECAST_START_DAY = section_1.getint('forecast_start_day')
 
-    FORECAST_START_YEAR= section.getint('forecast_start_year')
-    FORECAST_START_MONTH = section.getint('forecast_start_month')
-    FORECAST_START_DAY = section.getint('forecast_start_day')
-
-    FORECAST_END_YEAR= section.getint('forecast_end_year')
-    FORECAST_END_MONTH = section.getint('forecast_end_month')
-    FORECAST_END_DAY = section.getint('forecast_end_day')
+    FORECAST_END_YEAR= section_1.getint('forecast_end_year')
+    FORECAST_END_MONTH = section_1.getint('forecast_end_month')
+    FORECAST_END_DAY = section_1.getint('forecast_end_day')
 
     TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
     TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
     FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
     FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
+    
+    # Accessing sections
+    section_2 = config['config_sarimax']
+    
+    # Get values from sarimax configuration
+    start_p = section_2.getint('START_P')
+    max_p = section_2.getint('MAX_P')
+    
+    start_q = section_2.getint('START_Q')
+    max_q= section_2.getint('MAX_Q')
+    
+    start_P = section_2.getint('START_P_SEASONAL')
+    max_P = section_2.getint('MAX_P_SEASONAL')
+    
+    start_Q = section_2.getint('START_Q_SEASONAL')
+    max_Q = section_2.getint('MAX_Q_SEASONAL')
    
     # Connect to database
     # Exit program if not connected to database
@@ -348,7 +370,9 @@ def main():
     sarimax_n_fits = 50
 
     # Create SARIMA Model
-    sarimax_model = AutoARIMA(start_p = 0, max_p = 3, d=sarimax_differencing, max_q = 2, max_P = 2, max_Q = 2, D=sarimax_seasonal_differencing, sp=sarimax_m, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
+    sarimax_model = AutoARIMA(start_p = start_p, max_p = max_p, start_q = start_q, max_q = max_q, d=sarimax_differencing, 
+                              start_P = start_P, max_P = max_P, start_Q = start_Q, max_Q = max_Q, D=sarimax_seasonal_differencing, sp=sarimax_m, 
+                              trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
     sarimax_model.fit(y_train.lpg_c3, X=X_train) #, X=X_train
     logMessage("SARIMAX Model Summary")

@@ -1,6 +1,6 @@
 ###### FEED GAS BP TANGGUH FORECASTING INSAMPLE ######
 # This python script is used to perform forecasting on testing data from each method.
-# Data source from the SKK Migas (10.6.7.74) database in the lng_feed_gas_daily table with lng_plant = 'PT Badak'.
+# Data source from the SKK Migas (10.6.7.74) database in the lng_feed_gas_daily table with lng_plant = 'BP Tangguh'.
 
 ##### METHODS FOR TIME SERIES FORECASTING #####
 # There are many methods that we can use for this forecasting, such as ARIMAX, SARIMAX, PROPHET, RANDOM FOREST, XGBOOST, LINEAR REGRESSION, POLYNOMIAL REGRESSION DEGREE 2, POLYNOMIAL REGRESSION DEGREE 3.
@@ -12,7 +12,7 @@
 # 4. Data Preprocessing (Replace null values in column feed_gas with mean 1 year before, replace feed_gas values with unplanned shutdown case using mean 1 year before).
 # 5. Split data after cleaning process to train and test.
 # 6. Define the Forecasting Horizon. In this case, length for horizon is 365 data or 365 days.
-# 7. Create exogenous variables to support the forecasting process. In this case, we use the data of month and day index and fg_exog data.
+# 7. Create exogenous variables to support the forecasting process. In this case, we use the data of month and day index, planned_shutdown and wpnb_gas data.
 # 8. Split exogenous data to train and test. Train test proportion is same with train test data.
 # 9. Forecasting process using 8 methods (Arimax, Sarimax, Prophet, Random Forest, XGBoost, Linear Regression, Polynomial Regression Degree=2, Polynomial Regression Degree=3).
 # 10. For each methods, there are several steps :
@@ -39,7 +39,7 @@
 # The output for this script is best parameter and error value of each forecasting method. Which is best parameter and error value will be save in database table.
 
 ##### HOW TO USE THIS SCRIPT #####
-# We can run this script using command prompt (directory same with this python script). But in this case, we can run this script using main_lng.py.
+# We can run this script using command prompt (directory same with this python script). But in this case, we can run this script using main_lng_insample.py.
 # For example : We will run this script only, we can comment (#) script main_lng_insample.py on other script .py (example: feed_gas_tangguh_forecasting_insample.py etc.)
 
 
@@ -110,6 +110,8 @@ from xgboost import XGBRegressor
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
+warnings.filterwarnings("ignore", category=UserWarning, message="Non-invertible starting MA parameters found.")
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
@@ -123,35 +125,54 @@ def main():
     from polyfit import PolynomRegressor
     import datetime
     
+    # Connect to configuration file
     config = ConfigParser()
     config.read('config_lng.ini')
-    section = config['config']
+    
+    # Accessing sections
+    section_1 = config['config']
+    
+    # Get values from configuration
+    USE_DEFAULT_DATE = section_1.getboolean('use_default_date')
 
-    USE_DEFAULT_DATE = section.getboolean('use_default_date')
+    TRAIN_START_YEAR= section_1.getint('train_start_year')
+    TRAIN_START_MONTH = section_1.getint('train_start_month')
+    TRAIN_START_DAY = section_1.getint('train_start_day')
 
-    TRAIN_START_YEAR= section.getint('train_start_year')
-    TRAIN_START_MONTH = section.getint('train_start_month')
-    TRAIN_START_DAY = section.getint('train_start_day')
+    TRAIN_END_YEAR= section_1.getint('train_end_year')
+    TRAIN_END_MONTH = section_1.getint('train_end_month')
+    TRAIN_END_DAY = section_1.getint('train_end_day')
 
-    TRAIN_END_YEAR= section.getint('train_end_year')
-    TRAIN_END_MONTH = section.getint('train_end_month')
-    TRAIN_END_DAY = section.getint('train_end_day')
+    FORECAST_START_YEAR= section_1.getint('forecast_start_year')
+    FORECAST_START_MONTH = section_1.getint('forecast_start_month')
+    FORECAST_START_DAY = section_1.getint('forecast_start_day')
 
-    FORECAST_START_YEAR= section.getint('forecast_start_year')
-    FORECAST_START_MONTH = section.getint('forecast_start_month')
-    FORECAST_START_DAY = section.getint('forecast_start_day')
-
-    FORECAST_END_YEAR= section.getint('forecast_end_year')
-    FORECAST_END_MONTH = section.getint('forecast_end_month')
-    FORECAST_END_DAY = section.getint('forecast_end_day')
+    FORECAST_END_YEAR= section_1.getint('forecast_end_year')
+    FORECAST_END_MONTH = section_1.getint('forecast_end_month')
+    FORECAST_END_DAY = section_1.getint('forecast_end_day')
 
     TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
     TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
     FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
     FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
+    
+    # Accessing sections
+    section_2 = config['config_sarimax']
+    
+    # Get values from sarimax configuration
+    start_p = section_2.getint('START_P')
+    max_p = section_2.getint('MAX_P')
+    
+    start_q = section_2.getint('START_Q')
+    max_q= section_2.getint('MAX_Q')
+    
+    start_P = section_2.getint('START_P_SEASONAL')
+    max_P = section_2.getint('MAX_P_SEASONAL')
+    
+    start_Q = section_2.getint('START_Q_SEASONAL')
+    max_Q = section_2.getint('MAX_Q_SEASONAL')
 
     # Configure logging
-    #configLogging("feed_gas_tangguh.log")
     logMessage("Creating Feed Gas BP Tangguh Model ...")
     
     # Connect to database
@@ -227,10 +248,6 @@ def main():
     anomalies = anomalies.drop('planned_shutdown', axis=1)
 
     #%%
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
-
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
@@ -240,7 +257,6 @@ def main():
 
     # Get only anomalies data
     anomalies_data = new_s[new_s['anomaly'].isnull()]
-    #anomalies_data.tail(100)
 
     #%%
     # Plot data and its anomalies
@@ -523,7 +539,6 @@ def main():
     sarimax_differencing = 0
     sarimax_seasonal_differencing = 1
     sarimax_sp = 12
-    sarimax_stationary = False
     sarimax_seasonal = True
     sarimax_trace = True
     sarimax_error_action = "ignore"
@@ -532,9 +547,9 @@ def main():
     sarimax_stepwise = True
     
     #sarimax_model = auto_arima(y=y_train_cleaned.feed_gas, X=X_train[exogenous_features], d=0, D=1, seasonal=True, m=12, trace=True, error_action="ignore", suppress_warnings=True)
-    sarimax_model = AutoARIMA(start_p = 0, max_p = 3, d=sarimax_differencing, max_q = 2, max_P = 2, max_Q = 2, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp,
+    sarimax_model = AutoARIMA(start_p = start_p, max_p = max_p, start_q = start_q, max_q = max_q, d=sarimax_differencing, 
+                              start_P = start_P, max_P = max_P, start_Q = start_Q, max_Q = max_Q, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp,
                               trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
-    #sarimax_model = ARIMA(order=(2, 0, 0), seasonal_order=(2, 1, 0, 12), suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...") 
     sarimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
     logMessage("SARIMAX Model Summary")
