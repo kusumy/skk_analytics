@@ -140,18 +140,8 @@ def main():
     TRAIN_END_MONTH = section_1.getint('train_end_month')
     TRAIN_END_DAY = section_1.getint('train_end_day')
 
-    FORECAST_START_YEAR= section_1.getint('forecast_start_year')
-    FORECAST_START_MONTH = section_1.getint('forecast_start_month')
-    FORECAST_START_DAY = section_1.getint('forecast_start_day')
-
-    FORECAST_END_YEAR= section_1.getint('forecast_end_year')
-    FORECAST_END_MONTH = section_1.getint('forecast_end_month')
-    FORECAST_END_DAY = section_1.getint('forecast_end_day')
-
     TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
     TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
-    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
-    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
     
     # Accessing sections
     section_2 = config['config_sarimax']
@@ -263,18 +253,6 @@ def main():
 
     #%%
     df_cleaned = new_s[['lpg_c3']].copy()
-    #df_cleaned = df_cleaned.reset_index()
-    #df_cleaned['date'] = pd.to_datetime(df_cleaned.date)
-    #df_cleaned.index = pd.DatetimeIndex(df_cleaned.date)
-
-    #ds_cleaned = 'date'
-    #y_cleaned = 'lpg_c3'
-    #df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
-    #df_cleaned = df_cleaned.set_index(ds_cleaned)
-    #df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
-    #df_cleaned
-    #Select column target
-    #train_df = data_cleaned['lpg_c3']
 
     #%%
     #stationarity_check(train_df)
@@ -284,13 +262,6 @@ def main():
 
     #%%
     #plot_acf_pacf(train_df)
-
-    #%%
-    #from chart_studio.plotly import plot_mpl
-    #from statsmodels.tsa.seasonal import seasonal_decompose
-    #result = seasonal_decompose(df_cleaned['lpg_c3'], model="additive", period=365)
-    #fig = result.plot()
-    #plt.close()
 
     #%%
     logMessage("AD-Fuller testing ...")
@@ -344,7 +315,6 @@ def main():
 
     logMessage("SARIMAX Model Prediction ..")
     sarimax_forecast = sarimax_model.predict(fh, X=X_test) #, X=X_test
-    y_pred_sarimax = pd.DataFrame(sarimax_forecast).applymap('{:.2f}'.format)
 
     # Calculate model performance
     sarimax_mape = mean_absolute_percentage_error(y_test.lpg_c3, sarimax_forecast)
@@ -380,7 +350,6 @@ def main():
 
     logMessage("ARIMAX Model Prediction ..")
     arimax_forecast = arimax_model.predict(fh, X=X_test) #, X=X_test
-    y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
 
     # Calculate model performance
     arimax_mape = mean_absolute_percentage_error(y_test.lpg_c3, arimax_forecast)
@@ -417,9 +386,6 @@ def main():
     logMessage("Creating Prophet Model ...")
     gscv_prophet.fit(y_train.lpg_c3, X_train) #, X_train
 
-    # Show top 10 best models based on scoring function
-    gscv_prophet.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
-
     # Show best model parameters
     logMessage("Show Best Prophet Models ...")
     prophet_best_params = gscv_prophet.best_params_
@@ -428,7 +394,6 @@ def main():
 
     logMessage("Prophet Model Prediction ...")
     prophet_forecast = gscv_prophet.best_forecaster_.predict(fh, X=X_test)#, X=X_test
-    y_pred_prophet = pd.DataFrame(prophet_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
     prophet_mape = mean_absolute_percentage_error(y_test.lpg_c3, prophet_forecast)
@@ -467,9 +432,6 @@ def main():
     logMessage("Creating Random Forest Model ...")
     gscv_ranfor.fit(y_train.lpg_c3, X_train) #, X_train
 
-    # Show top 10 best models based on scoring function
-    gscv_ranfor.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
-
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")
     ranfor_best_params = gscv_ranfor.best_params_
@@ -478,10 +440,9 @@ def main():
     
     logMessage("Random Forest Model Prediction ...")
     ranfor_forecast = gscv_ranfor.best_forecaster_.predict(fh, X=X_test) #, X=X_test
-    y_pred_ranfor = pd.DataFrame(ranfor_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    ranfor_mape = mean_absolute_percentage_error(y_test['lpg_c3'], y_pred_ranfor)
+    ranfor_mape = mean_absolute_percentage_error(y_test['lpg_c3'], ranfor_forecast)
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
     
@@ -507,9 +468,6 @@ def main():
     logMessage("Creating XGBoost Model ....")
     gscv_xgb.fit(y_train.lpg_c3, X=X_train) #, X_train
 
-    # Show top 10 best models based on scoring function
-    gscv_xgb.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
-
     # Show best model parameters
     logMessage("Show Best XGBoost Models ...")
     xgb_best_params = gscv_xgb.best_params_
@@ -518,10 +476,9 @@ def main():
     
     logMessage("XGBoost Model Prediction ...")
     xgb_forecast = gscv_xgb.best_forecaster_.predict(fh, X=X_test) #, X=X_test
-    y_pred_xgb = pd.DataFrame(xgb_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    xgb_mape = mean_absolute_percentage_error(y_test['lpg_c3'], y_pred_xgb)
+    xgb_mape = mean_absolute_percentage_error(y_test['lpg_c3'], xgb_forecast)
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
 
@@ -543,9 +500,6 @@ def main():
 
     logMessage("Creating Linear Regression Model ...")
     gscv_linreg.fit(y_train.lpg_c3, X=X_train) #, X=X_train
-    
-    # Show top 10 best models based on scoring function
-    gscv_linreg.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
 
     # Show best model parameters
     logMessage("Show Best Linear Regression Models ...")
@@ -555,10 +509,9 @@ def main():
     
     logMessage("Linear Regression Model Prediction ...")
     linreg_forecast = gscv_linreg.best_forecaster_.predict(fh, X=X_test) #, X=X_test
-    y_pred_linreg = pd.DataFrame(linreg_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    linreg_mape = mean_absolute_percentage_error(y_test['lpg_c3'], y_pred_linreg)
+    linreg_mape = mean_absolute_percentage_error(y_test['lpg_c3'], linreg_forecast)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
 
@@ -581,9 +534,6 @@ def main():
 
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
     gscv_poly2.fit(y_train.lpg_c3, X=X_train) #, X=X_train
-    
-    # Show top 10 best models based on scoring function
-    gscv_poly2.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=2 Models ...")
@@ -593,10 +543,9 @@ def main():
     
     logMessage("Polynomial Regression Degree=2 Model Prediction ...")
     poly2_forecast = gscv_poly2.best_forecaster_.predict(fh, X=X_test) #, X=X_test
-    y_pred_poly2 = pd.DataFrame(poly2_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    poly2_mape = mean_absolute_percentage_error(y_test['lpg_c3'], y_pred_poly2)
+    poly2_mape = mean_absolute_percentage_error(y_test['lpg_c3'], poly2_forecast)
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Degree=2 Model "+poly2_mape_str)
 
@@ -619,9 +568,6 @@ def main():
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
     gscv_poly3.fit(y_train.lpg_c3) #, X=X_train
-    
-    # Show top 10 best models based on scoring function
-    gscv_poly3.cv_results_.sort_values(by='rank_test_MeanAbsolutePercentageError', ascending=True)
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=3 Models ...")
@@ -631,10 +577,9 @@ def main():
     
     logMessage("Polynomial Regression Degree=3 Model Prediction ...")
     poly3_forecast = gscv_poly3.best_forecaster_.predict(fh) #, X=X_test
-    y_pred_poly3 = pd.DataFrame(poly3_forecast).applymap('{:.2f}'.format)
 
     #Create MAPE
-    poly3_mape = mean_absolute_percentage_error(y_test['lpg_c3'], y_pred_poly3)
+    poly3_mape = mean_absolute_percentage_error(y_test['lpg_c3'], poly3_forecast)
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Degree=3 Model "+poly3_mape_str)
 
@@ -670,7 +615,6 @@ def main():
                         'product' : 'LPG C3'}
 
     all_model_param = pd.DataFrame(all_model_param)
-    all_model_param
 
 #%%    
     # Save mape result to database
