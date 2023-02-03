@@ -382,37 +382,6 @@ def main():
 
     ##### FORECASTING #####
     #%%
-    ##### ARIMAX MODEL #####
-    logMessage("Creating Arimax Model Forecasting Insample LNG Production PT Badak ...")
-    #Set parameters
-    arimax_differencing = 1
-    arimax_stationary = False
-    arimax_trace = True
-    arimax_error_action = "ignore"
-    arimax_suppress_warnings = True
-
-    # Create ARIMA Model
-    arimax_model = AutoARIMA(d=arimax_differencing, suppress_warnings=arimax_suppress_warnings, error_action=arimax_error_action, trace=arimax_trace, stationary=arimax_stationary) #If using SKTime AutoArima
-    logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(y_train.lng_production, X=X_train[exogenous_features])
-    logMessage("ARIMAX Model Summary")
-    logMessage(arimax_model.summary())
-    
-    logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(fh, X=X_test[exogenous_features]) #n_periods=len(fh)
-    y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
-
-    #Create MAPE
-    arimax_mape = mean_absolute_percentage_error(y_test.lng_production, arimax_forecast)
-    arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
-    logMessage("ARIMAX Model "+arimax_mape_str)
-
-    #Get parameter
-    arimax_param = str(arimax_model.get_fitted_params()['order'])
-    logMessage("Arimax Model Parameters "+arimax_param)
-
-
-    #%%
     ##### SARIMAX MODEL #####
     logMessage("Creating Sarimax Model Forecasting Insample LNG Production PT Badak ...")
     #Set parameters
@@ -448,6 +417,37 @@ def main():
     sarimax_param_order_seasonal = sarimax_model.get_fitted_params()['seasonal_order']
     sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
     logMessage("Sarimax Model Parameters "+sarimax_param)
+
+    
+    #%%
+    ##### ARIMAX MODEL #####
+    logMessage("Creating Arimax Model Forecasting Insample LNG Production PT Badak ...")
+    #Set parameters
+    arimax_differencing = 1
+    arimax_stationary = False
+    arimax_trace = True
+    arimax_error_action = "ignore"
+    arimax_suppress_warnings = True
+
+    # Create ARIMA Model
+    arimax_model = AutoARIMA(d=arimax_differencing, suppress_warnings=arimax_suppress_warnings, error_action=arimax_error_action, trace=arimax_trace, stationary=arimax_stationary) #If using SKTime AutoArima
+    logMessage("Creating ARIMAX Model ...")
+    arimax_model.fit(y_train.lng_production, X=X_train[exogenous_features])
+    logMessage("ARIMAX Model Summary")
+    logMessage(arimax_model.summary())
+    
+    logMessage("ARIMAX Model Prediction ..")
+    arimax_forecast = arimax_model.predict(fh, X=X_test[exogenous_features]) #n_periods=len(fh)
+    y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
+
+    #Create MAPE
+    arimax_mape = mean_absolute_percentage_error(y_test.lng_production, arimax_forecast)
+    arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
+    logMessage("ARIMAX Model "+arimax_mape_str)
+
+    #Get parameter
+    arimax_param = str(arimax_model.get_fitted_params()['order'])
+    logMessage("Arimax Model Parameters "+arimax_param)
 
 
     #%%

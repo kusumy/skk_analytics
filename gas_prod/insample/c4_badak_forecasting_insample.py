@@ -298,40 +298,6 @@ def main():
     # %%
     ##### FORECASTING #####
 
-    ##### ARIMAX MODEL #####
-    logMessage("Creating Arimax Model Forecasting Insample LPG C4 PT Badak ...")
-    #Set parameters
-    arimax_differencing = 1
-    arimax_trace = True
-    arimax_error_action = "ignore"
-    arimax_suppress_warnings = True
-    arimax_stepwise = True
-    arimax_parallel = True
-    arimax_n_fits = 50
-
-    # Create ARIMAX Model
-    arimax_model = AutoARIMA(d=arimax_differencing, trace=arimax_trace, n_fits=arimax_n_fits, stepwise=arimax_stepwise, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
-    
-    logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(y_train.lpg_c4, X=X_train) #, X=X_train
-    logMessage("ARIMAX Model Summary")
-    logMessage(arimax_model.summary())
-
-    logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(fh, X=X_test) #, X=X_test
-    y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
-
-    # Calculate model performance
-    arimax_mape = mean_absolute_percentage_error(y_test.lpg_c4, arimax_forecast)
-    arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
-    logMessage("ARIMAX Model "+arimax_mape_str)
-
-    #Get parameter
-    arimax_param = str(arimax_model.get_fitted_params()['order'])
-    logMessage("Arimax Model Parameters "+arimax_param)
-
-
-    #%%
     ##### SARIMAX MODEL #####
     logMessage("Creating Sarimax Model Forecasting Insample LPG C4 PT Badak ...")
     #Set parameters
@@ -369,6 +335,40 @@ def main():
     sarimax_param_order_seasonal = sarimax_model.get_fitted_params()['seasonal_order']
     sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
     logMessage("Sarimax Model Parameters "+sarimax_param)
+    
+    
+    ##### ARIMAX MODEL #####
+    logMessage("Creating Arimax Model Forecasting Insample LPG C4 PT Badak ...")
+    #Set parameters
+    arimax_differencing = 1
+    arimax_trace = True
+    arimax_error_action = "ignore"
+    arimax_suppress_warnings = True
+    arimax_stepwise = True
+    arimax_parallel = True
+    arimax_n_fits = 50
+
+    # Create ARIMAX Model
+    arimax_model = AutoARIMA(d=arimax_differencing, trace=arimax_trace, n_fits=arimax_n_fits, stepwise=arimax_stepwise, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
+    
+    logMessage("Creating ARIMAX Model ...")
+    arimax_model.fit(y_train.lpg_c4, X=X_train) #, X=X_train
+    logMessage("ARIMAX Model Summary")
+    logMessage(arimax_model.summary())
+
+    logMessage("ARIMAX Model Prediction ..")
+    arimax_forecast = arimax_model.predict(fh, X=X_test) #, X=X_test
+    y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
+
+    # Calculate model performance
+    arimax_mape = mean_absolute_percentage_error(y_test.lpg_c4, arimax_forecast)
+    arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
+    logMessage("ARIMAX Model "+arimax_mape_str)
+
+    #Get parameter
+    arimax_param = str(arimax_model.get_fitted_params()['order'])
+    logMessage("Arimax Model Parameters "+arimax_param)
+
 
     #%%
     ##### PROPHET MODEL #####

@@ -508,30 +508,6 @@ def main():
     
     
     ###### FORECASTING ######
-    ##### ARIMAX MODEL (forecast_a) #####
-    logMessage("Creating Arimax Model Forecasting Insample Feed Gas BP Tangguh ...")
-    # %%
-    # Create ARIMAX (forecast_a) Model
-    arimax_model = AutoARIMA(d=0, suppress_warnings=True, error_action='ignore')
-    logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
-    logMessage("ARIMAX Model Summary")
-    logMessage(arimax_model.summary())
-    
-    logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(fh, X=X_test[exogenous_features])
-    y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
-
-    #Create MAPE
-    arimax_mape = mean_absolute_percentage_error(y_test_cleaned.feed_gas, arimax_forecast)
-    arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
-    logMessage("ARIMAX Model "+arimax_mape_str)
-    
-    #Get parameter
-    arimax_param = str(arimax_model.get_fitted_params()['order'])
-    logMessage("Arimax Model Parameters "+arimax_param)
-
-
     ##### SARIMAX MODEL (forecast_b) #####
     logMessage("Creating Sarimax Model Forecasting Insample Feed Gas BP Tangguh ...")
     #%%
@@ -570,6 +546,30 @@ def main():
     sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
     logMessage("Sarimax Model Parameters "+sarimax_param)
     
+    
+    ##### ARIMAX MODEL (forecast_a) #####
+    logMessage("Creating Arimax Model Forecasting Insample Feed Gas BP Tangguh ...")
+    # %%
+    # Create ARIMAX (forecast_a) Model
+    arimax_model = AutoARIMA(d=0, suppress_warnings=True, error_action='ignore')
+    logMessage("Creating ARIMAX Model ...")
+    arimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
+    logMessage("ARIMAX Model Summary")
+    logMessage(arimax_model.summary())
+    
+    logMessage("ARIMAX Model Prediction ..")
+    arimax_forecast = arimax_model.predict(fh, X=X_test[exogenous_features])
+    y_pred_arimax = pd.DataFrame(arimax_forecast).applymap('{:.2f}'.format)
+
+    #Create MAPE
+    arimax_mape = mean_absolute_percentage_error(y_test_cleaned.feed_gas, arimax_forecast)
+    arimax_mape_str = str('MAPE: %.4f' % arimax_mape)
+    logMessage("ARIMAX Model "+arimax_mape_str)
+    
+    #Get parameter
+    arimax_param = str(arimax_model.get_fitted_params()['order'])
+    logMessage("Arimax Model Parameters "+arimax_param)
+      
 
     ##### PROPHET MODEL (forecast_c) #####
     logMessage("Creating Prophet Model Forecasting Insample Feed Gas BP Tangguh ...")
