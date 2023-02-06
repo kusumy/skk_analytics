@@ -291,6 +291,10 @@ def main():
     # Split into train and test
     X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
     exogenous_features = ["month", "day"]
+    
+    # Empty y_train and data
+    y_train = None
+    data = None
 
 
     #%%
@@ -305,7 +309,6 @@ def main():
     sarimax_trace = True
     sarimax_error_action = "ignore"
     sarimax_suppress_warnings = True
-    sarimax_random_state = 15
     sarimax_n_fits = 50
     sarimax_stepwise = True
 
@@ -314,13 +317,13 @@ def main():
                               start_P = start_P, max_P = max_P, start_Q = start_Q, max_Q = max_Q, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, 
                               trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
-    sarimax_model.fit(y_train_smoothed, X=X_train) #SKTIME
+    sarimax_fit = sarimax_model.fit(y_train_smoothed, X=X_train) #SKTIME
     logMessage("SARIMAX Model Summary")
-    logMessage(sarimax_model.summary())
+    logMessage(sarimax_fit.summary())
 
     logMessage("SARIMAX Model Prediction ..")
     #sarimax_forecast = sarimax_model.predict(len(fh), X=X_test[exogenous_features])
-    sarimax_forecast = sarimax_model.predict(fh, X=X_test) #SKTIME
+    sarimax_forecast = sarimax_fit.predict(fh, X=X_test) #SKTIME
 
     # Calculate model performance
     sarimax_mape = mean_absolute_percentage_error(y_test.condensate, sarimax_forecast)
@@ -328,11 +331,18 @@ def main():
     logMessage("SARIMAX Model "+sarimax_mape_str)
     
     #Get parameters
-    sarimax_param_order = sarimax_model.get_fitted_params()['order']
-    sarimax_param_order_seasonal = sarimax_model.get_fitted_params()['seasonal_order']
+    sarimax_param_order = sarimax_fit.get_fitted_params()['order']
+    sarimax_param_order_seasonal = sarimax_fit.get_fitted_params()['seasonal_order']
     sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
     logMessage("Sarimax Model Parameters "+sarimax_param)
 
+    # Empty the SARIMAX memory
+    sarimax_model = None
+    sarimax_forecast = None
+    sarimax_param_order = None
+    sarimax_param_order_seasonal = None
+    sarimax_fit = None
+    
     
     ##### ARIMAX MODEL #####
     logMessage("Creating Arimax Model Forecasting Insample Condensate PT Badak ...")
@@ -345,18 +355,17 @@ def main():
     arimax_n_fits = 50
     #arimax_method = 'basinhopping'
     arimax_stepwise = True
-    arimax_parallel = True
 
     # Create ARIMAX Model
     arimax_model = AutoARIMA(d=arimax_differencing, trace=arimax_trace, n_fits=arimax_n_fits, 
                                           stepwise=arimax_stepwise)
     logMessage("Creating ARIMAX Model ...")
-    arimax_model.fit(y_train_smoothed, X=X_train)
+    arimax_fit = arimax_model.fit(y_train_smoothed, X=X_train)
     logMessage("ARIMAX Model Summary")
-    logMessage(arimax_model.summary())
+    logMessage(arimax_fit.summary())
 
     logMessage("ARIMAX Model Prediction ..")
-    arimax_forecast = arimax_model.predict(fh, X=X_test)
+    arimax_forecast = arimax_fit.predict(fh, X=X_test)
 
     # Calculate model performance
     arimax_mape = mean_absolute_percentage_error(y_test.condensate, arimax_forecast)
@@ -364,8 +373,13 @@ def main():
     logMessage("ARIMAX Model "+arimax_mape_str)
     
     #Get parameter
-    arimax_param = str(arimax_model.get_fitted_params()['order'])
+    arimax_param = str(arimax_fit.get_fitted_params()['order'])
     logMessage("Arimax Model Parameters "+arimax_param)
+    
+    # Empty the SARIMAX memory
+    arimax_model = None
+    arimax_forecast = None
+    arimax_fit = None
     
 
     #%%
@@ -391,21 +405,28 @@ def main():
     gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating Prophet Model ...")
-    gscv_prophet.fit(y_train_smoothed, X_train) #, X_train
+    prophet_fit = gscv_prophet.fit(y_train_smoothed, X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Prophet Models ...")
-    prophet_best_params = gscv_prophet.best_params_
+    prophet_best_params = prophet_fit.best_params_
     prophet_best_params_str = str(prophet_best_params)
     logMessage("Best Prophet Models "+prophet_best_params_str)
 
     logMessage("Prophet Model Prediction ...")
-    prophet_forecast = gscv_prophet.best_forecaster_.predict(fh, X=X_test)#, X=X_test
+    prophet_forecast = prophet_fit.best_forecaster_.predict(fh, X=X_test)#, X=X_test
 
     #Create MAPE
     prophet_mape = mean_absolute_percentage_error(y_test['condensate'], prophet_forecast)
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
+    
+    # Empty the Prophet memory
+    prophet_param_grid = None
+    cv_prophet = None
+    gscv_prophet = None
+    prophet_forecast = None
+    prophet_fit = None
 
 
     #%%
@@ -429,21 +450,30 @@ def main():
     gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
-    gscv_ranfor.fit(y_train_smoothed, X_train) #, X_train
+    ranfor_fit = gscv_ranfor.fit(y_train_smoothed, X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")
-    ranfor_best_params = gscv_ranfor.best_params_
+    ranfor_best_params = ranfor_fit.best_params_
     ranfor_best_params_str = str(ranfor_best_params)
     logMessage("Best Random Forest Models "+ranfor_best_params_str)
     
     logMessage("Random Forest Model Prediction ...")
-    ranfor_forecast = gscv_ranfor.best_forecaster_.predict(fh, X=X_test) #, X=X_test
+    ranfor_forecast = ranfor_fit.best_forecaster_.predict(fh, X=X_test) #, X=X_test
 
     #Create MAPE
     ranfor_mape = mean_absolute_percentage_error(y_test['condensate'], ranfor_forecast)
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
+    
+    # Empty Random Forest Memory
+    ranfor_forecaster_param_grid = None
+    ranfor_regressor = None
+    ranfor_forecaster = None
+    cv_ranfor = None
+    gscv_ranfor = None
+    ranfor_forecast = None
+    ranfor_fit = None
 
 
     #%%
@@ -465,21 +495,30 @@ def main():
     gscv_xgb = ForecastingGridSearchCV(xgb_forecaster, cv=cv_xgb, param_grid=xgb_forecaster_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating XGBoost Model ....")
-    gscv_xgb.fit(y_train_smoothed, X=X_train) #, X_train
+    xgb_fit = gscv_xgb.fit(y_train_smoothed, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best XGBoost Models ...")
-    xgb_best_params = gscv_xgb.best_params_
+    xgb_best_params = xgb_fit.best_params_
     xgb_best_params_str = str(xgb_best_params)
     logMessage("Best XGBoost Models "+xgb_best_params_str)
     
     logMessage("XGBoost Model Prediction ...")
-    xgb_forecast = gscv_xgb.best_forecaster_.predict(fh, X=X_test) #, X=X_test
+    xgb_forecast = xgb_fit.best_forecaster_.predict(fh, X=X_test) #, X=X_test
 
     #Create MAPE
     xgb_mape = mean_absolute_percentage_error(y_test['condensate'], xgb_forecast)
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
+    
+    # Empty Random Forest Memory
+    xgb_forecaster_param_grid = None
+    xgb_regressor = None
+    xgb_forecaster = None
+    cv_xgb = None
+    gscv_xgb = None
+    xgb_forecast = None
+    xgb_fit = None
 
 
     #%%
@@ -498,21 +537,30 @@ def main():
     gscv_linreg = ForecastingGridSearchCV(linreg_forecaster, cv=cv_linreg, param_grid=linreg_forecaster_param_grid, n_jobs=-1, scoring=mape)
 
     logMessage("Creating Linear Regression Model ...")
-    gscv_linreg.fit(y_train_smoothed, X=X_train) #, X=X_train
+    linreg_fit = gscv_linreg.fit(y_train_smoothed, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Linear Regression Models ...")
-    linreg_best_params = gscv_linreg.best_params_
+    linreg_best_params = linreg_fit.best_params_
     linreg_best_params_str = str(linreg_best_params)
     logMessage("Best Linear Regression Models "+linreg_best_params_str)
     
     logMessage("Linear Regression Model Prediction ...")
-    linreg_forecast = gscv_linreg.best_forecaster_.predict(fh, X=X_test) #, X=X_test
+    linreg_forecast = linreg_fit.best_forecaster_.predict(fh, X=X_test) #, X=X_test
 
     #Create MAPE
     linreg_mape = mean_absolute_percentage_error(y_test['condensate'], linreg_forecast)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
+    
+    # Empty Linear Regression Memory
+    linreg_forecaster_param_grid = None
+    xgb_regressor = None
+    xgb_forecaster = None
+    cv_xgb = None
+    gscv_xgb = None
+    xgb_forecast = None
+    linreg_fit = None
 
 
     #%%
@@ -533,21 +581,31 @@ def main():
     gscv_poly2 = ForecastingGridSearchCV(poly2_forecaster, cv=cv_poly2, param_grid=poly2_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    gscv_poly2.fit(y_train_smoothed, X=X_train) #, X=X_train
+    poly2_fit = gscv_poly2.fit(y_train_smoothed, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=2 Models ...")
-    poly2_best_params = gscv_poly2.best_params_
+    poly2_best_params = poly2_fit.best_params_
     poly2_best_params_str = str(poly2_best_params)
     logMessage("Best Polynomial Regression Degree=2 Models "+poly2_best_params_str)
     
     logMessage("Polynomial Regression Degree=2 Model Prediction ...")
-    poly2_forecast = gscv_poly2.best_forecaster_.predict(fh, X=X_test) #, X=X_test
+    poly2_forecast = poly2_fit.best_forecaster_.predict(fh, X=X_test) #, X=X_test
 
     #Create MAPE
     poly2_mape = mean_absolute_percentage_error(y_test['condensate'], poly2_forecast)
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Degree=2 Model "+poly2_mape_str)
+    
+    # Empty Polynomial Regression Degree=2 Memory
+    poly2_forecaster_param_grid = None
+    poly2_regressor = None
+    poly2_forecaster = None
+    cv_poly2 = None
+    gscv_poly2 = None
+    poly2_forecast = None
+    poly2_fit = None  
+    
 
 
     #%%
