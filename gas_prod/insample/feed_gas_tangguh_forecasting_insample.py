@@ -459,7 +459,7 @@ def main():
 
     logMessage("Creating Window Splitter Prophet Model ....")   
     cv_prophet = SingleWindowSplitter(fh=fh_int)
-    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, n_jobs=-1, scoring=mape)
+    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape)
 
     logMessage("Creating Prophet Model ...")
     prophet_fit = gscv_prophet.fit(y_train_cleaned, X_train) #, X_train
@@ -498,12 +498,12 @@ def main():
                                     "estimator__n_estimators": [150, 200]}
 
     # create regressor object
-    ranfor_regressor = RandomForestRegressor(random_state = ranfor_random_state, criterion = ranfor_criterion, n_jobs=-1)
+    ranfor_regressor = RandomForestRegressor(random_state = ranfor_random_state, criterion = ranfor_criterion)
     ranfor_forecaster = make_reduction(ranfor_regressor, strategy = ranfor_strategy)
 
     logMessage("Creating Window Splitter Random Forest Model ....")   
     cv_ranfor = SingleWindowSplitter(fh=fh_int)
-    gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, n_jobs=-1, scoring=mape)
+    gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
     ranfor_fit = gscv_ranfor.fit(y_train_cleaned, X_train) #, X_train
@@ -543,11 +543,11 @@ def main():
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
-    xgb_regressor = XGBRegressor(objective=xgb_objective, n_jobs=-1, seed = 42)
+    xgb_regressor = XGBRegressor(objective=xgb_objective, seed = 42)
     xgb_forecaster = make_reduction(xgb_regressor, strategy=xgb_strategy)
 
     cv_xgb = SingleWindowSplitter(fh=fh_int)
-    gscv_xgb = ForecastingGridSearchCV(xgb_forecaster, cv=cv_xgb, param_grid=xgb_forecaster_param_grid, n_jobs=-1, scoring=mape)
+    gscv_xgb = ForecastingGridSearchCV(xgb_forecaster, cv=cv_xgb, param_grid=xgb_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating XGBoost Model ....")
     xgb_fit = gscv_xgb.fit(y_train_cleaned, X=X_train) #, X_train
@@ -583,11 +583,11 @@ def main():
     linreg_strategy = "recursive"
     linreg_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19, 27]}
 
-    linreg_regressor = LinearRegression(n_jobs=-1)
+    linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
 
     cv_linreg = SingleWindowSplitter(fh=fh_int)
-    gscv_linreg = ForecastingGridSearchCV(linreg_forecaster, cv=cv_linreg, param_grid=linreg_forecaster_param_grid, n_jobs=-1, scoring=mape)
+    gscv_linreg = ForecastingGridSearchCV(linreg_forecaster, cv=cv_linreg, param_grid=linreg_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Linear Regression Model ...")
     linreg_fit = gscv_linreg.fit(y_train_cleaned, X=X_train) #, X=X_train
@@ -608,11 +608,11 @@ def main():
     
     # Empty Linear Regression Memory
     linreg_forecaster_param_grid = None
-    xgb_regressor = None
-    xgb_forecaster = None
-    cv_xgb = None
-    gscv_xgb = None
-    xgb_forecast = None
+    linreg_regressor = None
+    linreg_forecaster = None
+    cv_linreg = None
+    gscv_linreg = None
+    linreg_forecast = None
     linreg_fit = None
     
 
@@ -672,7 +672,7 @@ def main():
     poly3_forecaster = make_reduction(poly3_regressor, strategy=poly3_strategy)
 
     cv_poly3 = SingleWindowSplitter(fh=fh_int)
-    gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, n_jobs=-1, scoring=mape, error_score='raise')
+    gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
     poly3_fit = gscv_poly3.fit(y_train_cleaned, X=X_train) #, X=X_train
