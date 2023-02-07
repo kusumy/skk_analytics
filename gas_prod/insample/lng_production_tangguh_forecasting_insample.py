@@ -444,10 +444,10 @@ def main():
 
     logMessage("Creating Window Splitter Prophet Model ....")   
     cv_prophet = SingleWindowSplitter(fh=fh_int)
-    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape)
+    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Prophet Model ...")
-    prophet_fit = gscv_prophet.fit(y_train_cleaned, X_train) #, X_train
+    prophet_fit = gscv_prophet.fit(y_train_cleaned, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Prophet Models ...")
@@ -491,7 +491,7 @@ def main():
     gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_fit = gscv_ranfor.fit(y_train_cleaned, X_train) #, X_train
+    ranfor_fit = gscv_ranfor.fit(y_train_cleaned, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")

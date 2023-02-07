@@ -420,7 +420,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample Condensate BP Tangguh ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[3, 6, 9, 18]
+                        ,'n_changepoints':[3, 6, 9]
                         ,'seasonality_prior_scale':[0.2, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[5,10]
@@ -434,10 +434,10 @@ def main():
 
     logMessage("Creating Window Splitter Prophet Model ....")   
     cv_prophet = SingleWindowSplitter(fh=fh_int)
-    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape)
+    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Prophet Model ...")
-    prophet_fit = gscv_prophet.fit(y_train_cleaned, X_train) #, X_train
+    prophet_fit = gscv_prophet.fit(y_train_cleaned, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Prophet Models ...")
@@ -482,7 +482,7 @@ def main():
     gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_fit = gscv_ranfor.fit(y_train_cleaned, X_train) #, X_train
+    ranfor_fit = gscv_ranfor.fit(y_train_cleaned, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")

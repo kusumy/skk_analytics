@@ -391,7 +391,7 @@ def main():
 
     logMessage("Creating Window Splitter Prophet Model ....")   
     cv_prophet = SingleWindowSplitter(fh=fh_int)
-    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape)
+    gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Prophet Model ...")
     prophet_fit = gscv_prophet.fit(y_train.lpg_c3, X=X_train) #, X_train

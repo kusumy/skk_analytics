@@ -426,7 +426,7 @@ def main():
 
     logMessage("Creating Window Splitter Random Forest Model ....")   
     cv_ranfor = SingleWindowSplitter(fh=fh_int)
-    gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape)
+    gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Random Forest Model ...")
     ranfor_fit = gscv_ranfor.fit(y_train.lpg_c4, X_train) #, X_train
