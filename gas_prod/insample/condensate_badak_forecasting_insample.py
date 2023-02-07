@@ -618,52 +618,6 @@ def main():
     del poly2_forecast
     del poly2_fit
     gc.collect()
-    
-
-
-    #%%
-    ##### POLYNOMIAL REGRESSION DEGREE=3 #####
-    logMessage("Creating Polynomial Regression Degree=3 Model Forecasting Insample Condensate PT Badak ...")
-    # Create Polynomial Regression Degree=3 Parameter Grid
-    poly3_regularization = None
-    poly3_interactions = False
-    poly3_strategy = "recursive"
-
-    # Create regressor object
-    poly3_forecaster_param_grid = {"window_length": [0.8]}
-
-    poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
-    poly3_forecaster = make_reduction(poly3_regressor, strategy=poly3_strategy)
-
-    cv_poly3 = SingleWindowSplitter(fh=fh_int)
-    gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, scoring=mape, error_score='raise')
-
-    logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    gscv_poly3.fit(y_train_smoothed, X=X_train) #, X=X_train
-
-    # Show best model parameters
-    logMessage("Show Best Polynomial Regression Degree=3 Models ...")
-    poly3_best_params = gscv_poly3.best_params_
-    poly3_best_params_str = str(poly3_best_params)
-    logMessage("Best Polynomial Regression Degree=3 Models "+poly3_best_params_str)
-    
-    logMessage("Polynomial Regression Degree=3 Model Prediction ...")
-    poly3_forecast = gscv_poly3.best_forecaster_.predict(fh, X=X_test) #, X=X_test
-
-    #Create MAPE
-    poly3_mape = mean_absolute_percentage_error(y_test['condensate'], poly3_forecast)
-    poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
-    logMessage("Polynomial Regression Degree=3 Model "+poly3_mape_str)
-    
-    # Empty Polynomial Regression Degree=2 Memory
-    del poly3_forecaster_param_grid
-    del poly3_regressor
-    del poly3_forecaster
-    del cv_poly3
-    del gscv_poly3
-    del poly3_forecast
-    del poly3_fit
-    gc.collect()
 
 
     #%%
@@ -676,7 +630,6 @@ def main():
                     'mape_forecast_e': [xgb_mape],
                     'mape_forecast_f': [linreg_mape],
                     'mape_forecast_g': [poly2_mape],
-                    'mape_forecast_h': [poly3_mape],
                     'lng_plant' : 'PT Badak',
                     'product' : 'Condensate'}
 
@@ -692,7 +645,6 @@ def main():
                     'model_param_e': [xgb_best_params_str],
                     'model_param_f': [linreg_best_params_str],
                     'model_param_g': [poly2_best_params_str],
-                    'model_param_h': [poly3_best_params_str],
                     'lng_plant' : 'PT Badak',
                     'product' : 'Condensate'}
 
@@ -716,10 +668,10 @@ def insert_mape(conn, all_mape_pred):
     for index, row in all_mape_pred.iterrows():
         lng_plant = row['lng_plant']
         product = row['product']
-        mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+        mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g = row[0], row[1], row[2], row[3], row[4], row[5], row[6]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        updated_rows = update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h , lng_plant, product)
+        updated_rows = update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, lng_plant, product)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
@@ -729,16 +681,16 @@ def insert_param(conn, all_model_param):
     for index, row in all_model_param.iterrows():
         lng_plant = row['lng_plant']
         product = row['product']
-        model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+        model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g = row[0], row[1], row[2], row[3], row[4], row[5], row[6]
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
-        updated_rows = update_param_value(conn, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h , lng_plant, product)
+        updated_rows = update_param_value(conn, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, lng_plant, product)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
 
 def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, 
-                        mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
+                        mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g,
                         lng_plant, product):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -756,9 +708,8 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
                     mape_forecast_e,
                     mape_forecast_f,
                     mape_forecast_g,
-                    mape_forecast_h,
                     created_by)
-                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
           """
     
     #conn = None
@@ -767,7 +718,7 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (lng_plant, product, date_now, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h,
+        cur.execute(sql, (lng_plant, product, date_now, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g,
                           created_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
@@ -781,7 +732,7 @@ def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c,
     return updated_rows
 
 def update_param_value(conn, model_param_a, model_param_b, model_param_c, 
-                        model_param_d, model_param_e, model_param_f, model_param_g, model_param_h,
+                        model_param_d, model_param_e, model_param_f, model_param_g,
                         lng_plant, product):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -799,9 +750,8 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
                     model_param_e,
                     model_param_f,
                     model_param_g,
-                    model_param_h,
                     created_by)
-                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
           """
     
     #conn = None
@@ -810,7 +760,7 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (lng_plant, product, date_now, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h,
+        cur.execute(sql, (lng_plant, product, date_now, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g,
                           created_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
