@@ -305,15 +305,6 @@ def main():
     train_df = df_cleaned['lng_production']
 
     #%%
-    #stationarity_check(train_df)
-
-    #%%
-    #decomposition_plot(train_df)
-
-    #%%
-    #plot_acf_pacf(train_df)
-
-    #%%
     # Ad-Fuller Testing
     ad_test(df_cleaned)
 
@@ -340,10 +331,15 @@ def main():
 
     exogenous_features = ["month", "day", "planned_shutdown"]
     
-    # Empty y_train and data
-    y_train = None
-    data = None
-
+    # Delete variabel that not used
+    del data
+    del data_null_cleaning
+    del y_train
+    del anomalies
+    del anomalies2
+    del anomalies_data
+    del anomalies_data2
+    gc.collect()
 
     ###### FORECASTING ######
     #%%

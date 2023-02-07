@@ -283,6 +283,8 @@ def main():
     # Delete variabel that not used
     del data
     del data_null_cleaning
+    del anomalies
+    del anomalies_data
     gc.collect()
     
 

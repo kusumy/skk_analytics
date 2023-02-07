@@ -283,9 +283,11 @@ def main():
     X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
     
     # Delete variabel that not used
-    del y_train
     del data
     del data_null_cleaning
+    del y_train
+    del anomalies
+    del anomalies_data
     gc.collect()
 
     # %%

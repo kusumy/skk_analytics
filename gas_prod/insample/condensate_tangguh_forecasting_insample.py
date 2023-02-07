@@ -219,7 +219,6 @@ def main():
 
     # Get only anomalies data
     anomalies_data = new_s[new_s['anomaly'].isnull()]
-    #anomalies_data.tail(100)
 
     #%%
     for index, row in anomalies_data.iterrows():
@@ -288,6 +287,7 @@ def main():
         # update value at specific location
         new_s2.at[index,'condensate'] = mean_month
         
+            
     #%%
     data_cleaned = new_s2[['condensate', 'wpnb_oil', 'planned_shutdown']].copy()
     data_cleaned = data_cleaned.reset_index()
@@ -303,13 +303,11 @@ def main():
     train_df = df_cleaned['condensate']
 
     #%%
-    #stationarity_check(train_df)
-
-    #%%
-    #decomposition_plot(train_df)
-
-    #%%
-    #plot_acf_pacf(df_cleaned['condensate'])
+    # Empty data2 memory
+    del data2
+    del new_s
+    del new_s2
+    gc.collect()
 
     #%%
     # Ad-Fuller Testing
@@ -338,11 +336,15 @@ def main():
     # Split into train and test
     X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
     
-    # Empty y_train and data
     # Delete variabel that not used
     del data
     del data_null_cleaning
     del y_train
+    del y_test
+    del anomalies
+    del anomalies2
+    del anomalies_data
+    del anomalies_data2
     gc.collect()
     
     ##### FORECASTING METHODS #####

@@ -294,9 +294,11 @@ def main():
     exogenous_features = ["month", "day"]
     
     # Delete variabel that not used
-    del y_train
     del data
     del data_null_cleaning
+    del y_train
+    del anomalies
+    del anomalies_data
     gc.collect()
 
 

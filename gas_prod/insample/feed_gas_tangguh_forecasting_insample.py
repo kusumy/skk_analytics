@@ -362,13 +362,16 @@ def main():
 
     #%%
     exogenous_features = ["month", "planned_shutdown", "day", "wpnb_gas"]
-
+   
     # Delete variabel that not used
-    del y_train
     del data
     del data_null_cleaning
+    del y_train
+    del anomalies
+    del anomalies2
+    del anomalies_data
+    del anomalies_data2
     gc.collect()
-    
     
     ###### FORECASTING ######
     ##### SARIMAX MODEL (forecast_b) #####

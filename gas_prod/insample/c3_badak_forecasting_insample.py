@@ -286,12 +286,12 @@ def main():
     #%%
     # Split into train and test
     X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
-
-    exogenous_features = ["day"]
     
     # Delete variabel that not used
     del data
     del data_null_cleaning
+    del anomalies
+    del anomalies_data
     gc.collect()
 
     # %%

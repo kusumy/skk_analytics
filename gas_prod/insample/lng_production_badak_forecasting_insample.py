@@ -245,7 +245,7 @@ def main():
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #Create column target
-    train_df = df_cleaned['lng_production']
+    #train_df = df_cleaned['lng_production']
    
     #%%
     # Ad-Fuller Test
@@ -279,6 +279,8 @@ def main():
     # Delete variabel that not used
     del data
     del data_null_cleaning
+    del anomalies
+    del anomalies_data
     gc.collect()
     
     ##### FORECASTING #####
