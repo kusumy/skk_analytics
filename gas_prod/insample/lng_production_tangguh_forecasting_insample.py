@@ -54,6 +54,7 @@ import seaborn as sns
 import time
 import ast
 from configparser import ConfigParser
+import gc
 
 from humanfriendly import format_timespan
 from tokenize import Ignore
@@ -241,9 +242,6 @@ def main():
         
         #print(sql), print(mean_month)
 
-    # Check if updated
-    anomaly_upd = new_s[new_s['anomaly'].isnull()]
-
     #%%
     logMessage("Unplanned Shutdown Cleaning ...")
     # Detect Unplanned Shutdown Value
@@ -290,8 +288,6 @@ def main():
         
         # update value at specific location
         new_s2.at[index,'lng_production'] = mean_month
-        
-        #print(index), print(sql), print(mean_month)
 
 
     #%%
@@ -389,11 +385,12 @@ def main():
     logMessage("Sarimax Model Parameters "+sarimax_param)
     
     # Empty the SARIMAX memory
-    sarimax_model = None
-    sarimax_forecast = None
-    sarimax_param_order = None
-    sarimax_param_order_seasonal = None
-    sarimax_fit = None
+    del sarimax_model
+    del sarimax_forecast
+    del sarimax_param_order
+    del sarimax_param_order_seasonal
+    del sarimax_fit
+    gc.collect()
 
 
     ##### ARIMAX MODEL (forecast_a) #####
@@ -419,10 +416,11 @@ def main():
     arimax_param = str(arimax_fit.get_fitted_params()['order'])
     logMessage("Arimax Model Parameters "+arimax_param)
     
-    # Empty the SARIMAX memory
-    arimax_model = None
-    arimax_forecast = None
-    arimax_fit = None
+    # Empty the ARIMAX memory
+    del arimax_model
+    del arimax_forecast
+    del arimax_fit
+    gc.collect()
 
 
     ##### PROPHET MODEL (forecast_c) #####
@@ -464,11 +462,12 @@ def main():
     logMessage("Prophet Model "+prophet_mape_str)
     
     # Empty the Prophet memory
-    prophet_param_grid = None
-    cv_prophet = None
-    gscv_prophet = None
-    prophet_forecast = None
-    prophet_fit = None
+    del prophet_param_grid
+    del cv_prophet
+    del gscv_prophet
+    del prophet_forecast
+    del prophet_fit
+    gc.collect()
 
 
     ##### RANDOM FOREST MODEL (forecast_d) #####
@@ -508,13 +507,14 @@ def main():
     logMessage("Random Forest Model "+ranfor_mape_str)
     
     # Empty Random Forest Memory
-    ranfor_forecaster_param_grid = None
-    ranfor_regressor = None
-    ranfor_forecaster = None
-    cv_ranfor = None
-    gscv_ranfor = None
-    ranfor_forecast = None
-    ranfor_fit = None
+    del ranfor_forecaster_param_grid
+    del ranfor_regressor
+    del ranfor_forecaster
+    del cv_ranfor
+    del gscv_ranfor
+    del ranfor_forecast
+    del ranfor_fit
+    gc.collect()
 
 
     ##### XGBOOST MODEL (forecast_e) #####
@@ -552,13 +552,14 @@ def main():
     logMessage("XGBoost Model "+xgb_mape_str)
     
     # Empty Random Forest Memory
-    xgb_forecaster_param_grid = None
-    xgb_regressor = None
-    xgb_forecaster = None
-    cv_xgb = None
-    gscv_xgb = None
-    xgb_forecast = None
-    xgb_fit = None
+    del xgb_forecaster_param_grid
+    del xgb_regressor
+    del xgb_forecaster
+    del cv_xgb
+    del gscv_xgb
+    del xgb_forecast
+    del xgb_fit
+    gc.collect()
 
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
@@ -592,13 +593,14 @@ def main():
     logMessage("Linear Regression Model "+linreg_mape_str)
     
     # Empty Linear Regression Memory
-    linreg_forecaster_param_grid = None
-    xgb_regressor = None
-    xgb_forecaster = None
-    cv_xgb = None
-    gscv_xgb = None
-    xgb_forecast = None
-    linreg_fit = None
+    del linreg_forecaster_param_grid
+    del linreg_regressor
+    del linreg_forecaster
+    del cv_linreg
+    del gscv_linreg
+    del linreg_forecast
+    del linreg_fit
+    gc.collect()
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
@@ -635,13 +637,14 @@ def main():
     logMessage("Polynomial Regression Degree=2 Model "+poly2_mape_str)
     
     # Empty Polynomial Regression Degree=2 Memory
-    poly2_forecaster_param_grid = None
-    poly2_regressor = None
-    poly2_forecaster = None
-    cv_poly2 = None
-    gscv_poly2 = None
-    poly2_forecast = None
-    poly2_fit = None  
+    del poly2_forecaster_param_grid
+    del poly2_regressor
+    del poly2_forecaster
+    del cv_poly2
+    del gscv_poly2
+    del poly2_forecast
+    del poly2_fit
+    gc.collect() 
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
@@ -678,13 +681,14 @@ def main():
     logMessage("Polynomial Regression Degree=3 Model "+poly3_mape_str)
     
     # Empty Polynomial Regression Degree=2 Memory
-    poly3_forecaster_param_grid = None
-    poly3_regressor = None
-    poly3_forecaster = None
-    cv_poly3 = None
-    gscv_poly3 = None
-    poly3_forecast = None   
-    poly3_fit = None
+    del poly3_forecaster_param_grid
+    del poly3_regressor
+    del poly3_forecaster
+    del cv_poly3
+    del gscv_poly3
+    del poly3_forecast
+    del poly3_fit
+    gc.collect()
 
 
     #%%
@@ -717,6 +721,11 @@ def main():
                         'product' : 'LNG Production'}
 
     all_model_param = pd.DataFrame(all_model_param)
+    
+    # Delete variabel that not used
+    del data
+    del data_null_cleaning
+    gc.collect()
 
     # Save mape result to database
     logMessage("Updating MAPE result to database ...")
