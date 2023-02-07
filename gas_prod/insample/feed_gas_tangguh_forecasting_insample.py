@@ -462,7 +462,7 @@ def main():
     gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape)
 
     logMessage("Creating Prophet Model ...")
-    prophet_fit = gscv_prophet.fit(y_train_cleaned, X_train) #, X_train
+    prophet_fit = gscv_prophet.fit(y_train_cleaned, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Prophet Models ...")
@@ -494,7 +494,7 @@ def main():
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
-    ranfor_forecaster_param_grid = {"window_length": [2, 11, 19, 21, 29], 
+    ranfor_forecaster_param_grid = {"window_length": [2, 11, 19, 21], 
                                     "estimator__n_estimators": [150, 200]}
 
     # create regressor object
@@ -506,7 +506,7 @@ def main():
     gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_fit = gscv_ranfor.fit(y_train_cleaned, X_train) #, X_train
+    ranfor_fit = gscv_ranfor.fit(y_train_cleaned, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")
@@ -539,7 +539,7 @@ def main():
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
-    xgb_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19, 27]
+    xgb_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -581,7 +581,7 @@ def main():
     #%%
     #Set Parameters
     linreg_strategy = "recursive"
-    linreg_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19, 27]}
+    linreg_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)

@@ -379,7 +379,7 @@ def main():
     gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape)
 
     logMessage("Creating Prophet Model ...")
-    prophet_fit = gscv_prophet.fit(y_train_smoothed, X_train) #, X_train
+    prophet_fit = gscv_prophet.fit(y_train_smoothed, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Prophet Models ...")
@@ -423,7 +423,7 @@ def main():
     gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_fit = gscv_ranfor.fit(y_train_smoothed, X_train) #, X_train
+    ranfor_fit = gscv_ranfor.fit(y_train_smoothed, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")

@@ -524,7 +524,7 @@ def main():
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
-    xgb_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19, 27]
+    xgb_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -566,7 +566,7 @@ def main():
     #%%
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
-    linreg_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19, 27]}
+    linreg_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)

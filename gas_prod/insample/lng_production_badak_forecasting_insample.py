@@ -361,7 +361,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample LNG Production PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[2, 8, 12, 22, 29]
+                        ,'n_changepoints':[2, 8, 12, 22]
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
@@ -379,7 +379,7 @@ def main():
     gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape)
 
     logMessage("Creating Prophet Model ...")
-    prophet_fit = gscv_prophet.fit(y_train.lng_production, X_train) #, X_train
+    prophet_fit = gscv_prophet.fit(y_train.lng_production, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Prophet Models ...")
@@ -412,7 +412,7 @@ def main():
     ranfor_strategy = "recursive"
 
     #Create regressor object
-    ranfor_forecaster_param_grid = {"window_length": [2, 8, 12, 22, 29], 
+    ranfor_forecaster_param_grid = {"window_length": [2, 8, 12, 22], 
                                     "estimator__n_estimators": [100,200]}
 
     # create regressor object
@@ -424,7 +424,7 @@ def main():
     gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_fit = gscv_ranfor.fit(y_train.lng_production, X_train) #, X_train
+    ranfor_fit = gscv_ranfor.fit(y_train.lng_production, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")
@@ -458,7 +458,7 @@ def main():
     xgb_strategy = "recursive"
 
     #Create regressor object
-    xgb_forecaster_param_grid = {"window_length": [2, 8, 12, 22, 29]
+    xgb_forecaster_param_grid = {"window_length": [2, 8, 12, 22]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -502,7 +502,7 @@ def main():
     linreg_strategy = "recursive"
 
     # Create regressor object
-    linreg_forecaster_param_grid = {"window_length": [2, 8, 12, 22, 29]}
+    linreg_forecaster_param_grid = {"window_length": [2, 8, 12, 22]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
