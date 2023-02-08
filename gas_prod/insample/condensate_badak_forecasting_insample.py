@@ -436,6 +436,8 @@ def main():
     del gscv_prophet
     del prophet_forecast
     del prophet_fit
+    del prophet_best_params
+    del prophet_mape_str
     gc.collect()
 
 
@@ -484,6 +486,8 @@ def main():
     del gscv_ranfor
     del ranfor_forecast
     del ranfor_fit
+    del ranfor_best_params
+    del ranfor_mape_str
     gc.collect()
 
 
@@ -530,6 +534,8 @@ def main():
     del gscv_xgb
     del xgb_forecast
     del xgb_fit
+    del xgb_best_params
+    del xgb_mape_str
     gc.collect()
 
 
@@ -574,6 +580,8 @@ def main():
     del gscv_linreg
     del linreg_forecast
     del linreg_fit
+    del linreg_best_params
+    del linreg_mape_str
     gc.collect()
 
 
@@ -619,6 +627,8 @@ def main():
     del gscv_poly2
     del poly2_forecast
     del poly2_fit
+    del poly2_best_params
+    del poly2_mape_str
     gc.collect()
     
 
@@ -640,16 +650,16 @@ def main():
     gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    gscv_poly3.fit(y_train_smoothed, X=X_train) #, X=X_train
+    poly3_fit = gscv_poly3.fit(y_train_smoothed, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=3 Models ...")
-    poly3_best_params = gscv_poly3.best_params_
+    poly3_best_params = poly3_fit.best_params_
     poly3_best_params_str = str(poly3_best_params)
     logMessage("Best Polynomial Regression Degree=3 Models "+poly3_best_params_str)
     
     logMessage("Polynomial Regression Degree=3 Model Prediction ...")
-    poly3_forecast = gscv_poly3.best_forecaster_.predict(fh, X=X_test) #, X=X_test
+    poly3_forecast = poly3_fit.best_forecaster_.predict(fh, X=X_test) #, X=X_test
 
     #Create MAPE
     poly3_mape = mean_absolute_percentage_error(y_test['condensate'], poly3_forecast)
@@ -664,6 +674,8 @@ def main():
     del gscv_poly3
     del poly3_forecast
     del poly3_fit
+    del poly3_best_params
+    del poly3_mape_str
     gc.collect()
 
 

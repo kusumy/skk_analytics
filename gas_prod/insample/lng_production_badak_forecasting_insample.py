@@ -412,6 +412,8 @@ def main():
     del gscv_prophet
     del prophet_forecast
     del prophet_fit
+    del prophet_best_params
+    del prophet_mape_str
     gc.collect()
 
 
@@ -460,6 +462,8 @@ def main():
     del gscv_ranfor
     del ranfor_forecast
     del ranfor_fit
+    del ranfor_best_params
+    del ranfor_mape_str
     gc.collect()
 
 
@@ -506,6 +510,8 @@ def main():
     del gscv_xgb
     del xgb_forecast
     del xgb_fit
+    del xgb_best_params
+    del xgb_mape_str
     gc.collect()
     
 
@@ -549,6 +555,8 @@ def main():
     del gscv_linreg
     del linreg_forecast
     del linreg_fit
+    del linreg_best_params
+    del linreg_mape_str
     gc.collect()
     
 
@@ -594,6 +602,8 @@ def main():
     del gscv_poly2
     del poly2_forecast
     del poly2_fit
+    del poly2_best_params
+    del poly2_mape_str
     gc.collect()
     
 
@@ -639,6 +649,8 @@ def main():
     del gscv_poly3
     del poly3_forecast
     del poly3_fit
+    del poly3_best_params
+    del poly3_mape_str
     gc.collect()
     
 
