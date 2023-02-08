@@ -248,8 +248,10 @@ def main():
     #train_df = df_cleaned['lng_production']
    
     #%%
-    # Ad-Fuller Test
-    ad_test(df_cleaned['lng_production'])
+    #%%
+    logMessage("AD Fuller Test ...")
+    ad_fuller = adfuller(df_cleaned['lng_production'])
+    num_lags = ad_fuller[2]
 
     #%%
     # Test size
@@ -370,7 +372,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample LNG Production PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[2, 8, 12, 22]
+                        ,'n_changepoints':[num_lags]
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
@@ -422,7 +424,7 @@ def main():
     ranfor_strategy = "recursive"
 
     #Create regressor object
-    ranfor_forecaster_param_grid = {"window_length": [2, 8, 12, 22], 
+    ranfor_forecaster_param_grid = {"window_length": [2, 8, num_lags], 
                                     "estimator__n_estimators": [100,200]}
 
     # create regressor object
@@ -469,7 +471,7 @@ def main():
     xgb_strategy = "recursive"
 
     #Create regressor object
-    xgb_forecaster_param_grid = {"window_length": [2, 8, 12, 22]
+    xgb_forecaster_param_grid = {"window_length": [2, 8, num_lags]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -514,7 +516,7 @@ def main():
     linreg_strategy = "recursive"
 
     # Create regressor object
-    linreg_forecaster_param_grid = {"window_length": [2, 8, 12, 22]}
+    linreg_forecaster_param_grid = {"window_length": [2, 8, num_lags]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)

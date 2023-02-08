@@ -54,6 +54,7 @@ from tracemalloc import start
 from configparser import ConfigParser
 import ast
 import gc
+from statsmodels.tsa.stattools import adfuller
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -258,8 +259,9 @@ def main():
     #plot_acf_pacf(df_smoothed)
 
     #%%
-    # Ad-Fuller Test
-    ad_test(df_smoothed)
+    logMessage("AD Fuller Test ...")
+    ad_fuller = adfuller(df_smoothed)
+    num_lags = ad_fuller[2]
 
     #%%
     # Test size
@@ -369,7 +371,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample Feed Gas PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[8, 18, 28]
+                        ,'n_changepoints':[num_lags]
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
@@ -419,7 +421,7 @@ def main():
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
-    ranfor_forecaster_param_grid = {"window_length": [8, 12, 18, 24, 28], 
+    ranfor_forecaster_param_grid = {"window_length": [8, 18, num_lags], 
                                     "estimator__n_estimators": [80,150]}
 
     # create regressor object
@@ -465,7 +467,7 @@ def main():
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
-    xgb_forecaster_param_grid = {"window_length": [8, 12, 18, 24, 28]
+    xgb_forecaster_param_grid = {"window_length": [8, 18, num_lags]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -509,7 +511,7 @@ def main():
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
 
-    linreg_forecaster_param_grid = {"window_length": [8, 12, 18, 24, 28]}
+    linreg_forecaster_param_grid = {"window_length": [8, 18, num_lags]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)

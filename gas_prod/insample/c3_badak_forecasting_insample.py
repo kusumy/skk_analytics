@@ -44,7 +44,6 @@
 
 
 # %%
-import configparser
 import logging
 import os
 import sys
@@ -56,16 +55,13 @@ from configparser import ConfigParser
 import ast
 import gc
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import pmdarima as pm
 import psycopg2
-import seaborn as sns
 from adtk.data import validate_series
-#import mlflow
+from statsmodels.tsa.stattools import adfuller
+
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from humanfriendly import format_timespan
@@ -263,11 +259,11 @@ def main():
 
     #%%
     #plot_acf_pacf(train_df)
-
+    
     #%%
-    logMessage("AD-Fuller testing ...")
-    # Ad-Fuller Test (Stationary data check)
-    ad_test(df_cleaned['lpg_c3'])
+    logMessage("AD Fuller Test ...")
+    ad_fuller = adfuller(df_cleaned['lpg_c3'])
+    num_lags = ad_fuller[2]
 
     #%%
     # Test size
@@ -384,7 +380,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample LPG C3 PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[2, 5, 6, 12]
+                        ,'n_changepoints':[num_lags]
                         ,'seasonality_prior_scale':[1, 10] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.001, 0.01] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[3,10]
@@ -444,7 +440,7 @@ def main():
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
-    ranfor_forecaster_param_grid = {"window_length": [2, 5, 6, 12], 
+    ranfor_forecaster_param_grid = {"window_length": [num_lags, 5], 
                                     "estimator__n_estimators": [100,200]}
 
     # create regressor object
@@ -491,7 +487,7 @@ def main():
     xgb_strategy = "recursive"
 
     # Create regressor object
-    xgb_forecaster_param_grid = {"window_length": [2, 5, 6, 12]
+    xgb_forecaster_param_grid = {"window_length": [num_lags, 5]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -536,7 +532,7 @@ def main():
     linreg_strategy = "recursive"
 
     # Create regressor object
-    linreg_forecaster_param_grid = {"window_length": [2, 5, 6, 12]}
+    linreg_forecaster_param_grid = {"window_length": [num_lags, 5]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)

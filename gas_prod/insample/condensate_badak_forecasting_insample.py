@@ -54,6 +54,7 @@ from tracemalloc import start
 from configparser import ConfigParser
 import ast
 import gc
+from statsmodels.tsa.stattools import adfuller
 
 import numpy as np
 import pandas as pd
@@ -268,8 +269,9 @@ def main():
     #plot_acf_pacf(df_smoothed)
 
     #%%
-    # Ad-Fuller Test
-    ad_test(df_smoothed)
+    logMessage("AD Fuller Test ...")
+    ad_fuller = adfuller(df_smoothed)
+    num_lags = ad_fuller[2]
 
     #%%
     # Test size
@@ -394,7 +396,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample Condensate PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[3, 5, 8, 18]
+                        ,'n_changepoints':[num_lags]
                         ,'seasonality_prior_scale':[1, 10] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8.11]
@@ -446,7 +448,7 @@ def main():
     ranfor_strategy = "recursive"
 
     # create regressor object
-    ranfor_forecaster_param_grid = {"window_length": [3, 5, 8, 18], 
+    ranfor_forecaster_param_grid = {"window_length": [3, 8, num_lags], 
                                     "estimator__n_estimators": [80, 150]}
 
     # create regressor object
@@ -493,7 +495,7 @@ def main():
     xgb_strategy = "recursive"
 
     # Create regressor object
-    xgb_forecaster_param_grid = {"window_length": [3, 5, 8, 18]
+    xgb_forecaster_param_grid = {"window_length": [3, 8, num_lags]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -539,7 +541,7 @@ def main():
     linreg_strategy = "recursive"
 
     # Create regressor object
-    linreg_forecaster_param_grid = {"window_length": [3, 5, 8, 18]}
+    linreg_forecaster_param_grid = {"window_length": [3, 8, num_lags]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)

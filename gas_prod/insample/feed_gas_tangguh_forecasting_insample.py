@@ -76,6 +76,7 @@ from sklearn.metrics import mean_absolute_percentage_error
 pd.options.plotting.backend = "plotly"
 from cProfile import label
 from imaplib import Time2Internaldate
+from statsmodels.tsa.stattools import adfuller
 
 import statsmodels.api as sm
 from dateutil.relativedelta import *
@@ -110,7 +111,7 @@ mse = MeanSquaredError()
 # %%
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+    from utils import (logMessage, get_first_date_of_prev_month, get_last_date_of_prev_month,
                        get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
@@ -334,7 +335,8 @@ def main():
 
     #%%
     logMessage("AD Fuller Test ...")
-    ad_test(train_df)
+    ad_fuller = adfuller(train_df)
+    num_lags = ad_fuller[2]
 
     #%%
     # Test size
@@ -452,7 +454,7 @@ def main():
     #%%
     #Set Parameters
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[2,11,19]
+                        ,'n_changepoints':[num_lags]
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
@@ -502,7 +504,7 @@ def main():
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
-    ranfor_forecaster_param_grid = {"window_length": [2, 11, 19, 21], 
+    ranfor_forecaster_param_grid = {"window_length": [2, 11, num_lags, 19], 
                                     "estimator__n_estimators": [150, 200]}
 
     # create regressor object
@@ -548,7 +550,7 @@ def main():
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
-    xgb_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19]
+    xgb_forecaster_param_grid = {"window_length": [2, 6, num_lags, 19]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -591,7 +593,7 @@ def main():
     #%%
     #Set Parameters
     linreg_strategy = "recursive"
-    linreg_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19]}
+    linreg_forecaster_param_grid = {"window_length": [2, 6, num_lags, 19]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)

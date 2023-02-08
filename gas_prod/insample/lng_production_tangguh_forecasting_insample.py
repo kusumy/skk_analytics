@@ -72,6 +72,7 @@ plt.style.use('fivethirtyeight')
 pd.options.plotting.backend = "plotly"
 from cProfile import label
 from imaplib import Time2Internaldate
+from statsmodels.tsa.stattools import adfuller
 
 import statsmodels.api as sm
 from pmdarima import auto_arima
@@ -303,10 +304,11 @@ def main():
 
     #Select column target
     train_df = df_cleaned['lng_production']
-
+   
     #%%
-    # Ad-Fuller Testing
-    ad_test(df_cleaned)
+    logMessage("AD Fuller Test ...")
+    ad_fuller = adfuller(df_cleaned)
+    num_lags = ad_fuller[2]
 
     #%%
     # Test size
@@ -424,7 +426,7 @@ def main():
     #%%
     #Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[1,6,27]
+                        ,'n_changepoints':[num_lags]
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
@@ -474,7 +476,7 @@ def main():
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
-    ranfor_forecaster_param_grid = {"window_length": [1, 6, 11, 21, 27], 
+    ranfor_forecaster_param_grid = {"window_length": [1, 6, 11, num_lags], 
                                     "estimator__n_estimators": [150, 200]}
 
     # create regressor object
@@ -520,7 +522,7 @@ def main():
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
-    xgb_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19]
+    xgb_forecaster_param_grid = {"window_length": [2, 6, 7, num_lags]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -563,7 +565,7 @@ def main():
     #%%
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
-    linreg_forecaster_param_grid = {"window_length": [2, 6, 7, 11, 19]}
+    linreg_forecaster_param_grid = {"window_length": [2, 6, 7, num_lags]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)

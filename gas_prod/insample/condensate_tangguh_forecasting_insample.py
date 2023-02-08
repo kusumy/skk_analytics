@@ -67,6 +67,7 @@ from sklearn.metrics import mean_absolute_percentage_error
 pd.options.plotting.backend = "plotly"
 from cProfile import label
 from imaplib import Time2Internaldate
+from statsmodels.tsa.stattools import adfuller
 
 import statsmodels.api as sm
 from dateutil.relativedelta import *
@@ -310,8 +311,9 @@ def main():
     gc.collect()
 
     #%%
-    # Ad-Fuller Testing
-    ad_test(train_df)
+    logMessage("AD Fuller Test ...")
+    ad_fuller = adfuller(train_df)
+    num_lags = ad_fuller[2]
 
     #%%
     # Test size
@@ -428,7 +430,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample Condensate BP Tangguh ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[3, 6, 9]
+                        ,'n_changepoints':[num_lags]
                         ,'seasonality_prior_scale':[0.2, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[5,10]
@@ -479,7 +481,7 @@ def main():
     ranfor_strategy = "recursive"
 
     # create regressor object
-    ranfor_forecaster_param_grid = {"window_length": [3, 6, 9, 18], 
+    ranfor_forecaster_param_grid = {"window_length": [3, 6, num_lags], 
                                     "estimator__n_estimators": [100, 150]}
 
     # create regressor object
@@ -525,7 +527,7 @@ def main():
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
-    xgb_forecaster_param_grid = {"window_length": [3, 6, 9, 18]
+    xgb_forecaster_param_grid = {"window_length": [3, 6, num_lags]
                                 ,"estimator__n_estimators": [100, 200, 300]
                                 }
 
@@ -568,7 +570,7 @@ def main():
     logMessage("Creating Linear Regression Model Forecasting Insample Condensate BP Tangguh ...")
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
-    linreg_forecaster_param_grid = {"window_length": [3, 6, 9, 18]}
+    linreg_forecaster_param_grid = {"window_length": [3, 6, num_lags]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
