@@ -44,18 +44,18 @@ configLogging("main_lng_insample.log")
 
 
 t0 = time.process_time()
-feed_gas_tangguh_insample.main()
+condensate_tangguh_insample.main()
 t1 = time.process_time()
 exec_time = format_timespan(t1-t0, max_units=3)
-print("Forecasting Feed Gas BP Tangguh : " + exec_time)
+logMessage("Creating Condensate Tangguh Model in : " + exec_time)
 
 logMessage('\n')
 
 t2 = time.process_time()
-condensate_tangguh_insample.main()
+feed_gas_tangguh_insample.main()
 t3 = time.process_time()
 exec_time = format_timespan(t3-t2, max_units=3)
-logMessage("Creating Condensate Tangguh Model in : " + exec_time)
+print("Forecasting Feed Gas BP Tangguh : " + exec_time)
 
 logMessage('\n')
 
