@@ -276,7 +276,7 @@ def main():
     del y_train
     del anomalies
     del anomalies_data
-    gc.collect()
+    #gc.collect()
 
 
     #%%
@@ -324,7 +324,7 @@ def main():
     del sarimax_param_order
     del sarimax_param_order_seasonal
     del sarimax_fit
-    gc.collect()
+    #gc.collect()
     
     
     ##### ARIMAX MODEL #####
@@ -363,7 +363,7 @@ def main():
     del arimax_model
     del arimax_forecast
     del arimax_fit
-    gc.collect()
+    #gc.collect()
     
 
     #%%
@@ -413,7 +413,7 @@ def main():
     del prophet_fit
     del prophet_best_params
     del prophet_mape_str
-    gc.collect()
+    #gc.collect()
 
 
     #%%
@@ -463,7 +463,7 @@ def main():
     del ranfor_fit
     del ranfor_best_params
     del ranfor_mape_str
-    gc.collect()
+    #gc.collect()
 
 
     #%%
@@ -511,7 +511,7 @@ def main():
     del xgb_fit
     del xgb_best_params
     del xgb_mape_str
-    gc.collect()
+    #gc.collect()
 
 
 
@@ -557,7 +557,7 @@ def main():
     del linreg_fit
     del linreg_best_params
     del linreg_mape_str
-    gc.collect()
+    #gc.collect()
 
 
     #%%
@@ -604,7 +604,7 @@ def main():
     del poly2_fit
     del poly2_best_params
     del poly2_mape_str
-    gc.collect()
+    #gc.collect()
     
 
     #%%
@@ -651,7 +651,7 @@ def main():
     del poly3_fit
     del poly3_best_params
     del poly3_mape_str
-    gc.collect()
+    #gc.collect()
 
 
     #%%
@@ -696,7 +696,7 @@ def main():
     total_updated_rows = insert_param(conn, all_model_param)
     logMessage("Updated rows: {}".format(total_updated_rows))
     
-    gc.collect()
+    #gc.collect()
     
     print("Done")
 

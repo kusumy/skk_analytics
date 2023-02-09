@@ -47,7 +47,7 @@ print("Forecasting Feed Gas BP Tangguh : " + exec_time)
 
 # Empty Memory After Run This Script
 del feed_gas_tangguh
-gc.collect()
+#gc.collect()
 
 logMessage('\n')
 
@@ -59,7 +59,7 @@ logMessage("Creating Condensate Tangguh Model in : " + exec_time)
 
 # Empty Memory After Run This Script
 del condensate_tangguh
-gc.collect()
+#gc.collect()
 
 logMessage('\n')
 
@@ -71,7 +71,7 @@ logMessage("Creating LNG Production Tangguh Model in: " + exec_time)
 
 # Empty Memory After Run This Script
 del lng_production_tangguh
-gc.collect()
+#gc.collect()
 
 logMessage('\n')
 
@@ -83,7 +83,7 @@ logMessage("Creating Feed Gas PT Badak Model in: " + exec_time)
 
 # Empty Memory After Run This Script
 del feed_gas_badak
-gc.collect()
+#gc.collect()
 
 logMessage('\n')
 
@@ -95,7 +95,7 @@ logMessage("Creating LNG Production PT Badak Model in: " + exec_time)
 
 # Empty Memory After Run This Script
 del lng_production_badak
-gc.collect()
+#gc.collect()
 
 logMessage('\n')
 
@@ -107,7 +107,7 @@ print("Forecasting Condensate Badak : " + exec_time)
 
 # Empty Memory After Run This Script
 del condensate_badak
-gc.collect()
+#gc.collect()
 
 logMessage('\n')
 
@@ -119,7 +119,7 @@ print("Forecasting LPG C3 Badak : " + exec_time)
 
 # Empty Memory After Run This Script
 del c3_badak
-gc.collect()
+#gc.collect()
 
 logMessage('\n')
 
@@ -131,7 +131,7 @@ print("Forecasting LPG C4 Badak : " + exec_time)
 
 # Empty Memory After Run This Script
 del c3_badak
-gc.collect()
+#gc.collect()
 
 logMessage('\n')
 
