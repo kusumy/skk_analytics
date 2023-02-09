@@ -49,46 +49,32 @@ import sys
 import numpy as np
 import pandas as pd
 import psycopg2
-import time
 from configparser import ConfigParser
-import ast
 import gc
 
 from tokenize import Ignore
 from datetime import datetime
-from tracemalloc import start
 import matplotlib.pyplot as plt
-plt.style.use('fivethirtyeight')
 
 from adtk.data import validate_series
 from adtk.detector import ThresholdAD
-from adtk.visualization import plot
 from sklearn.metrics import mean_absolute_percentage_error
 pd.options.plotting.backend = "plotly"
-from cProfile import label
-from imaplib import Time2Internaldate
 from statsmodels.tsa.stattools import adfuller
 
-import statsmodels.api as sm
 from dateutil.relativedelta import *
-from pmdarima.arima.utils import ndiffs, nsdiffs
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
 from sktime.forecasting.arima import AutoARIMA
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import make_reduction
 from sktime.forecasting.fbprophet import Prophet
-from sktime.forecasting.model_selection import (ExpandingWindowSplitter,
-                                                ForecastingGridSearchCV,
-                                                ForecastingRandomizedSearchCV,
+from sktime.forecasting.model_selection import (ForecastingGridSearchCV,
                                                 SingleWindowSplitter,
-                                                SlidingWindowSplitter,
                                                 temporal_train_test_split)
-from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
-from sktime.performance_metrics.forecasting import (
-    MeanAbsolutePercentageError, MeanSquaredError)
+#from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
+from sktime.performance_metrics.forecasting import (MeanAbsolutePercentageError, MeanSquaredError)
 from xgboost import XGBRegressor
 
 # Model scoring for Cross Validation
@@ -103,8 +89,8 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # %%
 def main():
-    from connection import config, retrieve_data, create_db_connection, get_sql_data
-    from utils import logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month, get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november
+    from connection import config, create_db_connection, get_sql_data
+    from utils import logMessage, get_first_date_of_prev_month, get_last_date_of_prev_month, get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november
     from polyfit import PolynomRegressor
     import datetime
     
@@ -175,9 +161,7 @@ def main():
             sql = query_1.format('2016-01-01', end_date_april)
     else :
         sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
-
-    #print(sql)
-    
+   
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data['wpnb_oil'].fillna(method='ffill', inplace=True)
@@ -239,7 +223,6 @@ def main():
         # update value at specific location
         new_s.at[index,'condensate'] = mean_month
         
- 
     #%%
     logMessage("Unplanned Shutdown Cleaning ...")
     # Detect Unplanned Shutdown Value
@@ -304,13 +287,6 @@ def main():
     train_df = df_cleaned['condensate']
 
     #%%
-    # Empty data2 memory
-    del data2
-    del new_s
-    del new_s2
-    gc.collect()
-
-    #%%
     logMessage("AD Fuller Test ...")
     ad_fuller = adfuller(train_df)
     num_lags = ad_fuller[2]
@@ -340,6 +316,9 @@ def main():
     
     # Delete variabel that not used
     del data
+    del data2
+    del new_s
+    del new_s2
     del data_null_cleaning
     del y_train
     del y_test
@@ -434,7 +413,7 @@ def main():
                         ,'seasonality_prior_scale':[0.2, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[5,10]
-                        ,'weekly_seasonality':[1,5]
+                        ,'weekly_seasonality':[1]
                         ,'yearly_seasonality':[8,10]
                         }
 
@@ -745,6 +724,8 @@ def main():
     logMessage("Updating Model Parameter result to database ...")
     total_updated_rows = insert_param(conn, all_model_param)
     logMessage("Updated rows: {}".format(total_updated_rows))
+    
+    gc.collect()
     
     print("Done")
 

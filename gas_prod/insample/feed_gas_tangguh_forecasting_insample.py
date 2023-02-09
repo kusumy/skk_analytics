@@ -50,9 +50,7 @@ import sys
 import numpy as np
 import pandas as pd
 import psycopg2
-import time
 from configparser import ConfigParser
-import ast
 import gc
 
 from humanfriendly import format_timespan
@@ -70,23 +68,15 @@ import psycopg2
 
 from adtk.data import validate_series
 from adtk.detector import ThresholdAD
-from adtk.visualization import plot
 from sklearn.metrics import mean_absolute_percentage_error
 
 pd.options.plotting.backend = "plotly"
-from cProfile import label
-from imaplib import Time2Internaldate
 from statsmodels.tsa.stattools import adfuller
 
-import statsmodels.api as sm
 from dateutil.relativedelta import *
-from pmdarima.arima.utils import ndiffs, nsdiffs
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import GridSearchCV
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+#from sklearn.pipeline import make_pipeline
 from sktime.forecasting.arima import AutoARIMA
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import make_reduction
@@ -94,7 +84,7 @@ from sktime.forecasting.fbprophet import Prophet
 from sktime.forecasting.model_selection import (ForecastingGridSearchCV,
                                                 SingleWindowSplitter,
                                                 temporal_train_test_split)
-from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
+#from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 from sktime.performance_metrics.forecasting import (MeanAbsolutePercentageError, MeanSquaredError)
 from xgboost import XGBRegressor
 
@@ -234,11 +224,7 @@ def main():
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month
-        
-        # Get start month and end month
-        #start_month = str(get_first_date_of_current_month(yr, mt))
-        #end_month = str(get_last_date_of_month(yr, mt))
-        
+
         # Get last year start date month
         start_month = get_first_date_of_prev_month(yr,mt,step=-12)
         
@@ -255,10 +241,7 @@ def main():
 
     #%%
     logMessage("Unplanned Shutdown Cleaning ...")
-    # Detect Unplanned Shutdown Value
     data2 = new_s[['feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
-    #data2 = data2.reset_index()
-    #data2['date'] = pd.DatetimeIndex(data2['date'], freq='D')
     s2 = validate_series(data2)
 
     threshold_ad2 = ThresholdAD(data2['unplanned_shutdown']==0)
@@ -297,7 +280,6 @@ def main():
         
         yesterday_date = yesterday_date.strftime("%Y-%m-%d")
         prev_date_year = prev_date_year.strftime("%Y-%m-%d")
-        #sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
         
         sql = "date>='"+prev_date_year+ "' & "+ "date<='" +yesterday_date+"'"
         mean_month=new_s2['feed_gas'].reset_index().query(sql).mean(skipna = True).values[0] 
@@ -305,10 +287,6 @@ def main():
         # update value at specific location
         new_s2.at[index,'feed_gas'] = mean_month
         
-        #print(index), print(sql), print(mean_month)
-
-    # Check if updated
-    new_s2[new_s2['anomaly'] == False]
 
     #%%
     logMessage("Final Data Prepare ...")
@@ -323,15 +301,6 @@ def main():
 
     #Select column target
     train_df = df_cleaned['feed_gas']
-
-    #%%
-    #stationarity_check(train_df)
-
-    #%%
-    #decomposition_plot(train_df)
-
-    #%%
-    #plot_acf_pacf(df_cleaned['feed_gas'])
 
     #%%
     logMessage("AD Fuller Test ...")
@@ -373,6 +342,7 @@ def main():
     del anomalies2
     del anomalies_data
     del anomalies_data2
+    del ad_fuller
     gc.collect()
     
     ###### FORECASTING ######    
@@ -458,7 +428,7 @@ def main():
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
-                        ,'weekly_seasonality':[1,5]
+                        ,'weekly_seasonality':[1]
                         ,'yearly_seasonality':[8,10]
                         }
 
@@ -471,7 +441,7 @@ def main():
     gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Prophet Model ...")
-    prophet_fit = gscv_prophet.fit(y_train_cleaned, X=X_train) #, X_train
+    prophet_fit = gscv_prophet.fit(y_train_cleaned.feed_gas, X=X_train) #, X_train
 
     # Show best model parameters
     prophet_best_params = prophet_fit.best_params_
@@ -517,7 +487,7 @@ def main():
     gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_fit = gscv_ranfor.fit(y_train_cleaned, X=X_train) #, X_train
+    ranfor_fit = gscv_ranfor.fit(y_train_cleaned.feed_gas, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")
@@ -564,7 +534,7 @@ def main():
     gscv_xgb = ForecastingGridSearchCV(xgb_forecaster, cv=cv_xgb, param_grid=xgb_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating XGBoost Model ....")
-    xgb_fit = gscv_xgb.fit(y_train_cleaned, X=X_train) #, X_train
+    xgb_fit = gscv_xgb.fit(y_train_cleaned.feed_gas, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best XGBoost Models ...")
@@ -607,7 +577,7 @@ def main():
     gscv_linreg = ForecastingGridSearchCV(linreg_forecaster, cv=cv_linreg, param_grid=linreg_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Linear Regression Model ...")
-    linreg_fit = gscv_linreg.fit(y_train_cleaned, X=X_train) #, X=X_train
+    linreg_fit = gscv_linreg.fit(y_train_cleaned.feed_gas, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Linear Regression Models ...")
@@ -653,7 +623,7 @@ def main():
     gscv_poly2 = ForecastingGridSearchCV(poly2_forecaster, cv=cv_poly2, param_grid=poly2_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_fit = gscv_poly2.fit(y_train_cleaned, X=X_train) #, X=X_train
+    poly2_fit = gscv_poly2.fit(y_train_cleaned.feed_gas, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=2 Models ...")
@@ -698,7 +668,7 @@ def main():
     gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_fit = gscv_poly3.fit(y_train_cleaned, X=X_train) #, X=X_train
+    poly3_fit = gscv_poly3.fit(y_train_cleaned.feed_gas, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=3 Models ...")
@@ -768,6 +738,8 @@ def main():
     logMessage("Updating Model Parameter result to database ...")
     total_updated_rows = insert_param(conn, all_model_param)
     logMessage("Updated rows: {}".format(total_updated_rows))
+    
+    gc.collect()
     
     print("Done")
     

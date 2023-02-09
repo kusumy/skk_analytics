@@ -47,12 +47,10 @@
 import logging
 import os
 import sys
-import time
 from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
 from configparser import ConfigParser
-import ast
 import gc
 from statsmodels.tsa.stattools import adfuller
 
@@ -75,21 +73,15 @@ from dateutil.relativedelta import *
 from pmdarima.arima.utils import ndiffs, nsdiffs
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import (mean_absolute_error,
-                             mean_absolute_percentage_error,
-                             mean_squared_error, r2_score)
-from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import mean_absolute_percentage_error
 from sktime.forecasting.arima import AutoARIMA
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import make_reduction
 from sktime.forecasting.fbprophet import Prophet
-from sktime.forecasting.model_selection import (ExpandingWindowSplitter,
-                                                ForecastingGridSearchCV,
-                                                ForecastingRandomizedSearchCV,
+from sktime.forecasting.model_selection import (ForecastingGridSearchCV,
                                                 SingleWindowSplitter,
-                                                SlidingWindowSplitter,
                                                 temporal_train_test_split)
-from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
+#from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 from sktime.performance_metrics.forecasting import (MeanAbsolutePercentageError, MeanSquaredError)
 from tsmoothie.smoother import LowessSmoother
 from xgboost import XGBRegressor
@@ -109,7 +101,7 @@ mse = MeanSquaredError()
 #%%
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+    from utils import (logMessage, get_first_date_of_prev_month, get_last_date_of_prev_month,
                        get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
@@ -177,9 +169,7 @@ def main():
             sql = query_1.format('2013-01-01', end_date_april)
     else :
         sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
-
-    #print(sql)  
-    
+   
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
@@ -214,11 +204,7 @@ def main():
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month
-        
-        # Get start month and end month
-        #start_month = str(get_first_date_of_current_month(yr, mt))
-        #end_month = str(get_last_date_of_month(yr, mt))
-        
+               
         # Get last year start date month
         start_month = get_first_date_of_prev_month(yr,mt,step=-12)
         
@@ -232,8 +218,6 @@ def main():
         # update value at specific location
         new_s.at[index,'condensate'] = mean_month
         
-        #print(index), print(sql), print(mean_month)
-
     #%%
     logMessage("Condensate PT Badak Prepare Data ...")
     #REPLACE ANOMALY VALUES
@@ -249,7 +233,6 @@ def main():
     #%%
     logMessage("Condensate PT Badak Data Smoothing ...")
     # Smooth time series signal using polynomial smoothing
-    #smoother = PolynomialSmoother(degree=1, copy=True)
     smoother = LowessSmoother(smooth_fraction=0.005, iterations=1)
     smoother.smooth(df_cleaned)
 
@@ -259,14 +242,6 @@ def main():
     # Replace original with smoothed data
     df_smoothed[y_cleaned] = smoother.smooth_data[0]
 
-    #%%
-    #stationarity_check(df_smoothed)
-
-    #%%
-    #decomposition_plot(df_smoothed)
-
-    #%%
-    #plot_acf_pacf(df_smoothed)
 
     #%%
     logMessage("AD Fuller Test ...")
@@ -293,11 +268,11 @@ def main():
     #%%
     # Split into train and test
     X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
-    exogenous_features = ["month", "day"]
     
     # Delete variabel that not used
     del data
     del data_null_cleaning
+    del new_s
     del y_train
     del anomalies
     del anomalies_data
@@ -720,6 +695,8 @@ def main():
     logMessage("Updating Model Parameter result to database ...")
     total_updated_rows = insert_param(conn, all_model_param)
     logMessage("Updated rows: {}".format(total_updated_rows))
+    
+    gc.collect()
     
     print("Done")
 

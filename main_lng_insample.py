@@ -39,99 +39,98 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 # Configure logging
 configLogging("main_lng_insample.log")
 
-
 t0 = time.process_time()
-condensate_tangguh_insample.main()
+feed_gas_tangguh = feed_gas_tangguh_insample.main()
 t1 = time.process_time()
 exec_time = format_timespan(t1-t0, max_units=3)
-logMessage("Creating Condensate Tangguh Model in : " + exec_time)
+print("Forecasting Feed Gas BP Tangguh : " + exec_time)
 
 # Empty Memory After Run This Script
-del condensate_tangguh_insample
+del feed_gas_tangguh
 gc.collect()
 
 logMessage('\n')
 
 t2 = time.process_time()
-feed_gas_tangguh_insample.main()
+condensate_tangguh = condensate_tangguh_insample.main()
 t3 = time.process_time()
 exec_time = format_timespan(t3-t2, max_units=3)
-print("Forecasting Feed Gas BP Tangguh : " + exec_time)
+logMessage("Creating Condensate Tangguh Model in : " + exec_time)
 
 # Empty Memory After Run This Script
-del feed_gas_tangguh_insample
+del condensate_tangguh
 gc.collect()
 
 logMessage('\n')
 
 t4 = time.process_time()
-lng_production_tangguh_insample.main()
+lng_production_tangguh = lng_production_tangguh_insample.main()
 t5 = time.process_time()
 exec_time = format_timespan(t5-t4, max_units=3)
 logMessage("Creating LNG Production Tangguh Model in: " + exec_time)
 
 # Empty Memory After Run This Script
-del lng_production_tangguh_insample
+del lng_production_tangguh
 gc.collect()
 
 logMessage('\n')
 
 t6 = time.process_time()
-feed_gas_badak_insample.main()
+feed_gas_badak = feed_gas_badak_insample.main()
 t7 = time.process_time()
 exec_time = format_timespan(t7-t6, max_units=3)
 logMessage("Creating Feed Gas PT Badak Model in: " + exec_time)
 
 # Empty Memory After Run This Script
-del feed_gas_tangguh_insample
+del feed_gas_badak
 gc.collect()
 
 logMessage('\n')
 
 t8 = time.process_time()
-lng_production_badak_insample.main()
+lng_production_badak = lng_production_badak_insample.main()
 t9 = time.process_time()
 exec_time = format_timespan(t9-t8, max_units=3)
 logMessage("Creating LNG Production PT Badak Model in: " + exec_time)
 
 # Empty Memory After Run This Script
-del lng_production_badak_insample
+del lng_production_badak
 gc.collect()
 
 logMessage('\n')
 
 t10 = time.process_time()
-condensate_badak_insample.main()
+condensate_badak = condensate_badak_insample.main()
 t11 = time.process_time()
 exec_time = format_timespan(t11-t10, max_units=3)
 print("Forecasting Condensate Badak : " + exec_time)
 
 # Empty Memory After Run This Script
-del condensate_badak_insample
+del condensate_badak
 gc.collect()
 
 logMessage('\n')
 
 t12 = time.process_time()
-c3_badak_insample.main()
+c3_badak = c3_badak_insample.main()
 t13 = time.process_time()
 exec_time = format_timespan(t13-t12, max_units=3)
 print("Forecasting LPG C3 Badak : " + exec_time)
 
 # Empty Memory After Run This Script
-del c3_badak_insample
+del c3_badak
 gc.collect()
 
 logMessage('\n')
 
 t14 = time.process_time()
-c4_badak_insample.main()
+c3_badak = c4_badak_insample.main()
 t15 = time.process_time()
 exec_time = format_timespan(t15-t14, max_units=3)
 print("Forecasting LPG C4 Badak : " + exec_time)
 
 # Empty Memory After Run This Script
-del c4_badak_insample
+del c3_badak
 gc.collect()
 
 logMessage('\n')

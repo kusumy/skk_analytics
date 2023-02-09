@@ -47,16 +47,13 @@
 import logging
 import os
 import sys
-import time
 from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
 from configparser import ConfigParser
-import ast
 import gc
 from statsmodels.tsa.stattools import adfuller
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -65,11 +62,7 @@ from adtk.data import validate_series
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from humanfriendly import format_timespan
-from pmdarima.arima import auto_arima
-from pmdarima.arima.auto import auto_arima
-from sklearn.metrics import (mean_absolute_error,
-                             mean_absolute_percentage_error,
-                             mean_squared_error, r2_score)
+from sklearn.metrics import mean_absolute_percentage_error
 
 pd.options.plotting.backend = "plotly"
 from dateutil.relativedelta import *
@@ -77,10 +70,8 @@ from sktime.forecasting.model_selection import temporal_train_test_split
 from tsmoothie.smoother import LowessSmoother
 
 plt.style.use('fivethirtyeight')
-import statsmodels.api as sm
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
 from sktime.forecasting.arima import AutoARIMA
 from sktime.forecasting.base import ForecastingHorizon
@@ -148,7 +139,6 @@ def main():
 
 
     # Configure logging
-    #configLogging("feed_gas_badak_forecasting.log")
     logMessage("Creating Feed Gas PT Badak Model ....")
     
     # Connect to database
@@ -178,7 +168,6 @@ def main():
     else :
         sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
 
-    #print(sql)
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
@@ -247,16 +236,6 @@ def main():
     df_smoothed = df_cleaned.copy()
     # Replace original with smoothed data
     df_smoothed[y_cleaned] = smoother.smooth_data[0]
-    
-
-    #%%
-    #stationarity_check(df_smoothed)
-
-    #%%
-    #decomposition_plot(df_smoothed)
-
-    #%%
-    #plot_acf_pacf(df_smoothed)
 
     #%%
     logMessage("AD Fuller Test ...")
@@ -288,6 +267,7 @@ def main():
     del data
     del data_null_cleaning
     del y_train
+    del new_s
     del anomalies
     del anomalies_data
     gc.collect()
@@ -687,6 +667,8 @@ def main():
     logMessage("Updating Model Parameter result to database ...")
     total_updated_rows = insert_param(conn, all_model_param)
     logMessage("Updated rows: {}".format(total_updated_rows))
+    
+    gc.collect()
     
     print("Done")
     

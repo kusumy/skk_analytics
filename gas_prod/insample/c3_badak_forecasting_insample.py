@@ -47,14 +47,11 @@
 import logging
 import os
 import sys
-import time
 from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
 from configparser import ConfigParser
-import ast
 import gc
-
 
 import numpy as np
 import pandas as pd
@@ -63,29 +60,16 @@ from adtk.data import validate_series
 from statsmodels.tsa.stattools import adfuller
 
 from adtk.detector import ThresholdAD
-from adtk.visualization import plot
-from humanfriendly import format_timespan
-from pmdarima import model_selection
-from pmdarima.arima import auto_arima
-from pmdarima.arima.auto import auto_arima
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 
 pd.options.plotting.backend = "plotly"
-from cProfile import label
-from imaplib import Time2Internaldate
 
 import statsmodels.api as sm
 from dateutil.relativedelta import *
-from pmdarima.arima import ARIMA, auto_arima
-from pmdarima.arima.utils import ndiffs, nsdiffs
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import (mean_absolute_error,
-                             mean_absolute_percentage_error,
-                             mean_squared_error, r2_score)
-from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import mean_absolute_percentage_error
+#from sklearn.model_selection import GridSearchCV
 from sktime.forecasting.arima import AutoARIMA
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import make_reduction
@@ -96,7 +80,7 @@ from sktime.forecasting.model_selection import (ExpandingWindowSplitter,
                                                 SingleWindowSplitter,
                                                 SlidingWindowSplitter,
                                                 temporal_train_test_split)
-from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
+#from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 from sktime.performance_metrics.forecasting import (
     MeanAbsolutePercentageError, MeanSquaredError)
 from xgboost import XGBRegressor
@@ -114,7 +98,7 @@ mse = MeanSquaredError()
 #%%
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+    from utils import (logMessage, get_first_date_of_prev_month, get_last_date_of_prev_month,
                        get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
@@ -183,9 +167,7 @@ def main():
             sql = query_1.format('2022-07-01', end_date_april)
     else :
         sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
-
-    #print(sql)
-    
+   
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
     data = data.reset_index()
@@ -203,10 +185,6 @@ def main():
 
     anomalies = anomalies.drop('lpg_c3', axis=1)
 
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
-
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
@@ -216,11 +194,10 @@ def main():
 
     # Get only anomalies data
     anomalies_data = new_s[new_s['anomaly'].isnull()]
-    #anomalies_data.tail(100)
 
     #%%
     #REPLACE ANOMALY VALUES
-    from datetime import date, datetime, timedelta
+    from datetime import datetime
       
     for index, row in anomalies_data.iterrows():
         yr = index.year
@@ -242,23 +219,9 @@ def main():
             
         # update value at specific location
         new_s.at[index,'lpg_c3'] = mean_month
-            
-        #print(sql), print(mean_month)
-
-    # Check if updated
-    anomaly_upd = new_s[new_s['anomaly'].isnull()]
 
     #%%
     df_cleaned = new_s[['lpg_c3']].copy()
-
-    #%%
-    #stationarity_check(train_df)
-
-    #%%
-    #decomposition_plot(train_df)
-
-    #%%
-    #plot_acf_pacf(train_df)
     
     #%%
     logMessage("AD Fuller Test ...")
@@ -276,7 +239,6 @@ def main():
 
     #%%
     # create features (exog) from date
-    #df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
 
     #%%
@@ -288,6 +250,7 @@ def main():
     del data_null_cleaning
     del anomalies
     del anomalies_data
+    del new_s
     gc.collect()
 
     # %%
@@ -702,7 +665,7 @@ def main():
 
     all_model_param = pd.DataFrame(all_model_param)
 
-#%%    
+    #%%    
     # Save mape result to database
     logMessage("Updating MAPE result to database ...")
     total_updated_rows = insert_mape(conn, all_mape_pred)
@@ -713,6 +676,8 @@ def main():
     total_updated_rows = insert_param(conn, all_model_param)
     logMessage("Updated rows: {}".format(total_updated_rows))
     
+    gc.collect()
+
     print("Done")
 
 # %%

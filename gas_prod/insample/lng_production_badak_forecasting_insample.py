@@ -51,34 +51,26 @@ from datetime import datetime
 from tokenize import Ignore
 from tracemalloc import start
 from configparser import ConfigParser
-import ast
 import gc
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import psycopg2
-from pmdarima.arima.auto import auto_arima
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 
 plt.style.use('fivethirtyeight')
 
 from adtk.data import validate_series
 from adtk.detector import ThresholdAD
-from adtk.visualization import plot
 
 pd.options.plotting.backend = "plotly"
-from cProfile import label
-from imaplib import Time2Internaldate
 
 import statsmodels.api as sm
 from dateutil.relativedelta import *
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_percentage_error
-from sklearn.model_selection import GridSearchCV
 from sktime.forecasting.arima import AutoARIMA
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import make_reduction
@@ -103,7 +95,7 @@ mse = MeanSquaredError()
 #%%   
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+    from utils import (logMessage, get_first_date_of_prev_month, get_last_date_of_prev_month,
                        get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
@@ -243,9 +235,6 @@ def main():
     df_cleaned = data_cleaned[[ds_cleaned, y_cleaned]]
     df_cleaned = df_cleaned.set_index(ds_cleaned)
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
-
-    #Create column target
-    #train_df = df_cleaned['lng_production']
    
     #%%
     #%%
@@ -280,6 +269,7 @@ def main():
     
     # Delete variabel that not used
     del data
+    del new_s
     del data_null_cleaning
     del anomalies
     del anomalies_data
@@ -694,6 +684,8 @@ def main():
     logMessage("Updating Model Parameter result to database ...")
     total_updated_rows = insert_param(conn, all_model_param)
     logMessage("Updated rows: {}".format(total_updated_rows))
+    
+    gc.collect()
     
     print("Done")
 
