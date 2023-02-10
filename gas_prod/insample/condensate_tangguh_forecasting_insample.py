@@ -332,7 +332,7 @@ def main():
     ##### SARIMAX MODEL (forecast_b) #####
     #%%
     logMessage("Creating Sarimax Model Forecasting Insample Condensate BP Tangguh ...")
-    #Set parameters
+    # Set parameters
     sarimax_differencing = 0
     sarimax_seasonal_differencing = 1
     sarimax_sp = 12
