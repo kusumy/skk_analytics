@@ -103,6 +103,7 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
+    #Load data from database
     query_data = os.path.join('gas_prod/sql','c3_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''

@@ -157,7 +157,7 @@ def main():
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
 
     #Load data from database
-    query_data = os.path.join('./sql','c3_badak_data_query.sql')
+    query_data = os.path.join('gas_prod/sql','c3_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
@@ -344,8 +344,8 @@ def main():
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
                         ,'n_changepoints':[num_lags]
-                        ,'seasonality_prior_scale':[1, 10] #Flexibility of the seasonality (0.01,10)
-                        ,'changepoint_prior_scale':[0.001, 0.01] #Flexibility of the trend (0.001,0.5)
+                        ,'seasonality_prior_scale':[1, 8] #Flexibility of the seasonality (0.01,10)
+                        ,'changepoint_prior_scale':[0.002, 0.1] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[3,10]
                         ,'weekly_seasonality':[5,10]
                         ,'yearly_seasonality':[7,10]
