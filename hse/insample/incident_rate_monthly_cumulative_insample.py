@@ -5,7 +5,7 @@ import os
 import sys
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import mlflow
+#import mlflow
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -52,10 +52,17 @@ def main():
     section = config['config']
     
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
+
     TRAIN_START_YEAR= section.getint('train_start_year')
+    TRAIN_START_MONTH = section.getint('train_start_month')
+    TRAIN_START_DAY = 1
+
     TRAIN_END_YEAR= section.getint('train_end_year')
-    FORECAST_START_YEAR= section.getint('forecast_start_year')
-    FORECAST_END_YEAR= section.getint('forecast_end_year')
+    TRAIN_END_MONTH = section.getint('train_end_month')
+    TRAIN_END_DAY = 1
+
+    TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
+    TRAIN_START_YEAR = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
     
     # Configure logging
     #configLogging("ir_monthly_cum_insample.log")
@@ -68,7 +75,7 @@ def main():
         exit()
     
     from datetime import datetime
-    current_year_month = datetime.now().strftime("%Y-%m")
+    current_year_month = datetime.now().strftime("%Y-%m-01")
     current_year = datetime.now().year
     query_data = os.path.join('hse/sql', 'query_month_cum.sql')
     query_1 = open(query_data, mode="rt").read()
@@ -76,12 +83,10 @@ def main():
     if USE_DEFAULT_DATE == True:
         sql = query_1.format('2013', current_year)
     else :
-        sql = query_1.format(TRAIN_START_YEAR, FORECAST_END_YEAR)
+        sql = query_1.format(TRAIN_START_YEAR, TRAIN_START_YEAR)
 
-    #print(sql)
     
     data = get_sql_data(sql, conn)
-    #data = retrieve_data(query_1)
     data['year_num'] = data['year_num'].astype(int)
     data['month_num'] = data['month_num'].astype(int)
     data['date'] = data['year_num'].astype(str) + '-' + data['month_num'].astype(str)
@@ -92,7 +97,7 @@ def main():
     data['date'] = pd.PeriodIndex(data['date'], freq='M')
     data = data.reset_index()
 
-    ds = 'date'
+    ds = 'datestamp'
     y = 'trir_cum' 
 
     df = data[[ds,y]]

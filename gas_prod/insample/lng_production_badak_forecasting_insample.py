@@ -52,6 +52,7 @@ from tokenize import Ignore
 from tracemalloc import start
 from configparser import ConfigParser
 import gc
+import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -159,7 +160,7 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query_data = os.path.join('./sql','lng_prod_badak_data_query.sql')
+    query_data = os.path.join('./gas_prod/insample/sql','lng_prod_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
@@ -395,6 +396,12 @@ def main():
     prophet_mape = mean_absolute_percentage_error(y_test['lng_production'], prophet_forecast)
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
+    
+    # Save best params to pickle file
+    #filename = 'prophet_lng_prod_badak_params.pkl'
+    
+    #with open(filename, 'wb') as file:
+    #    pickle.dump(prophet_best_params_str, file)
     
     # Empty the Prophet memory
     del prophet_param_grid
