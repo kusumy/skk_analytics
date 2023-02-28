@@ -163,7 +163,7 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query = os.path.join('gas_prod/sql','fg_tangguh_data_query.sql')
+    query = os.path.join('./sql','fg_tangguh_data_query.sql')
     query_1 = open(query, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:

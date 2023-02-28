@@ -104,7 +104,7 @@ def main():
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
     #Load data from database
-    query_data = os.path.join('gas_prod/sql','c3_badak_data_query.sql')
+    query_data = os.path.join('./sql','c3_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
@@ -226,7 +226,7 @@ def main():
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
     logMessage("Create Exogenous Features for Future Dates ...")
-    query_exog = os.path.join('gas_prod/sql',"c3_badak_exog_query.sql")
+    query_exog = os.path.join('./sql',"c3_badak_exog_query.sql")
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
     if USE_DEFAULT_DATE == True:

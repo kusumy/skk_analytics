@@ -157,7 +157,7 @@ def main():
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
     #Load data from database
-    query_data = os.path.join('gas_prod/sql','feed_gas_badak_data_query.sql')
+    query_data = os.path.join('./sql','feed_gas_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
