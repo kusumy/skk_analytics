@@ -50,27 +50,17 @@ def main():
     section = config['config']
     
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
-    
+
     TRAIN_START_YEAR= section.getint('train_start_year')
     TRAIN_START_MONTH = section.getint('train_start_month')
     TRAIN_START_DAY = 1
-    
+
     TRAIN_END_YEAR= section.getint('train_end_year')
     TRAIN_END_MONTH = section.getint('train_end_month')
     TRAIN_END_DAY = 1
-    
-    FORECAST_START_YEAR= section.getint('forecast_start_year')
-    FORECAST_START_MONTH = section.getint('forecast_start_month')
-    FORECAST_START_DAY = 1
-    
-    FORECAST_END_YEAR= section.getint('forecast_end_year')
-    FORECAST_END_MONTH = section.getint('forecast_end_month')
-    FORECAST_END_DAY = 1
-    
+
     TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
-    TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
-    FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
-    FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
+    TRAIN_START_YEAR = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
     
     # Configure logging
     #configLogging("incident_rate_trir.log")
@@ -91,9 +81,9 @@ def main():
     query_1 = open(query_data, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
-        sql = query_1.format('2013-01-01', current_year_month)
+        sql = query_1.format('2013', current_year)
     else :
-        sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
+        sql = query_1.format(TRAIN_START_YEAR, TRAIN_START_YEAR)
 
     #print(sql)    
     
