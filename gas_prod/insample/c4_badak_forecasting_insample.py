@@ -329,7 +329,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample LPG C4 PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[num_lags]
+                        ,'n_changepoints':[num_lags, 5, 7]
                         ,'seasonality_prior_scale':[1, 8] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.002, 0.1] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[3,10]

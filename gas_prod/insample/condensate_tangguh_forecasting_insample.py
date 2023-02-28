@@ -409,7 +409,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample Condensate BP Tangguh ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[num_lags]
+                        ,'n_changepoints':[num_lags, 6]
                         ,'seasonality_prior_scale':[0.2, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[5,10]
