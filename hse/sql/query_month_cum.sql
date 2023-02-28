@@ -3,6 +3,5 @@ select * from
 bor_eksplorasi_cum, bor_eksploitasi_cum, workover_cum, wellservice_cum
 FROM trir_monthly_cum ) b
 where
---year_num between '2013' and '2023'
 extract('year' from datestamp) between '{}' and '{}'
 order by datestamp

@@ -245,7 +245,7 @@ def main():
     ##### SARIMAX MODEL #####
     logMessage("Creating Sarimax Model Forecasting Insample LPG C4 PT Badak ...")
     #Set parameters
-    sarimax_differencing = 1
+    sarimax_differencing = 0
     sarimax_seasonal_differencing = 1
     sarimax_seasonal = True
     sarimax_sp = 12
@@ -256,8 +256,7 @@ def main():
     sarimax_n_fits = 50
 
     # Create SARIMA Model
-    sarimax_model = AutoARIMA(start_p = start_p, max_p = max_p, start_q = start_q, max_q = max_q, d=sarimax_differencing, 
-                              start_P = start_P, max_P = max_P, start_Q = start_Q, max_Q = max_Q, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, 
+    sarimax_model = AutoARIMA(d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, 
                               sp=sarimax_sp, trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
     sarimax_fit = sarimax_model.fit(y_train.lpg_c4, X=X_train) #, X=X_train
@@ -290,7 +289,7 @@ def main():
     ##### ARIMAX MODEL #####
     logMessage("Creating Arimax Model Forecasting Insample LPG C4 PT Badak ...")
     #Set parameters
-    arimax_differencing = 1
+    arimax_differencing = 0
     arimax_trace = True
     arimax_error_action = "ignore"
     arimax_suppress_warnings = True
