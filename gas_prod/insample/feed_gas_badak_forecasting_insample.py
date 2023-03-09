@@ -157,7 +157,8 @@ def main():
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
     #Load data from database
-    query_data = os.path.join('./sql','feed_gas_badak_data_query.sql')
+    query_data = os.path.join('./gas_prod/insample/sql','feed_gas_badak_data_query.sql')
+    #query_data = os.path.join('./sql','feed_gas_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
@@ -226,6 +227,31 @@ def main():
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
+    query_data2 = os.path.join('./gas_prod/insample/sql','lng_prod_badak_data_query.sql')
+    #query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
+    query_2 = open(query_data2, mode="rt").read()
+    sql2 = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql2 = query_2.format('2013-01-01', end_date)
+        else :
+            sql2 = query_2.format('2013-01-01', end_date_april)
+    else :
+        sql2 = query_2.format(TRAIN_START_DATE, TRAIN_END_DATE)
+   
+    data2 = get_sql_data(sql2, conn)
+    data2['date'] = pd.DatetimeIndex(data2['date'], freq='D')
+    data2['fg_exog'].fillna(method='ffill', inplace=True)
+    data2 = data2.reset_index()
+    logMessage("Finished Query")
+    
+    logMessage("Null Value Cleaning ...")
+    ##### CLEANING LNG PRODUCTION DATA #####
+    data_fg_exog = data2[['date', 'fg_exog']].copy()
+    ds_fg_exog = 'date'
+    data_fg_exog = data_fg_exog.set_index(ds_fg_exog)
+
+    #%%
     # Smooth time series signal using polynomial smoothing
 
     smoother = LowessSmoother(smooth_fraction=0.01, iterations=1)
@@ -258,6 +284,7 @@ def main():
     ## Create Exogenous Variable
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    df_cleaned['fg_exog'] = data_fg_exog['fg_exog'].copy()
 
     #%%
     # Split into train and test
