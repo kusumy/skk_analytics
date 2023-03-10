@@ -231,6 +231,31 @@ def main():
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
+    query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
+    #query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
+    query_2 = open(query_data2, mode="rt").read()
+    sql2 = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql2 = query_2.format('2013-01-01', end_date)
+        else :
+            sql2 = query_2.format('2013-01-01', end_date_april)
+    else :
+        sql2 = query_2.format(TRAIN_START_DATE, TRAIN_END_DATE)
+   
+    data2 = get_sql_data(sql2, conn)
+    data2['date'] = pd.DatetimeIndex(data2['date'], freq='D')
+    data2['fg_exog'].fillna(method='ffill', inplace=True)
+    data2 = data2.reset_index()
+    logMessage("Finished Query")
+    
+    logMessage("Null Value Cleaning ...")
+    ##### CLEANING LNG PRODUCTION DATA #####
+    data_fg_exog = data2[['date', 'fg_exog']].copy()
+    ds_fg_exog = 'date'
+    data_fg_exog = data_fg_exog.set_index(ds_fg_exog)
+
+    #%%
     logMessage("Condensate PT Badak Data Smoothing ...")
     # Smooth time series signal using polynomial smoothing
     smoother = LowessSmoother(smooth_fraction=0.005, iterations=1)
@@ -264,6 +289,7 @@ def main():
     ## Create Exogenous Variable
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    df_cleaned['fg_exog'] = data_fg_exog['fg_exog'].copy()
 
     #%%
     # Split into train and test
@@ -273,7 +299,6 @@ def main():
     del data
     del data_null_cleaning
     del new_s
-    del y_train
     del anomalies
     del anomalies_data
     #gc.collect()
@@ -299,7 +324,7 @@ def main():
                               start_P = start_P, max_P = max_P, start_Q = start_Q, max_Q = max_Q, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, 
                               trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...")
-    sarimax_fit = sarimax_model.fit(y_train_smoothed, X=X_train) #SKTIME
+    sarimax_fit = sarimax_model.fit(y_train, X=X_train) #SKTIME
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_fit.summary())
 
@@ -343,7 +368,7 @@ def main():
     arimax_model = AutoARIMA(d=arimax_differencing, trace=arimax_trace, n_fits=arimax_n_fits, 
                                           stepwise=arimax_stepwise)
     logMessage("Creating ARIMAX Model ...")
-    arimax_fit = arimax_model.fit(y_train_smoothed, X=X_train)
+    arimax_fit = arimax_model.fit(y_train, X=X_train)
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_fit.summary())
 
@@ -389,7 +414,7 @@ def main():
     gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Prophet Model ...")
-    prophet_fit = gscv_prophet.fit(y_train_smoothed, X=X_train) #, X_train
+    prophet_fit = gscv_prophet.fit(y_train, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Prophet Models ...")
@@ -437,7 +462,7 @@ def main():
     gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_fit = gscv_ranfor.fit(y_train_smoothed, X=X_train) #, X_train
+    ranfor_fit = gscv_ranfor.fit(y_train, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")
@@ -485,7 +510,7 @@ def main():
     gscv_xgb = ForecastingGridSearchCV(xgb_forecaster, cv=cv_xgb, param_grid=xgb_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating XGBoost Model ....")
-    xgb_fit = gscv_xgb.fit(y_train_smoothed, X=X_train) #, X_train
+    xgb_fit = gscv_xgb.fit(y_train, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best XGBoost Models ...")
@@ -531,7 +556,7 @@ def main():
     gscv_linreg = ForecastingGridSearchCV(linreg_forecaster, cv=cv_linreg, param_grid=linreg_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Linear Regression Model ...")
-    linreg_fit = gscv_linreg.fit(y_train_smoothed, X=X_train) #, X=X_train
+    linreg_fit = gscv_linreg.fit(y_train, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Linear Regression Models ...")
@@ -578,7 +603,7 @@ def main():
     gscv_poly2 = ForecastingGridSearchCV(poly2_forecaster, cv=cv_poly2, param_grid=poly2_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_fit = gscv_poly2.fit(y_train_smoothed, X=X_train) #, X=X_train
+    poly2_fit = gscv_poly2.fit(y_train, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=2 Models ...")
@@ -625,7 +650,7 @@ def main():
     gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_fit = gscv_poly3.fit(y_train_smoothed, X=X_train) #, X=X_train
+    poly3_fit = gscv_poly3.fit(y_train, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=3 Models ...")

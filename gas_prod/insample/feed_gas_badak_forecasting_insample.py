@@ -157,7 +157,7 @@ def main():
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
     #Load data from database
-    query_data = os.path.join('./gas_prod/insample/sql','feed_gas_badak_data_query.sql')
+    query_data = os.path.join('./sql','feed_gas_badak_data_query.sql')
     #query_data = os.path.join('./sql','feed_gas_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
@@ -227,7 +227,7 @@ def main():
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
-    query_data2 = os.path.join('./gas_prod/insample/sql','lng_prod_badak_data_query.sql')
+    query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
     #query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
     query_2 = open(query_data2, mode="rt").read()
     sql2 = ''
@@ -246,7 +246,7 @@ def main():
     logMessage("Finished Query")
     
     logMessage("Null Value Cleaning ...")
-    ##### CLEANING LNG PRODUCTION DATA #####
+    ##### EXOGENOUS DATA #####
     data_fg_exog = data2[['date', 'fg_exog']].copy()
     ds_fg_exog = 'date'
     data_fg_exog = data_fg_exog.set_index(ds_fg_exog)
@@ -286,6 +286,9 @@ def main():
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
     df_cleaned['fg_exog'] = data_fg_exog['fg_exog'].copy()
 
+    # find the correlation between columns
+    corr_matrix = df_cleaned.corr()
+
     #%%
     # Split into train and test
     X_train, X_test = temporal_train_test_split(df_cleaned.iloc[:,1:], test_size=test_size)
@@ -293,7 +296,6 @@ def main():
     # Delete variabel that not used
     del data
     del data_null_cleaning
-    del y_train
     del new_s
     del anomalies
     del anomalies_data
@@ -305,7 +307,7 @@ def main():
     ##### SARIMAX MODEL (forecast_b) #####  
     #Set parameters
     sarimax_differencing = 1
-    sarimax_seasonal_differencing = 1
+    sarimax_seasonal_differencing = 0
     sarimax_sp = 12
     sarimax_seasonal = True
     sarimax_trace = True
@@ -314,11 +316,11 @@ def main():
     sarimax_n_fits = 50
     sarimax_stepwise = True
     
-    sarimax_model = AutoARIMA(start_p = start_p, max_p = max_p, start_q = start_q, max_q = max_q, d=sarimax_differencing, 
-                              start_P = start_P, max_P = max_P, start_Q = start_Q, max_Q = max_Q, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, 
+    sarimax_model = AutoARIMA(start_p = start_p, max_p = max_p, start_q = start_q, max_q = max_q, d=sarimax_differencing,
+                               start_P = start_P, max_P = max_P, start_Q = start_Q, max_Q = max_Q, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, 
                               trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...") 
-    sarimax_fit = sarimax_model.fit(y_train_smoothed, X=X_train)
+    sarimax_fit = sarimax_model.fit(y_train, X=X_train)
     logMessage("SARIMAX Model Summary")
     logMessage(sarimax_fit.summary())
     
@@ -350,7 +352,7 @@ def main():
     # Create ARIMAX Model
     arimax_model = AutoARIMA(d=1, suppress_warnings=True, error_action='ignore', trace=True)
     logMessage("Creating ARIMAX Model ...")
-    arimax_fit = arimax_model.fit(y_train_smoothed, X=X_train)
+    arimax_fit = arimax_model.fit(y_train, X=X_train)
     logMessage("ARIMAX Model Summary")
     logMessage(arimax_fit.summary())
     
@@ -378,7 +380,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample Feed Gas PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[num_lags, 8]
+                        ,'n_changepoints':[num_lags, 8, 18]
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
@@ -395,7 +397,7 @@ def main():
     gscv_prophet = ForecastingGridSearchCV(prophet_forecaster, cv=cv_prophet, param_grid=prophet_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Prophet Model ...")
-    prophet_fit = gscv_prophet.fit(y_train_smoothed, X=X_train) #, X_train
+    prophet_fit = gscv_prophet.fit(y_train, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Prophet Models ...")
@@ -430,7 +432,7 @@ def main():
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
-    ranfor_forecaster_param_grid = {"window_length": [8, 18, num_lags], 
+    ranfor_forecaster_param_grid = {"window_length": [8, 18, 12, num_lags], 
                                     "estimator__n_estimators": [80,150]}
 
     # create regressor object
@@ -442,7 +444,7 @@ def main():
     gscv_ranfor = ForecastingGridSearchCV(ranfor_forecaster, cv=cv_ranfor, param_grid=ranfor_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Random Forest Model ...")
-    ranfor_fit = gscv_ranfor.fit(y_train_smoothed, X=X_train) #, X_train
+    ranfor_fit = gscv_ranfor.fit(y_train, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best Random Forest Models ...")
@@ -478,7 +480,7 @@ def main():
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
-    xgb_forecaster_param_grid = {"window_length": [8, 18, num_lags]
+    xgb_forecaster_param_grid = {"window_length": [8, 18, 12, num_lags]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -489,7 +491,7 @@ def main():
     gscv_xgb = ForecastingGridSearchCV(xgb_forecaster, cv=cv_xgb, param_grid=xgb_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating XGBoost Model ....")
-    xgb_fit = gscv_xgb.fit(y_train_smoothed, X=X_train) #, X_train
+    xgb_fit = gscv_xgb.fit(y_train, X=X_train) #, X_train
 
     # Show best model parameters
     logMessage("Show Best XGBoost Models ...")
@@ -524,7 +526,7 @@ def main():
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
 
-    linreg_forecaster_param_grid = {"window_length": [8, 18, num_lags]}
+    linreg_forecaster_param_grid = {"window_length": [2, 6, 8]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
@@ -533,7 +535,7 @@ def main():
     gscv_linreg = ForecastingGridSearchCV(linreg_forecaster, cv=cv_linreg, param_grid=linreg_forecaster_param_grid, scoring=mape)
 
     logMessage("Creating Linear Regression Model ...")
-    linreg_fit = gscv_linreg.fit(y_train_smoothed, X=X_train) #, X=X_train
+    linreg_fit = gscv_linreg.fit(y_train, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Linear Regression Models ...")
@@ -579,7 +581,7 @@ def main():
     gscv_poly2 = ForecastingGridSearchCV(poly2_forecaster, cv=cv_poly2, param_grid=poly2_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 2 Model ...")
-    poly2_fit = gscv_poly2.fit(y_train_smoothed, X=X_train) #, X=X_train
+    poly2_fit = gscv_poly2.fit(y_train, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=2 Models ...")
@@ -625,7 +627,7 @@ def main():
     gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_fit = gscv_poly3.fit(y_train_smoothed, X=X_train) #, X=X_train
+    poly3_fit = gscv_poly3.fit(y_train, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=3 Models ...")
