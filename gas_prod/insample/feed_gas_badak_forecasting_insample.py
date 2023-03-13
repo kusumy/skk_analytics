@@ -299,7 +299,7 @@ def main():
     del new_s
     del anomalies
     del anomalies_data
-    #gc.collect()
+    gc.collect()
 
     # %%
     ##### FORECASTING #####
@@ -317,7 +317,7 @@ def main():
     sarimax_stepwise = True
     
     sarimax_model = AutoARIMA(start_p = start_p, max_p = max_p, start_q = start_q, max_q = max_q, d=sarimax_differencing,
-                               start_P = start_P, max_P = max_P, start_Q = start_Q, max_Q = max_Q, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, sp=sarimax_sp, 
+                               start_P = start_P, max_P = max_P, start_Q = start_Q, max_Q = max_Q, D=0, seasonal=sarimax_seasonal, sp=sarimax_sp, 
                               trace=sarimax_trace, n_fits=sarimax_n_fits, stepwise=sarimax_stepwise, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
     logMessage("Creating SARIMAX Model ...") 
     sarimax_fit = sarimax_model.fit(y_train, X=X_train)
@@ -344,7 +344,7 @@ def main():
     del sarimax_param_order
     del sarimax_param_order_seasonal
     del sarimax_fit
-    #gc.collect()
+    gc.collect()
     
     
     ##### ARIMAX MODEL #####
@@ -372,7 +372,7 @@ def main():
     del arimax_model
     del arimax_forecast
     del arimax_fit
-    #gc.collect()
+    gc.collect()
 
 
     ##### PROPHET MODEL (forecast_c) #####
@@ -421,7 +421,7 @@ def main():
     del prophet_fit
     del prophet_best_params
     del prophet_mape_str
-    #gc.collect()
+    gc.collect()
     
 
     ##### RANDOM FOREST MODEL (forecast_d) #####
@@ -470,7 +470,7 @@ def main():
     del ranfor_fit
     del ranfor_best_params
     del ranfor_mape_str
-    #gc.collect()
+    gc.collect()
 
 
     ##### XGBOOST MODEL (forecast_e) #####
@@ -517,7 +517,7 @@ def main():
     del xgb_fit
     del xgb_best_params
     del xgb_mape_str
-    #gc.collect()
+    gc.collect()
 
 
     ##### LINEAR REGRESSION MODEL (forecast_f) #####
@@ -561,7 +561,7 @@ def main():
     del linreg_fit
     del linreg_best_params
     del linreg_mape_str
-    #gc.collect()
+    gc.collect()
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL (forecast_g) #####
@@ -607,7 +607,7 @@ def main():
     del poly2_fit
     del poly2_best_params
     del poly2_mape_str
-    #gc.collect()
+    gc.collect()
 
 
     ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL (forecast_h) #####
@@ -653,7 +653,7 @@ def main():
     del poly3_fit
     del poly3_best_params
     del poly3_mape_str
-    #gc.collect()
+    gc.collect()
 
     
     #%%   

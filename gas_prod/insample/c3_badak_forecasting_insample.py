@@ -574,7 +574,7 @@ def main():
     poly2_interactions = False
     poly2_strategy = "recursive"
 
-    poly2_forecaster_param_grid = {"window_length": [1]}
+    poly2_forecaster_param_grid = {"window_length": [0.8]}
 
     # Create regressor object
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
