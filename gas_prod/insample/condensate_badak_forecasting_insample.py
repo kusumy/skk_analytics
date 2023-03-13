@@ -90,8 +90,9 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 warnings.filterwarnings("ignore", category=UserWarning, message="Non-invertible starting MA parameters found.")
+warnings.filterwarnings('ignore', 'y_pred and y_true do not have the same column index')
+warnings.filterwarnings('ignore', 'Maximum Likelihood optimization failed to converge')
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
@@ -366,7 +367,7 @@ def main():
 
     # Create ARIMAX Model
     arimax_model = AutoARIMA(d=arimax_differencing, trace=arimax_trace, n_fits=arimax_n_fits, 
-                                          stepwise=arimax_stepwise)
+                            stepwise=arimax_stepwise)
     logMessage("Creating ARIMAX Model ...")
     arimax_fit = arimax_model.fit(y_train, X=X_train)
     logMessage("ARIMAX Model Summary")
@@ -396,11 +397,11 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample Condensate PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[num_lags, 8]
-                        ,'seasonality_prior_scale':[1, 10] #Flexibility of the seasonality (0.01,10)
+                        ,'n_changepoints':[7, 18, 28, num_lags]
+                        ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
-                        ,'daily_seasonality':[8.11]
-                        ,'weekly_seasonality':[5,10]
+                        ,'daily_seasonality':[8,10]
+                        ,'weekly_seasonality':[1,5]
                         ,'yearly_seasonality':[8,10]
                         }
 
@@ -450,8 +451,8 @@ def main():
     ranfor_strategy = "recursive"
 
     # create regressor object
-    ranfor_forecaster_param_grid = {"window_length": [3, 8, num_lags], 
-                                    "estimator__n_estimators": [80, 150]}
+    ranfor_forecaster_param_grid = {"window_length": [7, 18, 28, num_lags], 
+                                    "estimator__n_estimators": [100, 200]}
 
     # create regressor object
     ranfor_regressor = RandomForestRegressor(random_state = ranfor_random_state, criterion = ranfor_criterion)
@@ -499,7 +500,7 @@ def main():
     xgb_strategy = "recursive"
 
     # Create regressor object
-    xgb_forecaster_param_grid = {"window_length": [3, 8, num_lags]
+    xgb_forecaster_param_grid = {"window_length": [7, 18, 28, num_lags]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -547,7 +548,7 @@ def main():
     linreg_strategy = "recursive"
 
     # Create regressor object
-    linreg_forecaster_param_grid = {"window_length": [3, 8, num_lags]}
+    linreg_forecaster_param_grid = {"window_length": [7, 18, 28, num_lags]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
@@ -594,7 +595,7 @@ def main():
     poly2_strategy = "recursive"
 
     # Create regressor object
-    poly2_forecaster_param_grid = {"window_length": [1]}
+    poly2_forecaster_param_grid = {"window_length": [0.8]}
 
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
     poly2_forecaster = make_reduction(poly2_regressor, strategy=poly2_strategy)
@@ -650,7 +651,7 @@ def main():
     gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_fit = gscv_poly3.fit(y_train, X=X_train) #, X=X_train
+    poly3_fit = gscv_poly3.fit(y_train_smoothed, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=3 Models ...")

@@ -85,6 +85,8 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 warnings.filterwarnings("ignore", category=UserWarning, message="Non-invertible starting MA parameters found.")
+warnings.filterwarnings('ignore', 'y_pred and y_true do not have the same column index')
+warnings.filterwarnings('ignore', 'Maximum Likelihood optimization failed to converge')
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Model scoring for Cross Validation
@@ -526,7 +528,7 @@ def main():
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
 
-    linreg_forecaster_param_grid = {"window_length": [2, 6, 8]}
+    linreg_forecaster_param_grid = {"window_length": [8, 12]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
