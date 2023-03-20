@@ -159,7 +159,7 @@ def main():
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
     #Load data from database
-    query_data = os.path.join('./sql','feed_gas_badak_data_query.sql')
+    query_data = os.path.join('./gas_prod/insample/sql','feed_gas_badak_data_query.sql')
     #query_data = os.path.join('./sql','feed_gas_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
@@ -229,7 +229,7 @@ def main():
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
-    query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
+    query_data2 = os.path.join('./gas_prod/insample/sql','lng_prod_badak_data_query.sql')
     #query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
     query_2 = open(query_data2, mode="rt").read()
     sql2 = ''
@@ -279,7 +279,7 @@ def main():
     
     #%%
     # Create forecasting Horizon
-    fh = ForecastingHorizon(y_test_smoothed.index, is_relative=False)
+    fh = ForecastingHorizon(y_test.index, is_relative=False)
     fh_int = np.arange(1, len(fh))
 
     #%%
@@ -528,7 +528,7 @@ def main():
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
 
-    linreg_forecaster_param_grid = {"window_length": [8, 12]}
+    linreg_forecaster_param_grid = {"window_length": [1, 2, 3]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
