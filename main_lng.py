@@ -41,58 +41,77 @@ ap.add_argument("-e", "--enddate", required=True, help="End date test data")
 configLogging("main_lng.log")
     
 # Forecasting Feed Gas BP Tangguh ...
-t0 = time.process_time()
-feed_gas_tangguh_forecasting.main()
-t1 = time.process_time()
-exec_time = format_timespan(t1-t0, max_units=3)
-logMessage("Forecasting Feed Gas BP Tangguh : " + exec_time)
+#t0 = time.process_time()
+#feed_gas_tangguh_forecasting.main()
+#t1 = time.process_time()
+#exec_time = format_timespan(t1-t0, max_units=3)
+#logMessage("Forecasting Feed Gas BP Tangguh : " + exec_time)
 
-logMessage('\n')
-
-# Forecasting Feed Gas PT Badak ...
-t2 = time.process_time()
-feed_gas_badak_forecasting.main() 
-t3 = time.process_time()
-exec_time = format_timespan(t3-t2, max_units=3)
-logMessage("Forecasting Feed Gas PT Badak : " + exec_time)
-
-logMessage('\n')
+#logMessage('\n')
 
 # Forecasting LNG Production BP Tangguh ...
-t4 = time.process_time()
-lng_tangguh_forecasting.main() 
-t5 = time.process_time()
-exec_time = format_timespan(t5-t4, max_units=3)
-logMessage("Forecasting LNG Production BP Tangguh : " + exec_time)
+#t2 = time.process_time()
+#lng_tangguh_forecasting.main() 
+#t3 = time.process_time()
+#exec_time = format_timespan(t3-t2, max_units=3)
+#logMessage("Forecasting LNG Production BP Tangguh : " + exec_time)
 
-logMessage('\n')
-
-# Forecasting LNG Production PT Badak ...
-t6 = time.process_time()
-lng_badak_forecasting.main()
-t7 = time.process_time()
-exec_time = format_timespan(t7-t6, max_units=3)
-logMessage("Forecasting LNG Production PT Badak : " + exec_time)
-
-logMessage('\n')
+#logMessage('\n')
 
 # Forecasting Condensate BP Tangguh ...
-t8 = time.process_time()
-condensate_tangguh_forecasting.main()
-t9 = time.process_time()
-exec_time = format_timespan(t9-t8, max_units=3)
-logMessage("Forecasting Condensate BP Tangguh : " + exec_time)
+#t4 = time.process_time()
+#condensate_tangguh_forecasting.main()
+#t5 = time.process_time()
+#exec_time = format_timespan(t5-t4, max_units=3)
+#logMessage("Forecasting Condensate BP Tangguh : " + exec_time)
 
-logMessage('\n')
+#logMessage('\n')
+
+
+# Forecasting LNG Production BP Tangguh ...
+#t2 = time.process_time()
+#lng_tangguh_forecasting.main() 
+#t3 = time.process_time()
+#exec_time = format_timespan(t3-t2, max_units=3)
+#logMessage("Forecasting LNG Production BP Tangguh : " + exec_time)
+
+#logMessage('\n')
+
+# Forecasting Condensate BP Tangguh ...
+#t4 = time.process_time()
+#condensate_tangguh_forecasting.main()
+#t5 = time.process_time()
+#exec_time = format_timespan(t5-t4, max_units=3)
+#logMessage("Forecasting Condensate BP Tangguh : " + exec_time)
+
+#logMessage('\n')
+
+# Forecasting Feed Gas PT Badak ...
+#t2 = time.process_time()
+#feed_gas_badak_forecasting.main() 
+#t3 = time.process_time()
+#exec_time = format_timespan(t3-t2, max_units=3)
+#logMessage("Forecasting Feed Gas PT Badak : " + exec_time)
+
+#logMessage('\n')
+
+# Forecasting LNG Production PT Badak ...
+#t6 = time.process_time()
+#lng_badak_forecasting.main()
+#t7 = time.process_time()
+#exec_time = format_timespan(t7-t6, max_units=3)
+#logMessage("Forecasting LNG Production PT Badak : " + exec_time)
+
+#logMessage('\n')
 
 # Forecasting Condensate PT Badak ...
-t10 = time.process_time()
-condensate_badak_forecasting.main()
-t11 = time.process_time()
-exec_time = format_timespan(t11-t10, max_units=3)
-logMessage("Forecasting Condensate PT Badak : " + exec_time)
+#t10 = time.process_time()
+#condensate_badak_forecasting.main()
+#t11 = time.process_time()
+#exec_time = format_timespan(t11-t10, max_units=3)
+#logMessage("Forecasting Condensate PT Badak : " + exec_time)
 
-logMessage('\n')
+#logMessage('\n')
 
 # Forecasting C3 PT Badak ...
 t12 = time.process_time()
@@ -110,10 +129,10 @@ t15 = time.process_time()
 exec_time = format_timespan(t15-t14, max_units=3)
 logMessage("Forecasting C4 PT Badak : " + exec_time)
 
-logMessage('\n')
+#logMessage('\n')
 
-total_exec_time = format_timespan(t15-t0, max_units=2)
-logMessage("Total execution time : " + total_exec_time)
+#total_exec_time = format_timespan(t5-t0, max_units=2)
+#logMessage("Total execution time : " + total_exec_time)
 
 exit()
 

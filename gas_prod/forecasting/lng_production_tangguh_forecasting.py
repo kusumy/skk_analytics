@@ -99,7 +99,7 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query = os.path.join('./sql','lng_prod_tangguh_data_query.sql')
+    query = os.path.join('./gas_prod/insample/sql','lng_prod_tangguh_data_query.sql')
     query_1 = open(query, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
@@ -322,7 +322,7 @@ def main():
     #Load Data from Database
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
-    query_exog = os.path.join('./sql','lng_prod_tangguh_exog_query.sql')
+    query_exog = os.path.join('./gas_prod/insample/sql','lng_prod_tangguh_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
     if USE_DEFAULT_DATE == True:
@@ -722,27 +722,6 @@ def main():
                                 y_pred_poly2[['forecast_g']],
                                 y_pred_poly3[['forecast_h']]], axis=1)
         y_all_pred['date'] = future_exog.index.values
-
-        #%%
-        # Plot prediction
-        plt.style.use('fivethirtyeight')
-        fig, ax = plt.subplots(figsize=(20,8))
-        ax.plot(train_df, label='train')
-        ax.plot(arimax_forecast, label='arimax_pred')
-        ax.plot(sarimax_forecast, label='sarimax_pred')
-        ax.plot(prophet_forecast, label='prophet_pred')
-        ax.plot(ranfor_forecast, label='ranfor_pred')
-        ax.plot(xgb_forecast, label='xgb_pred')
-        ax.plot(linreg_forecast, label='linreg_pred')
-        ax.plot(poly2_forecast, label='poly2_pred')
-        ax.plot(poly3_forecast, label='poly3_pred')
-        title = 'LNG Production BP Tangguh Planned Shutdown and Unplanned Shutdown Cleaning'
-        ax.set_title(title)
-        ax.set_ylabel("LNG Production")
-        ax.set_xlabel("Datestamp")
-        ax.legend(loc='best')
-        #plt.savefig("LNG Production BP Tangguh Arimax Model with Exogenous-Shutdown" + ".jpg")
-        plt.close()
 
         # %%
         # Save forecast result to database
