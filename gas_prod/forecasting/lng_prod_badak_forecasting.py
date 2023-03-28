@@ -53,7 +53,7 @@ def main():
     
     config = ConfigParser()
     config.read('config_lng.ini')
-    section = config['config']
+    section = config['config_badak']
 
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
 

@@ -113,7 +113,7 @@ def main():
     config.read('config_lng.ini')
     
     # Accessing sections
-    section_1 = config['config']
+    section_1 = config['config_tangguh']
     
     # Get values from configuration
     USE_DEFAULT_DATE = section_1.getboolean('use_default_date')
