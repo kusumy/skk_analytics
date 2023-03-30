@@ -103,10 +103,16 @@ mse = MeanSquaredError()
 # %%
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import (logMessage, get_first_date_of_prev_month, get_last_date_of_prev_month,
+    from utils import (logMessage, get_first_date_of_prev_month, get_last_date_of_prev_month, configLogging,
                         get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
+
+    # Logs Directory
+    logs_file_path = os.path.join('./logs', 'feed_gas_tangguh_insample.log')
+
+    # Configure logging
+    configLogging(logs_file_path)
     
     # Connect to configuration file
     config = ConfigParser()
@@ -165,7 +171,7 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query = os.path.join('./gas_prod/insample/sql','fg_tangguh_data_query.sql')
+    query = os.path.join('./sql','fg_tangguh_data_query.sql')
     query_1 = open(query, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:

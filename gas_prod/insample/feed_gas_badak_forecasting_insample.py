@@ -97,10 +97,16 @@ mse = MeanSquaredError()
 # %%
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month, configLogging,
                        get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
+
+    # Logs Directory
+    logs_file_path = os.path.join('./logs', 'feed_gas_badak_insample.log')
+
+    # Configure logging
+    configLogging(logs_file_path)
     
     # Connect to configuration file
     config = ConfigParser()
@@ -159,7 +165,7 @@ def main():
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
     #Load data from database
-    query_data = os.path.join('./gas_prod/insample/sql','feed_gas_badak_data_query.sql')
+    query_data = os.path.join('./sql','feed_gas_badak_data_query.sql')
     #query_data = os.path.join('./sql','feed_gas_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
@@ -229,7 +235,7 @@ def main():
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
-    query_data2 = os.path.join('./gas_prod/insample/sql','lng_prod_badak_data_query.sql')
+    query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
     #query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
     query_2 = open(query_data2, mode="rt").read()
     sql2 = ''

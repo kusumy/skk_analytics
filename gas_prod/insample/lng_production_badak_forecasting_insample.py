@@ -98,10 +98,16 @@ mse = MeanSquaredError()
 #%%   
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import (logMessage, get_first_date_of_prev_month, get_last_date_of_prev_month,
+    from utils import (logMessage, get_first_date_of_prev_month, get_last_date_of_prev_month, configLogging,
                        get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
+
+    # Logs Directory
+    logs_file_path = os.path.join('./logs', 'lng_production_badak_insample.log')
+
+    # Configure logging
+    configLogging(logs_file_path)
 
     # Connect to configuration file
     config = ConfigParser()
@@ -162,7 +168,7 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query_data = os.path.join('./gas_prod/insample/sql','lng_prod_badak_data_query.sql')
+    query_data = os.path.join('./sql','lng_prod_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
