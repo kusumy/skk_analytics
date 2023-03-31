@@ -39,9 +39,15 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 # %%
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import (logMessage, ad_test)
+    from utils import logMessage, ad_test, configLogging
     from polyfit import PolynomRegressor
     import datetime
+
+    # Logs Directory
+    logs_file_path = os.path.join('./logs', 'incident_rate_monthly_cumulative_insample.log')
+
+    # Configure logging
+    configLogging(logs_file_path)
     
     config = ConfigParser()
     config.read('config_hse.ini')
@@ -65,13 +71,13 @@ def main():
     
     from datetime import datetime
     current_year = datetime.now().year
-    query_data = os.path.join('hse/sql', 'query_yearly.sql')
+    query_data = os.path.join('./sql', 'query_yearly.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         sql = query_1.format('2013', current_year)
     else :
-        sql = query_1.format(TRAIN_START_YEAR, FORECAST_END_YEAR)
+        sql = query_1.format(TRAIN_START_YEAR, TRAIN_END_YEAR)
 
     #print(sql)
     

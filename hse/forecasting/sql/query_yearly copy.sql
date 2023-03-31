@@ -2,4 +2,4 @@ SELECT year_num, trir, survey_seismic, bor_eksplorasi, bor_eksploitasi, workover
 FROM
 trir_yearly
 WHERE
-year_num BETWEEN '2013' AND date_part('year', now())
+year_num BETWEEN '2013' AND '2022'
