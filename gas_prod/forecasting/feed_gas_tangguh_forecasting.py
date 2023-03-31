@@ -46,11 +46,17 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 #%%
 def main():
-    from connection import create_db_connection, get_sql_data
-    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+    from connection import create_db_connection, get_sql_data, config
+    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month, configLogging,
                        get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
+
+    # Logs Directory
+    logs_file_path = os.path.join('./logs', 'feed_gas_tangguh_forecasting.log')
+
+    # Configure logging
+    configLogging(logs_file_path)
     
     config = ConfigParser()
     config.read('config_lng.ini')
@@ -99,7 +105,7 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query = os.path.join('./gas_prod/insample/sql','fg_tangguh_data_query.sql')
+    query = os.path.join('./sql','fg_tangguh_data_query.sql')
     query_1 = open(query, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
@@ -297,7 +303,7 @@ def main():
     #Load Data from Database
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
-    query_exog = os.path.join('./gas_prod/insample/sql','fg_tangguh_exog_query.sql')
+    query_exog = os.path.join('./sql','fg_tangguh_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
     if USE_DEFAULT_DATE == True:

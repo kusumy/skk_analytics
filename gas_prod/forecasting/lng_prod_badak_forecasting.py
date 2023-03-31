@@ -46,11 +46,17 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 # %%
 def main():
     from connection import create_db_connection, get_sql_data
-    from utils import (logMessage, ad_test, get_first_date_of_prev_month, get_last_date_of_prev_month,
+    from utils import (logMessage, configLogging, get_first_date_of_prev_month, get_last_date_of_prev_month,
                        get_last_date_of_current_year, end_day_forecast_april, get_first_date_of_november)
     from polyfit import PolynomRegressor
     import datetime
     
+    # Logs Directory
+    logs_file_path = os.path.join('./logs', 'lng_production_badak_forecasting.log')
+
+    # Configure logging
+    configLogging(logs_file_path)
+
     config = ConfigParser()
     config.read('config_lng.ini')
     section = config['config_badak']
@@ -98,7 +104,7 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query_data = os.path.join('./gas_prod/insample/sql','lng_prod_badak_data_query.sql')
+    query_data = os.path.join('./sql','lng_prod_badak_data_query.sql')
     query_1 = open(query_data, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
@@ -220,7 +226,7 @@ def main():
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
     logMessage("Create Exogenous Features for Future Dates ...")
-    query_exog = os.path.join('./gas_prod/insample/sql','lng_prod_badak_exog_query.sql')
+    query_exog = os.path.join('./sql','lng_prod_badak_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
     if USE_DEFAULT_DATE == True:
