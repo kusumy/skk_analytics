@@ -613,7 +613,6 @@ def main():
     df_adjustment_linreg = df_cleaned.loc[df_cleaned.index[-365:]].copy()
     df_adjustment_linreg['linreg_forecast'] = linreg_forecast.copy()
     #df_adjustment_linreg = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
-    df_adjustment_linreg = df_adjustment_linreg.drop(df_adjustment_linreg[df_adjustment_linreg['planned_shutdown'] == 1].index)
 
     # Calculate mean linreg_forecast
     linreg_forecast_mean = df_adjustment_linreg['linreg_forecast'].mean()

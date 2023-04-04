@@ -374,7 +374,7 @@ def main():
     logMessage("Sarimax Model Parameters "+sarimax_param)
 
     # Create Adjusment Value for Sarimax
-    df_adjustment_sarimax = df_cleaned.loc[df.index[-365:]].copy()
+    df_adjustment_sarimax = df_cleaned.loc[df_cleaned.index[-365:]].copy()
     df_adjustment_sarimax['sarimax_forecast'] = sarimax_forecast.copy()
     #df_adjustment_sarimax = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
     df_adjustment_sarimax = df_adjustment_sarimax.drop(df_adjustment_sarimax[df_adjustment_sarimax['planned_shutdown'] == 1].index)
@@ -422,7 +422,7 @@ def main():
     logMessage("Arimax Model Parameters "+arimax_param)
 
     # Create Adjusment Value for Arimax
-    df_adjustment_arimax = df_cleaned.loc[df.index[-365:]].copy()
+    df_adjustment_arimax = df_cleaned.loc[df_cleaned.index[-365:]].copy()
     df_adjustment_arimax['arimax_forecast'] = arimax_forecast.copy()
     #df_adjustment_arimax = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
     df_adjustment_arimax = df_adjustment_arimax.drop(df_adjustment_arimax[df_adjustment_arimax['planned_shutdown'] == 1].index)
@@ -479,7 +479,7 @@ def main():
     logMessage("Prophet Model "+prophet_mape_str)
 
     # Create Adjusment Value for Prophet
-    df_adjustment_prophet = df_cleaned.loc[df.index[-365:]].copy()
+    df_adjustment_prophet = df_cleaned.loc[df_cleaned.index[-365:]].copy()
     df_adjustment_prophet['prophet_forecast'] = prophet_forecast.copy()
     #df_adjustment_prophet = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
     df_adjustment_prophet = df_adjustment_prophet.drop(df_adjustment_prophet[df_adjustment_prophet['planned_shutdown'] == 1].index)
@@ -540,7 +540,7 @@ def main():
     logMessage("Random Forest Model "+ranfor_mape_str)
 
     # Create Adjusment Value for Random Forest
-    df_adjustment_ranfor = df_cleaned.loc[df.index[-365:]].copy()
+    df_adjustment_ranfor = df_cleaned.loc[df_cleaned.index[-365:]].copy()
     df_adjustment_ranfor['ranfor_forecast'] = ranfor_forecast.copy()
     #df_adjustment_ranfor = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
     df_adjustment_ranfor = df_adjustment_ranfor.drop(df_adjustment_ranfor[df_adjustment_ranfor['planned_shutdown'] == 1].index)
@@ -600,7 +600,7 @@ def main():
     logMessage("XGBoost Model "+xgb_mape_str)
 
     # Create Adjusment Value for XGBoost
-    df_adjustment_xgb = df_cleaned.loc[df.index[-365:]].copy()
+    df_adjustment_xgb = df_cleaned.loc[df_cleaned.index[-365:]].copy()
     df_adjustment_xgb['xgb_forecast'] = xgb_forecast.copy()
     #df_adjustment_xgb = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
     df_adjustment_xgb = df_adjustment_xgb.drop(df_adjustment_xgb[df_adjustment_xgb['planned_shutdown'] == 1].index)
@@ -656,7 +656,7 @@ def main():
     logMessage("Linear Regression Model "+linreg_mape_str)
 
     # Create Adjusment Value for Linear Regression
-    df_adjustment_linreg = df_cleaned.loc[df.index[-365:]].copy()
+    df_adjustment_linreg = df_cleaned.loc[df_cleaned.index[-365:]].copy()
     df_adjustment_linreg['linreg_forecast'] = linreg_forecast.copy()
     #df_adjustment_linreg = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
     df_adjustment_linreg = df_adjustment_linreg.drop(df_adjustment_linreg[df_adjustment_linreg['planned_shutdown'] == 1].index)
@@ -715,7 +715,7 @@ def main():
     logMessage("Polynomial Regression Degree=2 Model "+poly2_mape_str)
 
     # Create Adjusment Value for Polynomial Regression Degree=2
-    df_adjustment_poly2 = df_cleaned.loc[df.index[-365:]].copy()
+    df_adjustment_poly2 = df_cleaned.loc[df_cleaned.index[-365:]].copy()
     df_adjustment_poly2['poly2_forecast'] = poly2_forecast.copy()
     #df_adjustment_poly2 = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
     df_adjustment_poly2 = df_adjustment_poly2.drop(df_adjustment_poly2[df_adjustment_poly2['planned_shutdown'] == 1].index)
@@ -774,7 +774,7 @@ def main():
     logMessage("Polynomial Regression Degree=3 Model "+poly3_mape_str)
 
     # Create Adjusment Value for Polynomial Regression Degree=3
-    df_adjustment_poly3 = df_cleaned.loc[df.index[-365:]].copy()
+    df_adjustment_poly3 = df_cleaned.loc[df_cleaned.index[-365:]].copy()
     df_adjustment_poly3['poly3_forecast'] = poly3_forecast.copy()
     #df_adjustment_poly3 = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
     df_adjustment_poly3 = df_adjustment_poly3.drop(df_adjustment_poly3[df_adjustment_poly3['planned_shutdown'] == 1].index)
@@ -830,7 +830,7 @@ def main():
 
     all_model_param = pd.DataFrame(all_model_param)
 
-     # CREATE ADJUSTMENT VALUE TO DATAFRAME
+    # CREATE ADJUSTMENT VALUE TO DATAFRAME
     logMessage("Creating all adjustment value dataframe ...")
     all_adj_value =  {'adj_forecast_a': [adj_forecast_a],
                         'adj_forecast_b': [adj_forecast_b],

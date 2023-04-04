@@ -1,6 +1,6 @@
 ###### CONDENSATE PT BADAK FORECASTING INSAMPLE ######
 # This python script is used to perform forecasting on testing data from each method.
-# Data source from the SKK Migas (10.6.7.74) database in the lng_production_daily table with lng_plant = 'PT Badak'.
+# Data source from the SKK Migas (10.6.7.74) database in the lng_condensate_daily table with lng_plant = 'PT Badak'.
 
 ##### METHODS FOR TIME SERIES FORECASTING #####
 # There are many methods that we can use for this forecasting, such as ARIMAX, SARIMAX, PROPHET, RANDOM FOREST, XGBOOST, LINEAR REGRESSION, POLYNOMIAL REGRESSION DEGREE 2, POLYNOMIAL REGRESSION DEGREE 3.
@@ -40,7 +40,7 @@
 
 ##### HOW TO USE THIS SCRIPT #####
 # We can run this script using command prompt (directory same with this python script). But in this case, we can run this script using main_lng.py.
-# For example : We will run this script only, we can comment (#) script main_lng_insample.py on other script .py (example: feed_gas_tangguh_forecasting_insample.py etc.)
+# For example : We will run this script only, we can comment (#) script main_lng_insample.py on other script .py (example: condensate_badak_forecasting_insample.py etc.)
 
 
 # %%
@@ -350,12 +350,27 @@ def main():
     sarimax_param = str({'sarimax_order': sarimax_param_order, 'sarimax_seasonal_order': sarimax_param_order_seasonal})
     logMessage("Sarimax Model Parameters "+sarimax_param)
 
+    # Create Adjusment Value for Sarimax
+    df_adjustment_sarimax = df_cleaned.loc[df_cleaned.index[-365:]].copy()
+    df_adjustment_sarimax['sarimax_forecast'] = sarimax_forecast.copy()
+    #df_adjustment_sarimax = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
+
+    # Calculate mean condensate data testing
+    test_mean = df_adjustment_sarimax['condensate'].mean()
+
+    # Calculate mean sarimax_forecast
+    sarimax_forecast_mean = df_adjustment_sarimax['sarimax_forecast'].mean()
+
+    # Calculate difference mean value between testing and forecast data
+    adj_forecast_b = test_mean - sarimax_forecast_mean
+
     # Empty the SARIMAX memory
     del sarimax_model
     del sarimax_forecast
     del sarimax_param_order
     del sarimax_param_order_seasonal
     del sarimax_fit
+    del df_adjustment_sarimax
     gc.collect()
     
     
@@ -390,11 +405,23 @@ def main():
     #Get parameter
     arimax_param = str(arimax_fit.get_fitted_params()['order'])
     logMessage("Arimax Model Parameters "+arimax_param)
+
+    # Create Adjusment Value for Arimax
+    df_adjustment_arimax = df_cleaned.loc[df_cleaned.index[-365:]].copy()
+    df_adjustment_arimax['arimax_forecast'] = arimax_forecast.copy()
+    #df_adjustment_arimax = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
+
+    # Calculate mean arimax_forecast
+    arimax_forecast_mean = df_adjustment_arimax['arimax_forecast'].mean()
+
+    # Calculate difference mean value between testing and forecast data
+    adj_forecast_a = test_mean - arimax_forecast_mean
     
     # Empty the SARIMAX memory
     del arimax_model
     del arimax_forecast
     del arimax_fit
+    del df_adjustment_arimax
     gc.collect()
     
 
@@ -436,6 +463,17 @@ def main():
     prophet_mape = mean_absolute_percentage_error(y_test['condensate'], prophet_forecast)
     prophet_mape_str = str('MAPE: %.4f' % prophet_mape)
     logMessage("Prophet Model "+prophet_mape_str)
+
+    # Create Adjusment Value for Prophet
+    df_adjustment_prophet = df_cleaned.loc[df_cleaned.index[-365:]].copy()
+    df_adjustment_prophet['prophet_forecast'] = prophet_forecast.copy()
+    #df_adjustment_prophet = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
+
+    # Calculate mean prophet_forecast
+    prophet_forecast_mean = df_adjustment_prophet['prophet_forecast'].mean()
+
+    # Calculate difference mean value between testing and forecast data
+    adj_forecast_c = test_mean - prophet_forecast_mean
     
     # Empty the Prophet memory
     del prophet_param_grid
@@ -445,6 +483,7 @@ def main():
     del prophet_fit
     del prophet_best_params
     del prophet_mape_str
+    del df_adjustment_prophet
     gc.collect()
 
 
@@ -484,6 +523,17 @@ def main():
     ranfor_mape = mean_absolute_percentage_error(y_test['condensate'], ranfor_forecast)
     ranfor_mape_str = str('MAPE: %.4f' % ranfor_mape)
     logMessage("Random Forest Model "+ranfor_mape_str)
+
+    # Create Adjusment Value for Random Forest
+    df_adjustment_ranfor = df_cleaned.loc[df_cleaned.index[-365:]].copy()
+    df_adjustment_ranfor['ranfor_forecast'] = ranfor_forecast.copy()
+    #df_adjustment_ranfor = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
+
+    # Calculate mean ranfor_forecast
+    ranfor_forecast_mean = df_adjustment_ranfor['ranfor_forecast'].mean()
+
+    # Calculate difference mean value between testing and forecast data
+    adj_forecast_d = test_mean - ranfor_forecast_mean
     
     # Empty Random Forest Memory
     del ranfor_forecaster_param_grid
@@ -495,6 +545,7 @@ def main():
     del ranfor_fit
     del ranfor_best_params
     del ranfor_mape_str
+    del df_adjustment_ranfor
     gc.collect()
 
 
@@ -532,6 +583,17 @@ def main():
     xgb_mape = mean_absolute_percentage_error(y_test['condensate'], xgb_forecast)
     xgb_mape_str = str('MAPE: %.4f' % xgb_mape)
     logMessage("XGBoost Model "+xgb_mape_str)
+
+    # Create Adjusment Value for XGBoost
+    df_adjustment_xgb = df_cleaned.loc[df_cleaned.index[-365:]].copy()
+    df_adjustment_xgb['xgb_forecast'] = xgb_forecast.copy()
+    #df_adjustment_xgb = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
+
+    # Calculate mean xgb_forecast
+    xgb_forecast_mean = df_adjustment_xgb['xgb_forecast'].mean()
+
+    # Calculate difference mean value between testing and forecast data
+    adj_forecast_e = test_mean - xgb_forecast_mean
     
     # Empty Random Forest Memory
     del xgb_forecaster_param_grid
@@ -543,6 +605,7 @@ def main():
     del xgb_fit
     del xgb_best_params
     del xgb_mape_str
+    del df_adjustment_xgb
     gc.collect()
 
 
@@ -578,6 +641,17 @@ def main():
     linreg_mape = mean_absolute_percentage_error(y_test['condensate'], linreg_forecast)
     linreg_mape_str = str('MAPE: %.4f' % linreg_mape)
     logMessage("Linear Regression Model "+linreg_mape_str)
+
+    # Create Adjusment Value for Linear Regression
+    df_adjustment_linreg = df_cleaned.loc[df_cleaned.index[-365:]].copy()
+    df_adjustment_linreg['linreg_forecast'] = linreg_forecast.copy()
+    #df_adjustment_linreg = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
+
+    # Calculate mean linreg_forecast
+    linreg_forecast_mean = df_adjustment_linreg['linreg_forecast'].mean()
+
+    # Calculate difference mean value between testing and forecast data
+    adj_forecast_f = test_mean - linreg_forecast_mean
     
     # Empty Linear Regression Memory
     del linreg_forecaster_param_grid
@@ -589,6 +663,7 @@ def main():
     del linreg_fit
     del linreg_best_params
     del linreg_mape_str
+    del df_adjustment_linreg
     gc.collect()
 
 
@@ -625,6 +700,17 @@ def main():
     poly2_mape = mean_absolute_percentage_error(y_test['condensate'], poly2_forecast)
     poly2_mape_str = str('MAPE: %.4f' % poly2_mape)
     logMessage("Polynomial Regression Degree=2 Model "+poly2_mape_str)
+
+    # Create Adjusment Value for Polynomial Regression Degree=2
+    df_adjustment_poly2 = df_cleaned.loc[df_cleaned.index[-365:]].copy()
+    df_adjustment_poly2['poly2_forecast'] = poly2_forecast.copy()
+    #df_adjustment_poly2 = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
+
+    # Calculate mean poly2_forecast
+    poly2_forecast_mean = df_adjustment_poly2['poly2_forecast'].mean()
+
+    # Calculate difference mean value between testing and forecast data
+    adj_forecast_g = test_mean - poly2_forecast_mean
     
     # Empty Polynomial Regression Degree=2 Memory
     del poly2_forecaster_param_grid
@@ -636,6 +722,7 @@ def main():
     del poly2_fit
     del poly2_best_params
     del poly2_mape_str
+    del df_adjustment_poly2
     gc.collect()
     
 
@@ -672,6 +759,17 @@ def main():
     poly3_mape = mean_absolute_percentage_error(y_test['condensate'], poly3_forecast)
     poly3_mape_str = str('MAPE: %.4f' % poly3_mape)
     logMessage("Polynomial Regression Degree=3 Model "+poly3_mape_str)
+
+    # Create Adjusment Value for Polynomial Regression Degree=3
+    df_adjustment_poly3 = df_cleaned.loc[df_cleaned.index[-365:]].copy()
+    df_adjustment_poly3['poly3_forecast'] = poly3_forecast.copy()
+    #df_adjustment_poly3 = df_cleaned.drop(['month', 'day', 'wpnb_gas'], axis=1)
+
+    # Calculate mean poly3_forecast
+    poly3_forecast_mean = df_adjustment_poly3['poly3_forecast'].mean()
+
+    # Calculate difference mean value between testing and forecast data
+    adj_forecast_h = test_mean - poly3_forecast_mean
     
     # Empty Polynomial Regression Degree=2 Memory
     del poly3_forecaster_param_grid
@@ -683,6 +781,7 @@ def main():
     del poly3_fit
     del poly3_best_params
     del poly3_mape_str
+    del df_adjustment_poly3
     gc.collect()
 
 
@@ -717,6 +816,21 @@ def main():
                     'product' : 'Condensate'}
 
     all_model_param = pd.DataFrame(all_model_param)
+
+    # CREATE ADJUSTMENT VALUE TO DATAFRAME
+    logMessage("Creating all adjustment value dataframe ...")
+    all_adj_value =  {'adj_forecast_a': [adj_forecast_a],
+                        'adj_forecast_b': [adj_forecast_b],
+                        'adj_forecast_c': [adj_forecast_c],
+                        'adj_forecast_d': [adj_forecast_d],
+                        'adj_forecast_e': [adj_forecast_e],
+                        'adj_forecast_f': [adj_forecast_f],
+                        'adj_forecast_g': [adj_forecast_g],
+                        'adj_forecast_h': [adj_forecast_h],
+                        'lng_plant' : 'PT Badak',
+                        'product' : 'Condensate'}
+
+    all_adj_value = pd.DataFrame(all_adj_value)
  
     # Save mape result to database
     logMessage("Updating MAPE result to database ...")
@@ -728,7 +842,10 @@ def main():
     total_updated_rows = insert_param(conn, all_model_param)
     logMessage("Updated rows: {}".format(total_updated_rows))
     
-    #gc.collect()
+    # Save adjustment value result to database
+    logMessage("Updating Adjustment Value result to database ...")
+    total_updated_rows = insert_adj_value(conn, all_adj_value)
+    logMessage("Updated rows: {}".format(total_updated_rows))
     
     print("Done")
 
@@ -755,6 +872,19 @@ def insert_param(conn, all_model_param):
         
         #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
         updated_rows = update_param_value(conn, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h , lng_plant, product)
+        total_updated_rows = total_updated_rows + updated_rows 
+        
+    return total_updated_rows
+
+def insert_adj_value(conn, all_adj_value):
+    total_updated_rows = 0
+    for index, row in all_adj_value.iterrows():
+        lng_plant = row['lng_plant']
+        product = row['product']
+        adj_forecast_a, adj_forecast_b, adj_forecast_c, adj_forecast_d, adj_forecast_e, adj_forecast_f, adj_forecast_g, adj_forecast_h = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+        
+        #sql = f'UPDATE trir_monthly_test SET forecast_a = {} WHERE year_num = {} AND month_num = {}'.format(forecast, year_num, month_num)
+        updated_rows = update_adj_value(conn, adj_forecast_a, adj_forecast_b, adj_forecast_c, adj_forecast_d, adj_forecast_e, adj_forecast_f, adj_forecast_g, adj_forecast_h , lng_plant, product)
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
@@ -834,6 +964,49 @@ def update_param_value(conn, model_param_a, model_param_b, model_param_c,
         # execute the UPDATE  statement
         cur.execute(sql, (lng_plant, product, date_now, model_param_a, model_param_b, model_param_c, model_param_d, model_param_e, model_param_f, model_param_g, model_param_h,
                           created_by))
+        # get the number of updated rows
+        updated_rows = cur.rowcount
+        # Commit the changes to the database
+        conn.commit()
+        # Close cursor
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        logging.error(error)
+
+    return updated_rows
+
+def update_adj_value(conn, adj_forecast_a, adj_forecast_b, adj_forecast_c, 
+                        adj_forecast_d, adj_forecast_e, adj_forecast_f, adj_forecast_g, adj_forecast_h,
+                        lng_plant, product):
+    
+    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    updated_by = 'PYTHON'
+    
+    """ insert mape result after last row in table """
+    sql = """ INSERT INTO lng_analytics_adjustment
+                    (lng_plant,
+                    product,
+                    running_date,
+                    adj_forecast_a,
+                    adj_forecast_b,
+                    adj_forecast_c,
+                    adj_forecast_d,
+                    adj_forecast_e,
+                    adj_forecast_f,
+                    adj_forecast_g,
+                    adj_forecast_h,
+                    updated_by)
+                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+          """
+    
+    #conn = None
+    updated_rows = 0
+    try:
+        # create a new cursor
+        cur = conn.cursor()
+        # execute the UPDATE  statement
+        cur.execute(sql, (lng_plant, product, date_now, adj_forecast_a, adj_forecast_b, adj_forecast_c, adj_forecast_d, adj_forecast_e, adj_forecast_f, adj_forecast_g, adj_forecast_h,
+                          updated_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
