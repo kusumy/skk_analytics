@@ -1,17 +1,17 @@
-2023-04-04 10:26:22,773 Connecting to database ...
-2023-04-04 10:26:22,980 Data Null Cleaning ...
-2023-04-04 10:26:23,457 Finished Query
-2023-04-04 10:26:23,457 Null Value Cleaning ...
-2023-04-04 10:26:23,460 AD Fuller Test ...
-2023-04-04 10:26:23,535 Creating Sarimax Model Forecasting Insample LPG C3 PT Badak ...
-2023-04-04 10:26:23,537 Creating SARIMAX Model ...
-2023-04-04 10:26:25,975 SARIMAX Model Summary
-2023-04-04 10:26:25,979                                      SARIMAX Results                                      
+2023-04-05 15:45:04,471 Connecting to database ...
+2023-04-05 15:45:04,680 Data Null Cleaning ...
+2023-04-05 15:45:05,163 Finished Query
+2023-04-05 15:45:05,163 Null Value Cleaning ...
+2023-04-05 15:45:05,166 AD Fuller Test ...
+2023-04-05 15:45:05,245 Creating Sarimax Model Forecasting Insample LPG C3 PT Badak ...
+2023-04-05 15:45:05,246 Creating SARIMAX Model ...
+2023-04-05 15:45:08,289 SARIMAX Model Summary
+2023-04-05 15:45:08,293                                      SARIMAX Results                                      
 ==========================================================================================
 Dep. Variable:                                  y   No. Observations:                  144
 Model:             SARIMAX(1, 1, 0)x(1, 0, 0, 12)   Log Likelihood                -701.174
-Date:                            Tue, 04 Apr 2023   AIC                           1412.348
-Time:                                    10:26:25   BIC                           1427.162
+Date:                            Wed, 05 Apr 2023   AIC                           1412.348
+Time:                                    15:45:08   BIC                           1427.162
 Sample:                                07-01-2022   HQIC                          1418.367
                                      - 11-21-2022                                         
 Covariance Type:                              opg                                         
@@ -32,18 +32,18 @@ Prob(H) (two-sided):                  0.00   Kurtosis:                         5
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2023-04-04 10:26:25,986 SARIMAX Model Prediction ..
-2023-04-04 10:26:26,008 SARIMAX Model MAPE: 0.2861
-2023-04-04 10:26:26,009 Sarimax Model Parameters {'sarimax_order': (1, 1, 0), 'sarimax_seasonal_order': (1, 0, 0, 12)}
-2023-04-04 10:26:26,077 Creating Arimax Model Forecasting Insample LPG C3 PT Badak ...
-2023-04-04 10:26:26,078 Creating ARIMAX Model ...
-2023-04-04 10:26:30,709 ARIMAX Model Summary
-2023-04-04 10:26:30,712                                SARIMAX Results                                
+2023-04-05 15:45:08,300 SARIMAX Model Prediction ..
+2023-04-05 15:45:08,323 SARIMAX Model MAPE: 0.2861
+2023-04-05 15:45:08,325 Sarimax Model Parameters {'sarimax_order': (1, 1, 0), 'sarimax_seasonal_order': (1, 0, 0, 12)}
+2023-04-05 15:45:08,392 Creating Arimax Model Forecasting Insample LPG C3 PT Badak ...
+2023-04-05 15:45:08,393 Creating ARIMAX Model ...
+2023-04-05 15:45:13,092 ARIMAX Model Summary
+2023-04-05 15:45:13,095                                SARIMAX Results                                
 ==============================================================================
 Dep. Variable:                      y   No. Observations:                  144
 Model:               SARIMAX(3, 1, 2)   Log Likelihood                -696.173
-Date:                Tue, 04 Apr 2023   AIC                           1408.345
-Time:                        10:26:30   BIC                           1432.048
+Date:                Wed, 05 Apr 2023   AIC                           1408.345
+Time:                        15:45:13   BIC                           1432.048
 Sample:                    07-01-2022   HQIC                          1417.977
                          - 11-21-2022                                         
 Covariance Type:                  opg                                         
@@ -67,126 +67,126 @@ Prob(H) (two-sided):                  0.00   Kurtosis:                         4
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2023-04-04 10:26:30,719 ARIMAX Model Prediction ..
-2023-04-04 10:26:30,737 ARIMAX Model MAPE: 0.2551
-2023-04-04 10:26:30,738 Arimax Model Parameters (3, 1, 2)
-2023-04-04 10:26:30,801 Creating Prophet Model Forecasting Insample LPG C3 PT Badak ...
-2023-04-04 10:26:30,801 Creating Prophet Regressor Object ....
-2023-04-04 10:26:30,802 Creating Window Splitter Prophet Model ....
-2023-04-04 10:26:30,803 Creating Prophet Model ...
-2023-04-04 10:26:30,927 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:31,564 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:32,278 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:32,938 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:33,797 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:34,441 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:35,155 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:35,816 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:36,515 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:37,219 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:37,863 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:38,617 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:39,266 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:40,009 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:40,963 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:41,710 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:42,500 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:43,394 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:44,079 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:45,069 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:46,080 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:46,773 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:47,592 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:26:48,341 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:20,409 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:21,153 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:21,868 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:22,630 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:23,452 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:24,194 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:24,877 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:26,321 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:26,979 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:27,715 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:28,405 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:29,165 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:30,038 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:32,170 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:33,749 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:36,702 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:37,494 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:44,621 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:45,882 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:46,742 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:27:49,703 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:22,011 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:22,658 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:23,434 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:24,152 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:24,889 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:26,243 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:28,228 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:28,950 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:29,644 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:30,371 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:31,151 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:31,812 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:33,913 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:36,632 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:37,354 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:28:38,191 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:29:09,943 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:29:12,609 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:29:13,338 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:29:15,365 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:29:17,394 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:29:18,775 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:29:23,427 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:29:24,328 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:29:25,103 Optimization terminated abnormally. Falling back to Newton.
-2023-04-04 10:29:56,685 Show Best Prophet Models ...
-2023-04-04 10:29:56,686 Best Prophet Models {'changepoint_prior_scale': 0.002, 'daily_seasonality': 10, 'n_changepoints': 5, 'seasonality_mode': 'additive', 'seasonality_prior_scale': 0.1, 'weekly_seasonality': 10, 'yearly_seasonality': 7}
-2023-04-04 10:29:56,686 Prophet Model Prediction ...
-2023-04-04 10:29:57,160 Prophet Model MAPE: 0.2104
-2023-04-04 10:29:57,162 Prophet Model MAPE: 0.2104
-2023-04-04 10:29:57,162 Prophet Model Parameters {'add_country_holidays': None, 'add_seasonality': None, 'alpha': 0.05, 'changepoint_prior_scale': 0.05, 'changepoint_range': 0.8, 'changepoints': None, 'daily_seasonality': 'auto', 'freq': None, 'growth': 'linear', 'growth_cap': None, 'growth_floor': 0.0, 'holidays': None, 'holidays_prior_scale': 10.0, 'mcmc_samples': 0, 'n_changepoints': 25, 'seasonality_mode': 'additive', 'seasonality_prior_scale': 10.0, 'stan_backend': None, 'uncertainty_samples': 1000, 'verbose': 0, 'weekly_seasonality': 'auto', 'yearly_seasonality': 'auto'}
-2023-04-04 10:29:57,233 Creating Random Forest Model Forecasting Insample LPG C3 PT Badak ...
-2023-04-04 10:29:57,234 Creating Window Splitter Random Forest Model ....
-2023-04-04 10:29:57,236 Creating Random Forest Model ...
-2023-04-04 10:30:01,384 Show Best Random Forest Models ...
-2023-04-04 10:30:01,385 Best Random Forest Models {'estimator__n_estimators': 200, 'window_length': 1}
-2023-04-04 10:30:01,385 Random Forest Model Prediction ...
-2023-04-04 10:30:02,274 Random Forest Model MAPE: 0.2973
-2023-04-04 10:30:02,342 Creating XGBoost Model Forecasting Insample LPG C3 PT Badak ...
-2023-04-04 10:30:02,343 Creating XGBoost Model ....
-2023-04-04 10:30:03,226 Show Best XGBoost Models ...
-2023-04-04 10:30:03,227 Best XGBoost Models {'estimator__n_estimators': 200, 'window_length': 1}
-2023-04-04 10:30:03,227 XGBoost Model Prediction ...
-2023-04-04 10:30:03,286 XGBoost Model MAPE: 0.3466
-2023-04-04 10:30:03,354 Creating Linear Regression Model Forecasting Insample LPG C3 PT Badak ...
-2023-04-04 10:30:03,356 Creating Linear Regression Model ...
-2023-04-04 10:30:03,486 Show Best Linear Regression Models ...
-2023-04-04 10:30:03,486 Best Linear Regression Models {'window_length': 1}
-2023-04-04 10:30:03,486 Linear Regression Model Prediction ...
-2023-04-04 10:30:03,498 Linear Regression Model MAPE: 0.2043
-2023-04-04 10:30:03,563 Creating Polynomial Regression Degree=2 Model Forecasting Insample LPG C3 PT Badak ...
-2023-04-04 10:30:03,564 Creating Polynomial Regression Orde 2 Model ...
-2023-04-04 10:30:04,000 Show Best Polynomial Regression Degree=2 Models ...
-2023-04-04 10:30:04,000 Best Polynomial Regression Degree=2 Models {'window_length': 0.8}
-2023-04-04 10:30:04,000 Polynomial Regression Degree=2 Model Prediction ...
-2023-04-04 10:30:04,338 Polynomial Regression Degree=2 Model MAPE: 0.2605
-2023-04-04 10:30:04,406 Creating Polynomial Regression Degree=3 Model Forecasting Insample LPG C3 PT Badak ...
-2023-04-04 10:30:04,407 Creating Polynomial Regression Orde 3 Model ...
-2023-04-04 10:30:04,817 Show Best Polynomial Regression Degree=3 Models ...
-2023-04-04 10:30:04,817 Best Polynomial Regression Degree=3 Models {'window_length': 0.8}
-2023-04-04 10:30:04,817 Polynomial Regression Degree=3 Model Prediction ...
-2023-04-04 10:30:05,158 Polynomial Regression Degree=3 Model MAPE: 0.2560
-2023-04-04 10:30:05,222 Creating all model mape result data frame ...
-2023-04-04 10:30:05,223 Creating all model params result data frame ...
-2023-04-04 10:30:05,224 Creating all adjustment value dataframe ...
-2023-04-04 10:30:05,225 Updating MAPE result to database ...
-2023-04-04 10:30:05,230 Updated rows: 1
-2023-04-04 10:30:05,230 Updating Model Parameter result to database ...
-2023-04-04 10:30:05,234 Updated rows: 1
-2023-04-04 10:30:05,234 Updating Adjustment Value result to database ...
-2023-04-04 10:30:05,239 Updated rows: 1
+2023-04-05 15:45:13,103 ARIMAX Model Prediction ..
+2023-04-05 15:45:13,121 ARIMAX Model MAPE: 0.2551
+2023-04-05 15:45:13,122 Arimax Model Parameters (3, 1, 2)
+2023-04-05 15:45:13,186 Creating Prophet Model Forecasting Insample LPG C3 PT Badak ...
+2023-04-05 15:45:13,186 Creating Prophet Regressor Object ....
+2023-04-05 15:45:13,188 Creating Window Splitter Prophet Model ....
+2023-04-05 15:45:13,189 Creating Prophet Model ...
+2023-04-05 15:45:13,314 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:13,959 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:14,691 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:15,365 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:16,236 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:16,886 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:17,610 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:18,279 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:18,973 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:19,673 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:20,315 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:21,076 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:21,725 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:22,479 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:23,427 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:24,173 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:24,972 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:25,867 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:26,547 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:27,551 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:28,558 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:29,255 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:30,081 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:45:30,833 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:02,888 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:03,626 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:04,302 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:05,049 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:05,870 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:06,609 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:07,272 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:08,712 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:09,402 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:10,145 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:10,830 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:11,576 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:12,443 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:14,606 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:16,199 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:19,089 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:19,888 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:27,018 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:28,281 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:29,141 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:46:32,064 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:04,414 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:05,057 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:05,836 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:06,558 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:07,305 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:08,673 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:10,683 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:11,385 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:12,069 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:12,806 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:13,575 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:14,242 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:16,329 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:19,026 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:19,766 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:20,612 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:52,412 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:55,068 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:55,796 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:57,824 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:47:59,842 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:48:01,223 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:48:05,911 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:48:06,813 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:48:07,607 Optimization terminated abnormally. Falling back to Newton.
+2023-04-05 15:48:39,355 Show Best Prophet Models ...
+2023-04-05 15:48:39,355 Best Prophet Models {'changepoint_prior_scale': 0.002, 'daily_seasonality': 10, 'n_changepoints': 5, 'seasonality_mode': 'additive', 'seasonality_prior_scale': 0.1, 'weekly_seasonality': 10, 'yearly_seasonality': 7}
+2023-04-05 15:48:39,355 Prophet Model Prediction ...
+2023-04-05 15:48:39,833 Prophet Model MAPE: 0.2104
+2023-04-05 15:48:39,834 Prophet Model MAPE: 0.2104
+2023-04-05 15:48:39,835 Prophet Model Parameters {'add_country_holidays': None, 'add_seasonality': None, 'alpha': 0.05, 'changepoint_prior_scale': 0.05, 'changepoint_range': 0.8, 'changepoints': None, 'daily_seasonality': 'auto', 'freq': None, 'growth': 'linear', 'growth_cap': None, 'growth_floor': 0.0, 'holidays': None, 'holidays_prior_scale': 10.0, 'mcmc_samples': 0, 'n_changepoints': 25, 'seasonality_mode': 'additive', 'seasonality_prior_scale': 10.0, 'stan_backend': None, 'uncertainty_samples': 1000, 'verbose': 0, 'weekly_seasonality': 'auto', 'yearly_seasonality': 'auto'}
+2023-04-05 15:48:39,904 Creating Random Forest Model Forecasting Insample LPG C3 PT Badak ...
+2023-04-05 15:48:39,905 Creating Window Splitter Random Forest Model ....
+2023-04-05 15:48:39,906 Creating Random Forest Model ...
+2023-04-05 15:48:44,126 Show Best Random Forest Models ...
+2023-04-05 15:48:44,126 Best Random Forest Models {'estimator__n_estimators': 200, 'window_length': 1}
+2023-04-05 15:48:44,126 Random Forest Model Prediction ...
+2023-04-05 15:48:45,013 Random Forest Model MAPE: 0.2973
+2023-04-05 15:48:45,079 Creating XGBoost Model Forecasting Insample LPG C3 PT Badak ...
+2023-04-05 15:48:45,081 Creating XGBoost Model ....
+2023-04-05 15:48:45,989 Show Best XGBoost Models ...
+2023-04-05 15:48:45,989 Best XGBoost Models {'estimator__n_estimators': 200, 'window_length': 1}
+2023-04-05 15:48:45,989 XGBoost Model Prediction ...
+2023-04-05 15:48:46,053 XGBoost Model MAPE: 0.3466
+2023-04-05 15:48:46,121 Creating Linear Regression Model Forecasting Insample LPG C3 PT Badak ...
+2023-04-05 15:48:46,122 Creating Linear Regression Model ...
+2023-04-05 15:48:46,256 Show Best Linear Regression Models ...
+2023-04-05 15:48:46,256 Best Linear Regression Models {'window_length': 1}
+2023-04-05 15:48:46,256 Linear Regression Model Prediction ...
+2023-04-05 15:48:46,269 Linear Regression Model MAPE: 0.2043
+2023-04-05 15:48:46,333 Creating Polynomial Regression Degree=2 Model Forecasting Insample LPG C3 PT Badak ...
+2023-04-05 15:48:46,334 Creating Polynomial Regression Orde 2 Model ...
+2023-04-05 15:48:46,744 Show Best Polynomial Regression Degree=2 Models ...
+2023-04-05 15:48:46,744 Best Polynomial Regression Degree=2 Models {'window_length': 0.8}
+2023-04-05 15:48:46,744 Polynomial Regression Degree=2 Model Prediction ...
+2023-04-05 15:48:47,072 Polynomial Regression Degree=2 Model MAPE: 0.2605
+2023-04-05 15:48:47,137 Creating Polynomial Regression Degree=3 Model Forecasting Insample LPG C3 PT Badak ...
+2023-04-05 15:48:47,138 Creating Polynomial Regression Orde 3 Model ...
+2023-04-05 15:48:47,538 Show Best Polynomial Regression Degree=3 Models ...
+2023-04-05 15:48:47,538 Best Polynomial Regression Degree=3 Models {'window_length': 0.8}
+2023-04-05 15:48:47,538 Polynomial Regression Degree=3 Model Prediction ...
+2023-04-05 15:48:47,863 Polynomial Regression Degree=3 Model MAPE: 0.2560
+2023-04-05 15:48:47,927 Creating all model mape result data frame ...
+2023-04-05 15:48:47,928 Creating all model params result data frame ...
+2023-04-05 15:48:47,929 Creating all adjustment value dataframe ...
+2023-04-05 15:48:47,930 Updating MAPE result to database ...
+2023-04-05 15:48:47,935 Updated rows: 1
+2023-04-05 15:48:47,935 Updating Model Parameter result to database ...
+2023-04-05 15:48:47,940 Updated rows: 1
+2023-04-05 15:48:47,940 Updating Adjustment Value result to database ...
+2023-04-05 15:48:47,945 Updated rows: 1
