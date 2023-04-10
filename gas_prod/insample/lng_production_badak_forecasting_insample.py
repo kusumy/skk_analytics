@@ -1086,15 +1086,12 @@ def update_model_config(conn, model_choosen, lng_plant, lng_parameter):
     
     date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     updated_by = 'PYTHON'
-    
-    """ insert mape result after last row in table """
-    sql = """ INSERT INTO model_config_daily
-                    (lng_plant,
-                    lng_parameter,
-                    model_choosen,
-                    updated_at,
-                    updated_by)
-                    VALUES(%s, %s, %s, %s, %s)
+      
+    sql = """   UPDATE model_config_daily
+                SET model_choosen = %s,
+                    updated_at = %s,
+                    updated_by = %s
+                WHERE lng_plant = 'PT Badak' AND lng_parameter = 'LNG'
           """
     
     #conn = None
@@ -1103,7 +1100,7 @@ def update_model_config(conn, model_choosen, lng_plant, lng_parameter):
         # create a new cursor
         cur = conn.cursor()
         # execute the UPDATE  statement
-        cur.execute(sql, (lng_plant, lng_parameter, model_choosen, date_now, updated_by))
+        cur.execute(sql, (model_choosen, date_now, updated_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
