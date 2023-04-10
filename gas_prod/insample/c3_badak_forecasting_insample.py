@@ -810,6 +810,24 @@ def main():
     del df_adjustment_poly3
     gc.collect()
 
+    # CREATE BEST MODEL CONFIG TO DATAFRAME
+    logMessage("Creating best model config dataframe ...")
+    best_model = [{'lng_plant': 'PT Badak', 'lng_parameter': 'LPG C3', 'model_choosen': 'a', 'mape': arimax_mape_adj},
+                {'lng_plant': 'PT Badak', 'lng_parameter': 'LPG C3', 'model_choosen': 'b', 'mape': sarimax_mape_adj},
+                {'lng_plant': 'PT Badak', 'lng_parameter': 'LPG C3', 'model_choosen': 'c', 'mape': prophet_mape_adj},
+                {'lng_plant': 'PT Badak', 'lng_parameter': 'LPG C3', 'model_choosen': 'd', 'mape': ranfor_mape_adj},
+                {'lng_plant': 'PT Badak', 'lng_parameter': 'LPG C3', 'model_choosen': 'e', 'mape': xgb_mape_adj},
+                {'lng_plant': 'PT Badak', 'lng_parameter': 'LPG C3', 'model_choosen': 'f', 'mape': linreg_mape_adj},
+                {'lng_plant': 'PT Badak', 'lng_parameter': 'LPG C3', 'model_choosen': 'g', 'mape': poly2_mape_adj},
+                {'lng_plant': 'PT Badak', 'lng_parameter': 'LPG C3', 'model_choosen': 'h', 'mape': poly3_mape_adj}]
+    best_model = pd.DataFrame(best_model)
+
+    # get the row with the smallest value in column mape
+    best_model = best_model.loc[best_model['mape'].idxmin()]
+    best_model_df = {'lng_plant': 'PT Badak',
+                    'lng_parameter': 'LPG C3',
+                    'model_choosen': [best_model['model_choosen']]}
+    best_model_df = pd.DataFrame(best_model_df)
 
     #%%
     #CREATE DATAFRAME MAPE
@@ -882,6 +900,11 @@ def main():
     total_updated_rows = insert_adj_value(conn, all_adj_value)
     logMessage("Updated rows: {}".format(total_updated_rows))
 
+    # Save model config to database
+    logMessage("Updating Model Config to database ...")
+    total_updated_rows = insert_model_config(conn, best_model_df)
+    logMessage("Updated rows: {}".format(total_updated_rows))
+
     print("Done")
 
 # %%
@@ -923,6 +946,16 @@ def insert_adj_value(conn, all_adj_value):
         total_updated_rows = total_updated_rows + updated_rows 
         
     return total_updated_rows
+
+def insert_model_config(conn, best_model_df):
+    total_updated_rows = 0
+    for index, row in best_model_df.iterrows():
+        lng_plant = row['lng_plant']
+        lng_parameter = row['lng_parameter']
+        model_choosen = row[2]
+        
+        updated_rows = update_model_config(conn, model_choosen, lng_plant, lng_parameter)
+        total_updated_rows = total_updated_rows + updated_rows
 
 def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h, mape_fc_a_before_adj,
                       mape_fc_b_before_adj, mape_fc_c_before_adj, mape_fc_d_before_adj, mape_fc_e_before_adj, mape_fc_f_before_adj, mape_fc_g_before_adj, mape_fc_h_before_adj, lng_plant, product):
@@ -1049,6 +1082,39 @@ def update_adj_value(conn, adj_forecast_a, adj_forecast_b, adj_forecast_c,
         # execute the UPDATE  statement
         cur.execute(sql, (lng_plant, product, date_now, adj_forecast_a, adj_forecast_b, adj_forecast_c, adj_forecast_d, adj_forecast_e, adj_forecast_f, adj_forecast_g, adj_forecast_h,
                           updated_by))
+        # get the number of updated rows
+        updated_rows = cur.rowcount
+        # Commit the changes to the database
+        conn.commit()
+        # Close cursor
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        logging.error(error)
+
+    return updated_rows
+
+def update_model_config(conn, model_choosen, lng_plant, lng_parameter):
+    
+    date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    updated_by = 'PYTHON'
+    
+    """ insert mape result after last row in table """
+    sql = """ INSERT INTO model_config_daily
+                    (lng_plant,
+                    lng_parameter,
+                    model_choosen,
+                    updated_at,
+                    updated_by)
+                    VALUES(%s, %s, %s, %s, %s)
+          """
+    
+    #conn = None
+    updated_rows = 0
+    try:
+        # create a new cursor
+        cur = conn.cursor()
+        # execute the UPDATE  statement
+        cur.execute(sql, (lng_plant, lng_parameter, model_choosen, date_now, updated_by))
         # get the number of updated rows
         updated_rows = cur.rowcount
         # Commit the changes to the database
