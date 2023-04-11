@@ -442,7 +442,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample Condensate PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[7, 18, 28, num_lags]
+                        ,'n_changepoints':[num_lags, 7, 30, 31, 365]
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
@@ -514,7 +514,7 @@ def main():
     ranfor_strategy = "recursive"
 
     # create regressor object
-    ranfor_forecaster_param_grid = {"window_length": [7, 18, 28, num_lags], 
+    ranfor_forecaster_param_grid = {"window_length": [num_lags, 7, 30, 31, 365], 
                                     "estimator__n_estimators": [100, 200]}
 
     # create regressor object
@@ -581,7 +581,7 @@ def main():
     xgb_strategy = "recursive"
 
     # Create regressor object
-    xgb_forecaster_param_grid = {"window_length": [7, 18, 28, num_lags]
+    xgb_forecaster_param_grid = {"window_length": [num_lags, 7, 30, 31, 365]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -647,7 +647,7 @@ def main():
     linreg_strategy = "recursive"
 
     # Create regressor object
-    linreg_forecaster_param_grid = {"window_length": [7, 18, 28, num_lags]}
+    linreg_forecaster_param_grid = {"window_length": [7, 30, num_lags]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
@@ -850,6 +850,9 @@ def main():
                     'model_choosen': [best_model['model_choosen']]}
     best_model_df = pd.DataFrame(best_model_df)
 
+    del best_model
+    gc.collect()
+
     #%%
     #CREATE MAPE TO DATAFRAME
     logMessage("Creating all model mape result data frame ...")
@@ -909,21 +912,33 @@ def main():
     logMessage("Updating MAPE result to database ...")
     total_updated_rows = insert_mape(conn, all_mape_pred)
     logMessage("Updated rows: {}".format(total_updated_rows))
+
+    del all_mape_pred
+    gc.collect()
     
-    # Save mape result to database
+    # Save param result to database
     logMessage("Updating Model Parameter result to database ...")
     total_updated_rows = insert_param(conn, all_model_param)
     logMessage("Updated rows: {}".format(total_updated_rows))
+
+    del all_model_param
+    gc.collect()
     
     # Save adjustment value result to database
     logMessage("Updating Adjustment Value result to database ...")
     total_updated_rows = insert_adj_value(conn, all_adj_value)
     logMessage("Updated rows: {}".format(total_updated_rows))
 
+    del all_adj_value
+    gc.collect()
+
     # Save model config to database
     logMessage("Updating Model Config to database ...")
     total_updated_rows = insert_model_config(conn, best_model_df)
     logMessage("Updated rows: {}".format(total_updated_rows))
+
+    del best_model_df
+    gc.collect()
     
     print("Done")
 
