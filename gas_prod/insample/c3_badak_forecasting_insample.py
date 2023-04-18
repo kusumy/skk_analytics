@@ -292,7 +292,7 @@ def main():
     ##### SARIMAX MODEL #####
     logMessage("Creating Sarimax Model Forecasting Insample LPG C3 PT Badak ...")
     #Set parameters
-    sarimax_differencing = 1
+    sarimax_differencing = 0
     sarimax_seasonal_differencing = 0
     sarimax_seasonal = True
     sarimax_m = 12
@@ -358,7 +358,7 @@ def main():
     ##### ARIMAX MODEL #####
     logMessage("Creating Arimax Model Forecasting Insample LPG C3 PT Badak ...")
     #Set parameters
-    arimax_differencing = 1
+    arimax_differencing = 0
     arimax_trace = True
     arimax_error_action = "ignore"
     arimax_suppress_warnings = True
@@ -417,11 +417,11 @@ def main():
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
                         ,'n_changepoints':[num_lags, 3, 5, 7]
-                        ,'seasonality_prior_scale':[0.1, 1, 5] #Flexibility of the seasonality (0.01,10)
-                        ,'changepoint_prior_scale':[0.002, 0.1] #Flexibility of the trend (0.001,0.5)
-                        ,'daily_seasonality':[3,10]
-                        ,'weekly_seasonality':[5,10]
-                        ,'yearly_seasonality':[7,10]
+                        ,'seasonality_prior_scale':[0.06, 0.01, 0.1, 1] #Flexibility of the seasonality (0.01,10)
+                        ,'changepoint_prior_scale':[0.008, 0.005, 0.01] #Flexibility of the trend (0.001,0.5)
+                        ,'daily_seasonality':[False]
+                        ,'weekly_seasonality':[False]
+                        ,'yearly_seasonality':[False]
                         }
 
     #Create Forecaster
@@ -691,7 +691,7 @@ def main():
     poly2_interactions = False
     poly2_strategy = "recursive"
 
-    poly2_forecaster_param_grid = {"window_length": [0.8]}
+    poly2_forecaster_param_grid = {"window_length": [0.92]}
 
     # Create regressor object
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
@@ -755,7 +755,7 @@ def main():
     poly3_interactions = False
     poly3_strategy = "recursive"
 
-    poly3_forecaster_param_grid = {"window_length": [0.8]}
+    poly3_forecaster_param_grid = {"window_length": [2]}
 
     # Create regressor object
     poly3_regressor = PolynomRegressor(deg=3, regularization=poly3_regularization, interactions=poly3_interactions)
@@ -971,6 +971,8 @@ def insert_model_config(conn, best_model_df):
         
         updated_rows = update_model_config(conn, model_choosen, lng_plant, lng_parameter)
         total_updated_rows = total_updated_rows + updated_rows
+        
+    return total_updated_rows
 
 def update_mape_value(conn, mape_forecast_a, mape_forecast_b, mape_forecast_c, mape_forecast_d, mape_forecast_e, mape_forecast_f, mape_forecast_g, mape_forecast_h, mape_fc_a_before_adj,
                       mape_fc_b_before_adj, mape_fc_c_before_adj, mape_fc_d_before_adj, mape_fc_e_before_adj, mape_fc_f_before_adj, mape_fc_g_before_adj, mape_fc_h_before_adj, lng_plant, product):

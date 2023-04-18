@@ -281,15 +281,22 @@ def main():
         # Convert string to tuple
         arimax_model_param = ast.literal_eval(arimax_model_param)
 
+        # Get Adjustment Value Arimax
+        sql_arimax_adj = """SELECT adj_forecast_a
+                        FROM lng_analytics_adjustment
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LPG C3'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+        
+        arimax_adj_value = get_sql_data(sql_arimax_adj, conn)
+        arimax_adj_value = arimax_adj_value['adj_forecast_a'][0]
+
         #Set parameters
-        arimax_differencing = 0
-        arimax_trace = True
-        arimax_error_action = "ignore"
         arimax_suppress_warnings = True
 
         # Create ARIMAX Model
         logMessage("Creating ARIMAX Model ...")
-        #arimax_model = auto_arima(train_df, exogenous=future_exog, d=arimax_differencing, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
         arimax_model = ARIMA(order=arimax_model_param, suppress_warnings=arimax_suppress_warnings)
         arimax_model.fit(train_df, X=train_exog) #, X=train_exog
         logMessage("ARIMAX Model Summary")
@@ -306,6 +313,12 @@ def main():
         #Rename colum 0
         y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
 
+        # Convert the 'forecast_a' column to float data type
+        y_pred_arimax['forecast_a'] = y_pred_arimax['forecast_a'].astype(float)
+
+        # Add adj value to all the values in the 'forecast_a' column
+        y_pred_arimax['forecast_a'] = y_pred_arimax['forecast_a'] + arimax_adj_value
+
 
         ##### SARIMAX MODEL #####
         logMessage("Create Sarimax Forecasting LPG C3 PT Badak ...")
@@ -321,23 +334,26 @@ def main():
         sarimax_model_param = sarimax_model_param['model_param_b'][0]
        
         # Convert string to tuple
-        sarimax_model_param = ast.literal_eval(sarimax_model_param)    
+        sarimax_model_param = ast.literal_eval(sarimax_model_param)
+        
+        # Get Adjustment Value Sarimax
+        sql_sarimax_adj = """SELECT adj_forecast_b
+                        FROM lng_analytics_adjustment
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LPG C3'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+        
+        sarimax_adj_value = get_sql_data(sql_sarimax_adj, conn)
+        sarimax_adj_value = sarimax_adj_value['adj_forecast_b'][0]
         
         #Set parameters
-        sarimax_differencing = 0
-        sarimax_seasonal_differencing = 1
-        sarimax_seasonal = True
-        sarimax_m = 12
-        sarimax_trace = True
-        sarimax_error_action = "ignore"
         sarimax_suppress_warnings = True
         sarimax_order = sarimax_model_param['sarimax_order']
         sarimax_seasonal_order = sarimax_model_param['sarimax_seasonal_order']
 
         # Create SARIMA Model
         logMessage("Creating SARIMAX Model ...")
-        #ARIMA(0,0,1)(0,1,1)[12]
-        #sarimax_model = auto_arima(train_df, exogenous=future_exog, d=sarimax_differencing, D=sarimax_seasonal_differencing, seasonal=sarimax_seasonal, m=sarimax_m, trace=sarimax_trace, error_action=sarimax_error_action, suppress_warnings=sarimax_suppress_warnings)
         sarimax_model = ARIMA(order=sarimax_order, seasonal_order=sarimax_seasonal_order, suppress_warnings=sarimax_suppress_warnings)
         sarimax_model.fit(train_df, X=train_exog) #, X=train_exog
         logMessage("SARIMAX Model Summary")
@@ -353,6 +369,12 @@ def main():
         y_pred_sarimax['date'] = pd.DatetimeIndex(y_pred_sarimax['date'], freq='D')
         #Rename colum 0
         y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
+
+        # Convert the 'forecast_b' column to float data type
+        y_pred_sarimax['forecast_b'] = y_pred_sarimax['forecast_b'].astype(float)
+
+        # Add adj value to all the values in the 'forecast_b' column
+        y_pred_sarimax['forecast_b'] = y_pred_sarimax['forecast_b'] + sarimax_adj_value
 
 
         ##### PROPHET MODEL #####
@@ -371,12 +393,22 @@ def main():
         # Convert string to dictionary
         prophet_model_param = ast.literal_eval(prophet_model_param)
 
+        # Get Adjustment Value Prophet
+        sql_prophet_adj = """SELECT adj_forecast_c
+                        FROM lng_analytics_adjustment
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LPG C3'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+        
+        prophet_adj_value = get_sql_data(sql_prophet_adj, conn)
+        prophet_adj_value = prophet_adj_value['adj_forecast_c'][0]
+
         #Set parameters
         prophet_seasonality_mode = prophet_model_param['seasonality_mode']
         prophet_n_changepoints = prophet_model_param['n_changepoints']
         prophet_seasonality_prior_scale = prophet_model_param['seasonality_prior_scale']
         prophet_changepoint_prior_scale = prophet_model_param['changepoint_prior_scale']
-        #prophet_holidays_prior_scale = prophet_model_param['seasonality_mode']
         prophet_daily_seasonality = prophet_model_param['daily_seasonality']
         prophet_weekly_seasonality = prophet_model_param['weekly_seasonality']
         prophet_yearly_seasonality = prophet_model_param['yearly_seasonality']
@@ -392,7 +424,8 @@ def main():
                 #changepoint_range=0.8, #proportion of the history in which the trend is allowed to change
                 daily_seasonality=prophet_daily_seasonality,
                 weekly_seasonality=prophet_weekly_seasonality,
-                yearly_seasonality=prophet_yearly_seasonality)
+                yearly_seasonality=prophet_yearly_seasonality
+                )
 
         prophet_forecaster.fit(train_df, X=train_exog) #, X=train_exog
         logMessage("Prophet Model Prediction ...")
@@ -405,6 +438,12 @@ def main():
         y_pred_prophet['date'] = pd.DatetimeIndex(y_pred_prophet['date'], freq='D')
         #Rename colum 0
         y_pred_prophet.rename(columns={0:'forecast_c'}, inplace=True)
+
+        # Convert the 'forecast_c' column to float data type
+        y_pred_prophet['forecast_c'] = y_pred_prophet['forecast_c'].astype(float)
+
+        # Add adj value to all the values in the 'forecast_c' column
+        y_pred_prophet['forecast_c'] = y_pred_prophet['forecast_c'] + prophet_adj_value
 
 
         ##### RANDOM FOREST MODEL #####
@@ -422,6 +461,17 @@ def main():
        
         # Convert string to tuple
         ranfor_model_param = ast.literal_eval(ranfor_model_param)
+
+        # Get Adjustment Value Ranfor
+        sql_ranfor_adj = """SELECT adj_forecast_d
+                        FROM lng_analytics_adjustment
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LPG C3'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+        
+        ranfor_adj_value = get_sql_data(sql_ranfor_adj, conn)
+        ranfor_adj_value = ranfor_adj_value['adj_forecast_d'][0]
 
         #Set parameters
         ranfor_lags = ranfor_model_param['window_length']
@@ -447,6 +497,12 @@ def main():
         #Rename colum 0
         y_pred_ranfor.rename(columns={0:'forecast_d'}, inplace=True)
 
+        # Convert the 'forecast_d' column to float data type
+        y_pred_ranfor['forecast_d'] = y_pred_ranfor['forecast_d'].astype(float)
+
+        # Add adj value to all the values in the 'forecast_d' column
+        y_pred_ranfor['forecast_d'] = y_pred_ranfor['forecast_d'] + ranfor_adj_value
+
 
         ##### XGBOOST MODEL #####
         logMessage("Create XGBoost Forecasting LPG C3 PT Badak ...")
@@ -463,6 +519,17 @@ def main():
        
         # Convert string to tuple
         xgb_model_param = ast.literal_eval(xgb_model_param)
+
+        # Get Adjustment Value XGB
+        sql_xgb_adj = """SELECT adj_forecast_e
+                        FROM lng_analytics_adjustment
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LPG C3'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+        
+        xgb_adj_value = get_sql_data(sql_xgb_adj, conn)
+        xgb_adj_value = xgb_adj_value['adj_forecast_e'][0]
 
         #Set parameters
         xgb_lags = xgb_model_param['window_length']
@@ -486,6 +553,12 @@ def main():
         #Rename colum 0
         y_pred_xgb.rename(columns={0:'forecast_e'}, inplace=True)
 
+        # Convert the 'forecast_e' column to float data type
+        y_pred_xgb['forecast_e'] = y_pred_xgb['forecast_e'].astype(float)
+
+        # Add adj value to all the values in the 'forecast_e' column
+        y_pred_xgb['forecast_e'] = y_pred_xgb['forecast_e'] + xgb_adj_value
+
 
         ##### LINEAR REGRESSION MODEL #####
         logMessage("Create Linear Regression Forecasting LPG C3 PT Badak ...")
@@ -503,9 +576,19 @@ def main():
         # Convert string to tuple
         linreg_model_param = ast.literal_eval(linreg_model_param)
 
+        # Get Adjustment Value Linreg
+        sql_linreg_adj = """SELECT adj_forecast_f
+                        FROM lng_analytics_adjustment
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LPG C3'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+        
+        linreg_adj_value = get_sql_data(sql_linreg_adj, conn)
+        linreg_adj_value = linreg_adj_value['adj_forecast_f'][0]
+
         #Set parameters
         linreg_lags = linreg_model_param['window_length']
-        linreg_normalize = True
         linreg_strategy = "recursive"
 
         # Create regressor object
@@ -526,6 +609,12 @@ def main():
         #Rename colum 0
         y_pred_linreg.rename(columns={0:'forecast_f'}, inplace=True)
 
+        # Convert the 'forecast_f' column to float data type
+        y_pred_linreg['forecast_f'] = y_pred_linreg['forecast_f'].astype(float)
+
+        # Add adj value to all the values in the 'forecast_f' column
+        y_pred_linreg['forecast_f'] = y_pred_linreg['forecast_f'] + linreg_adj_value
+
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 #####
         logMessage("Create Polynomial Regression Degree=2 Forecasting LPG C3 PT Badak ...")
@@ -542,6 +631,17 @@ def main():
        
         # Convert string to tuple
         poly2_model_param = ast.literal_eval(poly2_model_param)
+
+        # Get Adjustment Value Poly2
+        sql_poly2_adj = """SELECT adj_forecast_g
+                        FROM lng_analytics_adjustment
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LPG C3'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+        
+        poly2_adj_value = get_sql_data(sql_poly2_adj, conn)
+        poly2_adj_value = poly2_adj_value['adj_forecast_g'][0]
 
         #Set parameters
         poly2_lags = poly2_model_param['window_length']
@@ -567,6 +667,12 @@ def main():
         #Rename colum 0
         y_pred_poly2.rename(columns={0:'forecast_g'}, inplace=True)
 
+        # Convert the 'forecast_g' column to float data type
+        y_pred_poly2['forecast_g'] = y_pred_poly2['forecast_g'].astype(float)
+
+        # Add adj value to all the values in the 'forecast_g' column
+        y_pred_poly2['forecast_g'] = y_pred_poly2['forecast_g'] + poly2_adj_value
+
 
         ##### POLYNOMIAL REGRESSION DEGREE=3 #####
         logMessage("Create Polynomial Regression Degree=3 Forecasting LPG C3 PT Badak ...")
@@ -583,6 +689,17 @@ def main():
        
         # Convert string to tuple
         poly3_model_param = ast.literal_eval(poly3_model_param)
+
+        # Get Adjustment Value Poly3
+        sql_poly3_adj = """SELECT adj_forecast_h
+                        FROM lng_analytics_adjustment
+                        WHERE lng_plant = 'PT Badak' 
+                        AND product = 'LPG C3'
+                        ORDER BY running_date DESC 
+                        LIMIT 1 OFFSET 0"""
+        
+        poly3_adj_value = get_sql_data(sql_poly3_adj, conn)
+        poly3_adj_value = poly3_adj_value['adj_forecast_h'][0]
 
         #Set parameters
         poly3_lags = poly3_model_param['window_length']
@@ -608,6 +725,12 @@ def main():
         #Rename colum 0
         y_pred_poly3.rename(columns={0:'forecast_h'}, inplace=True)
 
+        # Convert the 'forecast_h' column to float data type
+        y_pred_poly3['forecast_h'] = y_pred_poly3['forecast_h'].astype(float)
+
+        # Add adj value to all the values in the 'forecast_h' column
+        y_pred_poly3['forecast_h'] = y_pred_poly3['forecast_h'] + poly3_adj_value
+
 
         ##### JOIN PREDICTION RESULT TO DATAFRAME #####
         logMessage("Creating all model prediction result data frame ...")
@@ -620,26 +743,6 @@ def main():
                                     y_pred_poly2[['forecast_g']],
                                     y_pred_poly3[['forecast_h']]], axis=1)
         y_all_pred['date'] = future_exog.index.values
-
-        # Plot prediction
-        fig, ax = plt.subplots(figsize=(20,8))
-        ax.plot(train_df, label='train')
-        ax.plot(arimax_forecast, label='arimax_pred')
-        ax.plot(sarimax_forecast, label='sarimax_pred')
-        ax.plot(prophet_forecast, label='prophet_pred')
-        ax.plot(ranfor_forecast, label='ranfor_pred')
-        ax.plot(xgb_forecast, label='xgb_pred')
-        ax.plot(linreg_forecast, label='linreg_pred')
-        ax.plot(poly2_forecast, label='poly2_pred')
-        ax.plot(poly3_forecast, label='poly3_pred')
-        title = 'LPG C3 PT Badak Forecasting with Exogenous Day & Month)'
-        ax.set_title(title)
-        ax.set_ylabel("LPG C3")
-        ax.set_xlabel("Datestamp")
-        ax.legend(loc='best')
-        #plt.savefig("LPG C3 PT Badak Forecasting" + ".jpg")
-        #plt.show()
-        plt.close()
 
         # %%
         # Save forecast result to database
