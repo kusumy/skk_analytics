@@ -53,6 +53,7 @@ from tracemalloc import start
 from configparser import ConfigParser
 import gc
 from statsmodels.tsa.stattools import adfuller
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -81,7 +82,6 @@ from sktime.forecasting.fbprophet import Prophet
 from sktime.forecasting.model_selection import (ForecastingGridSearchCV,
                                                 SingleWindowSplitter,
                                                 temporal_train_test_split)
-#from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 from sktime.performance_metrics.forecasting import (MeanAbsolutePercentageError, MeanSquaredError)
 from tsmoothie.smoother import LowessSmoother
 from xgboost import XGBRegressor
@@ -108,17 +108,24 @@ def main():
     import datetime
 
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'condensate_badak_insample.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'condensate_badak_insample.log')
 
     # Configure logging
     configLogging(logs_file_path)
 
     # Connect to configuration file
-    config = ConfigParser()
-    config.read('config_lng.ini')
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_tangguh_str = str(config_folder/'config_forecast_badak.ini')
+
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_tangguh_str)
     
     # Accessing sections
-    section_1 = config['config_badak']
+    section_1 = config_forecast['config_badak']
     
     # Get values from configuration
     USE_DEFAULT_DATE = section_1.getboolean('use_default_date')
@@ -134,8 +141,13 @@ def main():
     TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
     TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
     
+    config_sarimax_badak_str = str(config_folder/'lng_badak_sarimax.ini')
+
+    config_sarimax = ConfigParser()
+    config_sarimax.read(config_sarimax_badak_str)
+
     # Accessing sections
-    section_2 = config['config_sarimax']
+    section_2 = config_sarimax['config_sarimax']
     
     # Get values from sarimax configuration
     start_p = section_2.getint('START_P')
@@ -149,7 +161,6 @@ def main():
     
     start_Q = section_2.getint('START_Q_SEASONAL')
     max_Q = section_2.getint('MAX_Q_SEASONAL')
-    
     
     # Connect to database
     # Exit program if not connected to database

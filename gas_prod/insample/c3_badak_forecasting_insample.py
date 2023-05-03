@@ -52,6 +52,7 @@ from tokenize import Ignore
 from tracemalloc import start
 from configparser import ConfigParser
 import gc
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -106,17 +107,24 @@ def main():
     import datetime
 
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'c3_badak_insample.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'c3_badak_insample.log')
 
     # Configure logging
     configLogging(logs_file_path)
     
     # Connect to configuration file
-    config = ConfigParser()
-    config.read('config_lng.ini')
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_tangguh_str = str(config_folder/'config_forecast_badak.ini')
+
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_tangguh_str)
     
     # Accessing sections
-    section_1 = config['config_c3c4_badak']
+    section_1 = config_forecast['config_c3c4_badak']
     
     # Get values from configuration
     USE_DEFAULT_DATE = section_1.getboolean('use_default_date')
@@ -132,8 +140,13 @@ def main():
     TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
     TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
     
+    config_sarimax_badak_str = str(config_folder/'lng_badak_sarimax.ini')
+
+    config_sarimax = ConfigParser()
+    config_sarimax.read(config_sarimax_badak_str)
+
     # Accessing sections
-    section_2 = config['config_sarimax']
+    section_2 = config_sarimax['config_sarimax']
     
     # Get values from sarimax configuration
     start_p = section_2.getint('START_P')
@@ -366,7 +379,6 @@ def main():
     arimax_n_fits = 50
 
     # Create ARIMAX Model
-    #arimax_model = auto_arima(train_df, exogenous=future_exog, d=arimax_differencing, trace=arimax_trace, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
     arimax_model = AutoARIMA(d=arimax_differencing, trace=arimax_trace, n_fits=arimax_n_fits, stepwise=arimax_stepwise, error_action=arimax_error_action, suppress_warnings=arimax_suppress_warnings)
     
     logMessage("Creating ARIMAX Model ...")

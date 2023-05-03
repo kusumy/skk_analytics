@@ -52,6 +52,7 @@ import pandas as pd
 import psycopg2
 from configparser import ConfigParser
 import gc
+from pathlib import Path
 
 from humanfriendly import format_timespan
 from tokenize import Ignore
@@ -76,7 +77,6 @@ from statsmodels.tsa.stattools import adfuller
 from dateutil.relativedelta import *
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
-#from sklearn.pipeline import make_pipeline
 from sktime.forecasting.arima import AutoARIMA
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.forecasting.compose import make_reduction
@@ -109,17 +109,24 @@ def main():
     import datetime
 
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'feed_gas_tangguh_insample.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'feed_gas_tangguh_insample.log')
 
     # Configure logging
     configLogging(logs_file_path)
     
     # Connect to configuration file
-    config = ConfigParser()
-    config.read('config_lng.ini')
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_tangguh_str = str(config_folder/'config_forecast_tangguh.ini')
+
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_tangguh_str)
     
     # Accessing sections
-    section_1 = config['config_tangguh']
+    section_1 = config_forecast['config_tangguh']
     
     # Get values from configuration
     USE_DEFAULT_DATE = section_1.getboolean('use_default_date')
@@ -135,8 +142,13 @@ def main():
     TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
     TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
     
+    config_sarimax_tangguh_str = str(config_folder/'lng_tangguh_sarimax.ini')
+
+    config_sarimax = ConfigParser()
+    config_sarimax.read(config_sarimax_tangguh_str)
+
     # Accessing sections
-    section_2 = config['config_sarimax']
+    section_2 = config_sarimax['config_sarimax']
     
     # Get values from sarimax configuration
     start_p = section_2.getint('START_P')
