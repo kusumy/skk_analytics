@@ -59,7 +59,6 @@ from tokenize import Ignore
 from datetime import datetime
 from tracemalloc import start
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 plt.style.use('fivethirtyeight')
 
 import matplotlib as mpl
@@ -84,7 +83,6 @@ from sktime.forecasting.fbprophet import Prophet
 from sktime.forecasting.model_selection import (ForecastingGridSearchCV,
                                                 SingleWindowSplitter,
                                                 temporal_train_test_split)
-#from sktime.forecasting.statsforecast import StatsForecastAutoARIMA
 from sktime.performance_metrics.forecasting import (MeanAbsolutePercentageError, MeanSquaredError)
 from xgboost import XGBRegressor
 
@@ -483,7 +481,7 @@ def main():
     #%%
     #Set Parameters
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[num_lags, 1, 7, 30, 31, 365]
+                        ,'n_changepoints':[num_lags, 1, 7, 30, 31]
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
@@ -553,7 +551,7 @@ def main():
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
-    ranfor_forecaster_param_grid = {"window_length": [num_lags, 1, 7, 30, 31, 365], 
+    ranfor_forecaster_param_grid = {"window_length": [num_lags, 1, 7, 30, 31], 
                                     "estimator__n_estimators": [150, 200]}
 
     # create regressor object
@@ -620,7 +618,7 @@ def main():
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
-    xgb_forecaster_param_grid = {"window_length": [num_lags, 1, 7, 30, 31, 365]
+    xgb_forecaster_param_grid = {"window_length": [num_lags, 1, 7, 30, 31]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
