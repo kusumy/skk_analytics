@@ -169,7 +169,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(filename='database_tangguh.ini', section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
         
@@ -183,6 +183,8 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
+    sql_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'feed_gas_tangguh_insample.log')
     query = os.path.join('./sql','fg_tangguh_data_query.sql')
     query_1 = open(query, mode="rt").read()
     sql = ''
@@ -193,8 +195,6 @@ def main():
             sql = query_1.format('2016-01-01', end_date_april)
     else :
         sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
-
-    #print(sql)
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
