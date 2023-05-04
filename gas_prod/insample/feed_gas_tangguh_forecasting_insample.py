@@ -183,10 +183,10 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    sql_folder = current_dir_parent_logs / "logs"
-    logs_file_path = str(logs_folder/'feed_gas_tangguh_insample.log')
-    query = os.path.join('./sql','fg_tangguh_data_query.sql')
-    query_1 = open(query, mode="rt").read()
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'fg_tangguh_data_query.sql')
+    #query = os.path.join('./sql','fg_tangguh_data_query.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         if current_date < date_nov:

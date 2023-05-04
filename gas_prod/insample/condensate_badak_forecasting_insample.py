@@ -165,7 +165,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(filename='database_badak.ini', section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
 
@@ -177,8 +177,10 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query_data = os.path.join('./sql','condensate_badak_data_query.sql')
-    query_1 = open(query_data, mode="rt").read()
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'condensate_badak_data_query.sql')
+    #query_data = os.path.join('./sql','condensate_badak_data_query.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         if current_date < date_nov:
@@ -203,10 +205,6 @@ def main():
     threshold_ad = ThresholdAD(data_null_cleaning['condensate_copy'].isnull())
     anomalies = threshold_ad.detect(s)
     anomalies = anomalies.drop('condensate', axis=1)
-
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
 
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
@@ -249,7 +247,7 @@ def main():
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
 
     #%%
-    query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
+    query_data2 = str(sql_folder/'lng_prod_badak_data_query.sql')
     #query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
     query_2 = open(query_data2, mode="rt").read()
     sql2 = ''

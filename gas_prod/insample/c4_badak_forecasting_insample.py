@@ -154,7 +154,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(filename='database_badak.ini', section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
 
@@ -165,9 +165,10 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    #Load data from database
-    query_data = os.path.join('./sql','c4_badak_data_query.sql')
-    query_1 = open(query_data, mode="rt").read()
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'c4_badak_data_query.sql')
+    #query_data = os.path.join('./sql','c4_badak_data_query.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         if current_date < date_nov:
@@ -228,7 +229,7 @@ def main():
     df_cleaned = new_s[['lpg_c4']].copy()
 
     #%%
-    query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
+    query_data2 = str(sql_folder/'lng_prod_badak_data_query.sql')
     #query_data2 = os.path.join('./sql','lng_prod_badak_data_query.sql')
     query_2 = open(query_data2, mode="rt").read()
     sql2 = ''
@@ -251,7 +252,6 @@ def main():
     data_fg_exog = data2[['date', 'fg_exog']].copy()
     ds_fg_exog = 'date'
     data_fg_exog = data_fg_exog.set_index(ds_fg_exog)
-
     
     #%%
     logMessage("AD Fuller Test ...")

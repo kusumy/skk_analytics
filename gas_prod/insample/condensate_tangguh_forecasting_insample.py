@@ -158,7 +158,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(filename='database_tangguh.ini', section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
         
@@ -172,8 +172,10 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query = os.path.join('./sql','condensate_tangguh_data_query.sql')
-    query_1 = open(query, mode="rt").read()
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'condensate_tangguh_data_query.sql')
+    #query = os.path.join('./sql','condensate_tangguh_data_query.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         if current_date < date_nov:
