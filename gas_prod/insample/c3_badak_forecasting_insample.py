@@ -509,7 +509,7 @@ def main():
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
-    ranfor_forecaster_param_grid = {"window_length": [num_lags, 3, 5, 7], 
+    ranfor_forecaster_param_grid = {"window_length": [num_lags, 5, 7], 
                                     "estimator__n_estimators": [100,200]}
 
     # create regressor object
@@ -575,7 +575,7 @@ def main():
     xgb_strategy = "recursive"
 
     # Create regressor object
-    xgb_forecaster_param_grid = {"window_length": [num_lags, 3, 5, 7]
+    xgb_forecaster_param_grid = {"window_length": [num_lags, 5, 7]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 

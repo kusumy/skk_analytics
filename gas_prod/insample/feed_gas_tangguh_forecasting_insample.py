@@ -481,7 +481,7 @@ def main():
     #%%
     #Set Parameters
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[num_lags, 1, 7, 30, 31]
+                        ,'n_changepoints':[num_lags, 7, 30]
                         ,'seasonality_prior_scale':[0.05, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[8,10]
@@ -551,8 +551,8 @@ def main():
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
-    ranfor_forecaster_param_grid = {"window_length": [num_lags, 1, 7, 30, 31], 
-                                    "estimator__n_estimators": [150, 200]}
+    ranfor_forecaster_param_grid = {"window_length": [num_lags, 1, 7, 30], 
+                                    "estimator__n_estimators": [100, 200]}
 
     # create regressor object
     ranfor_regressor = RandomForestRegressor(random_state = ranfor_random_state, criterion = ranfor_criterion)
@@ -618,7 +618,7 @@ def main():
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
-    xgb_forecaster_param_grid = {"window_length": [num_lags, 1, 7, 30, 31]
+    xgb_forecaster_param_grid = {"window_length": [num_lags, 1, 7, 30]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 

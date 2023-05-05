@@ -473,7 +473,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample Condensate BP Tangguh ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[num_lags, 7, 30, 31]
+                        ,'n_changepoints':[num_lags, 7]
                         ,'seasonality_prior_scale':[0.2, 0.1] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.1, 0.5] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[5,10]
@@ -544,7 +544,7 @@ def main():
     ranfor_strategy = "recursive"
 
     # create regressor object
-    ranfor_forecaster_param_grid = {"window_length": [num_lags, 7, 30, 31], 
+    ranfor_forecaster_param_grid = {"window_length": [num_lags, 7, 30], 
                                     "estimator__n_estimators": [100, 150]}
 
     # create regressor object
@@ -611,7 +611,7 @@ def main():
     xgb_objective = 'reg:squarederror'
     xgb_strategy = "recursive"
 
-    xgb_forecaster_param_grid = {"window_length": [num_lags, 7, 30, 31]
+    xgb_forecaster_param_grid = {"window_length": [num_lags, 7, 30]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 

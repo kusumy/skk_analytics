@@ -413,7 +413,7 @@ def main():
     logMessage("Creating Prophet Model Forecasting Insample LPG C4 PT Badak ...")
     # Create Prophet Parameter Grid
     prophet_param_grid = {'seasonality_mode':['additive','multiplicative']
-                        ,'n_changepoints':[num_lags, 3, 5, 7]
+                        ,'n_changepoints':[num_lags, 5, 7]
                         ,'seasonality_prior_scale':[1, 8] #Flexibility of the seasonality (0.01,10)
                         ,'changepoint_prior_scale':[0.002, 0.1] #Flexibility of the trend (0.001,0.5)
                         ,'daily_seasonality':[3,10]
@@ -484,7 +484,7 @@ def main():
     ranfor_criterion = "squared_error"
     ranfor_strategy = "recursive"
 
-    ranfor_forecaster_param_grid = {"window_length": [num_lags, 3, 5, 7], 
+    ranfor_forecaster_param_grid = {"window_length": [num_lags, 5, 7], 
                                     "estimator__n_estimators": [100,200]}
 
     # create regressor object
@@ -551,7 +551,7 @@ def main():
     xgb_strategy = "recursive"
 
     # Create regressor object
-    xgb_forecaster_param_grid = {"window_length": [num_lags, 3, 5, 7]
+    xgb_forecaster_param_grid = {"window_length": [num_lags, 5, 7]
                                 ,"estimator__n_estimators": [100, 200]
                                 }
 
@@ -616,7 +616,7 @@ def main():
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
 
-    linreg_forecaster_param_grid = {"window_length": [3, num_lags, 7]}
+    linreg_forecaster_param_grid = {"window_length": [3, 5, 7]}
 
     # Create regressor object
     linreg_regressor = LinearRegression()
