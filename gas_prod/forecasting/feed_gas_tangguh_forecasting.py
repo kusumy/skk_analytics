@@ -4,27 +4,22 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import pmdarima as pm
 import psycopg2
-import seaborn as sns
-import time
 from configparser import ConfigParser
 import ast
+from pathlib import Path
 
 from humanfriendly import format_timespan
 from tokenize import Ignore
 from datetime import datetime
 from tracemalloc import start
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 plt.style.use('fivethirtyeight')
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-from pmdarima import model_selection 
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from adtk.data import validate_series
@@ -32,7 +27,6 @@ pd.options.plotting.backend = "plotly"
 from dateutil.relativedelta import *
 
 from pmdarima.arima.utils import ndiffs, nsdiffs
-import statsmodels.api as sm
 from sktime.forecasting.arima import AutoARIMA, ARIMA
 from sktime.forecasting.fbprophet import Prophet
 from sktime.forecasting.compose import make_reduction
@@ -53,14 +47,25 @@ def main():
     import datetime
 
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'feed_gas_tangguh_forecasting.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'feed_gas_tangguh_forecasting.log')
+    #logs_file_path = os.path.join('./logs', 'feed_gas_tangguh_forecasting.log')
 
     # Configure logging
     configLogging(logs_file_path)
+
+    # Connect to configuration file
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_tangguh_str = str(config_folder/'config_forecast_tangguh.ini')
     
-    config = ConfigParser()
-    config.read('config_lng.ini')
-    section = config['config_tangguh']
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_tangguh_str)
+
+    # Accessing sections
+    section = config_forecast['config_tangguh']
 
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
 
@@ -91,11 +96,12 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(filename='database_tangguh.ini', section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
     
     logMessage("Cleaning data ...")
+
     ##### CLEANING FEED GAS DATA #####
     #Load Data from Database
     from datetime import datetime
@@ -105,8 +111,10 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query = os.path.join('./sql','fg_tangguh_data_query.sql')
-    query_1 = open(query, mode="rt").read()
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'fg_tangguh_data_query.sql')
+    #query = os.path.join('./sql','fg_tangguh_data_query.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         if current_date < date_nov:
@@ -115,8 +123,6 @@ def main():
             sql = query_1.format('2016-01-01', end_date_april)
     else :
         sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
-
-    #print(sql)
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
@@ -139,10 +145,6 @@ def main():
     anomalies = anomalies.drop('planned_shutdown', axis=1)
     anomalies = anomalies.drop('unplanned_shutdown', axis=1)
 
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
-
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
@@ -153,29 +155,18 @@ def main():
     # Get only anomalies data
     anomalies_data = new_s[new_s['anomaly'].isnull()]
 
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
-
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
     copy_anomalies.rename(columns={'feed_gas_copy':'anomaly'}, inplace=True)
     # Merge original dataframe with anomalies
     new_s = pd.concat([s, copy_anomalies], axis=1)
-
-    # Get only anomalies data
-    #anomalies_data = new_s[new_s['anomaly'].isnull()]
     
     #%%
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month
-        
-        # Get start month and end month
-        #start_month = str(get_first_date_of_current_month(yr, mt))
-        #end_month = str(get_last_date_of_month(yr, mt))
-        
+               
         # Get last year start date month
         start_month = get_first_date_of_prev_month(yr,mt,step=-12)
         
@@ -188,18 +179,10 @@ def main():
         
         # update value at specific location
         new_s.at[index,'feed_gas'] = mean_month
-        
-        #print(index), print(sql), print(mean_month)
-    
-    # Check if updated
-    #new_s[new_s['anomaly'].isnull()]
     
     #%%
     logMessage("Feed Gas Tangguh Unplanned Shutdown Cleaning ...")
     data_unplanned_cleaning = new_s[['feed_gas', 'wpnb_gas', 'unplanned_shutdown', 'planned_shutdown']].copy()
-    #ds_cleaning2 = 'date'
-    #data_unplanned_cleaning = data_unplanned_cleaning.set_index(ds_cleaning2)
-    #data_unplanned_cleaning['unplanned_shutdown'] = data_unplanned_cleaning['unplanned_shutdown'].astype('int')
     s2 = validate_series(data_unplanned_cleaning)
 
     #%%
@@ -210,10 +193,6 @@ def main():
     anomalies2 = anomalies2.drop('feed_gas', axis=1)
     anomalies2 = anomalies2.drop('wpnb_gas', axis=1)
     anomalies2 = anomalies2.drop('planned_shutdown', axis=1)
-
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
 
     # Copy data frame of anomalies
     copy_anomalies2 =  anomalies2.copy()
@@ -238,16 +217,6 @@ def main():
         yr = index.year
         mt = index.month
         
-        # Get start month and end month
-        #start_month = str(get_first_date_of_current_month(yr, mt))
-        #end_month = str(get_last_date_of_month(yr, mt))
-        
-        # Get last year start date month
-        #start_month = get_first_date_of_prev_month(yr,mt,step=-12)
-        
-        # Get last month last date
-        #end_month = get_last_date_of_prev_month(yr,mt,step=-1)
-        
         # Get mean fead gas data for the month
         #sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
         yesterday_date = index - datetime.timedelta(days=1)
@@ -260,12 +229,6 @@ def main():
         
         # update value at specific location
         new_s2.at[index,'feed_gas'] = mean_month
-        
-        #print(index), print(sql), print(mean_month)
-
-    # Check if updated
-    new_s2[new_s2['anomaly'] == False]
-    anomaly_upd2 = new_s2[new_s2['anomaly'] == False]
 
     #%%
     logMessage("Feed Gas BP Tangguh Prepare Data ...")
@@ -279,13 +242,8 @@ def main():
     df_cleaned = df_cleaned.set_index(ds_cleaned)
     df_cleaned.index = pd.DatetimeIndex(df_cleaned.index, freq='D')
     
-
     #Select column target
     train_df = df_cleaned['feed_gas']
-   
-    #%%
-    #Ad Fuller Test
-    #ad_test(train_df)
 
     #%%
     logMessage("Create Exogenous Features for Training ...")
@@ -303,7 +261,8 @@ def main():
     #Load Data from Database
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
-    query_exog = os.path.join('./sql','fg_tangguh_exog_query.sql')
+    query_exog = str(sql_folder/'fg_tangguh_exog_query.sql')
+    #query_exog = os.path.join('./sql','fg_tangguh_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
     if USE_DEFAULT_DATE == True:
@@ -313,8 +272,6 @@ def main():
             sql2 = query_2.format(exog_forecast_start_date, end_date_april)
     else :
         sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
-        
-    #print(sql2)
     
     #%%
     data_exog = get_sql_data(sql2, conn)

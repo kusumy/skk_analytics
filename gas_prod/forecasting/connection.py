@@ -7,6 +7,7 @@ import psycopg2
 import psycopg2.extras as extras
 from io import StringIO
 from pandas.io.sql import execute
+from pathlib import Path
 
 from configparser import ConfigParser
 
@@ -57,9 +58,15 @@ def get_sql_data(sql, conn):
 #df = retrieve_data(query)
 
 def create_db_connection(filename='database.ini', section='postgresql_ml_lng_skk'):
+    # Connect to configuration file
+    current_dir = Path(__file__).resolve()
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_db_str = str(config_folder/'database_tangguh.ini')
+
     # Read database configuration INI
     config = ConfigParser()
-    config.read(filename)
+    config.read(config_db_str)
     postgresql = config[section]
     host = postgresql['host']
     dbname = postgresql['database']

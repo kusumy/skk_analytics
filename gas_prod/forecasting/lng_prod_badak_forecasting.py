@@ -5,18 +5,15 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import psycopg2
-import seaborn as sns
-import time
 from configparser import ConfigParser
 import ast
+from pathlib import Path
 
 from humanfriendly import format_timespan
 from tokenize import Ignore
 from datetime import datetime
 from tracemalloc import start
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 from statsmodels.tsa.seasonal import seasonal_decompose
@@ -52,14 +49,25 @@ def main():
     import datetime
     
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'lng_production_badak_forecasting.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'lng_production_badak_forecasting.log')
+    #logs_file_path = os.path.join('./logs', 'lng_production_badak_forecasting.log')
 
     # Configure logging
     configLogging(logs_file_path)
 
-    config = ConfigParser()
-    config.read('config_lng.ini')
-    section = config['config_badak']
+    # Connect to configuration file
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_badak_str = str(config_folder/'config_forecast_badak.ini')
+    
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_badak_str)
+
+    # Accessing sections
+    section = config_forecast['config_badak']
 
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
 
@@ -91,10 +99,11 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(filename='database_badak.ini', section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
-        
+    
+    logMessage("Cleaning data ...")
     ##### CLEANING FEED GAS DATA #####
     #Load Data from Database
     from datetime import datetime
@@ -104,8 +113,10 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query_data = os.path.join('./sql','lng_prod_badak_data_query.sql')
-    query_1 = open(query_data, mode="rt").read()
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'lng_prod_badak_data_query.sql')
+    #query_data = os.path.join('./sql','lng_prod_badak_data_query.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         if current_date < date_nov:
@@ -114,8 +125,6 @@ def main():
             sql = query_1.format('2013-01-01', end_date_april)
     else :
         sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
-
-    #print(sql)
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
@@ -134,10 +143,6 @@ def main():
     anomalies =  threshold_ad.detect(s)
     anomalies = anomalies.drop('lng_production', axis=1)
 
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
-
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
@@ -147,18 +152,10 @@ def main():
 
     # Get only anomalies data
     anomalies_data = new_s[new_s['anomaly'].isnull()]
-
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
    
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month
-        
-        # Get start month and end month
-        #start_month = str(get_first_date_of_current_month(yr, mt))
-        #end_month = str(get_last_date_of_month(yr, mt))
         
         # Get last year start date month
         start_month = get_first_date_of_prev_month(yr,mt,step=-12)
@@ -191,26 +188,6 @@ def main():
     train_df = df_cleaned['lng_production']
 
     #%%
-    #stationarity_check(train_df)
-
-    #%%
-    #decomposition_plot(train_df)
-
-    #%%
-    #plot_acf_pacf(train_df)
-
-    #%%
-    # from chart_studio.plotly import plot_mpl
-    # from statsmodels.tsa.seasonal import seasonal_decompose
-    # result = seasonal_decompose(df.lng_production.values, model="multiplicative", period=365)
-    # fig = result.plot()
-    # plt.close()
-
-    #%%
-    #Ad Fuller Test
-    #ad_test(train_df)
-
-    #%%
     logMessage("Create Exogenous Features for Training ...")
     #CREATE EXOGENOUS VARIABLES
     df_cleaned['fg_exog'] = data['fg_exog'].values
@@ -220,13 +197,13 @@ def main():
     train_exog = df_cleaned.iloc[:,1:]
 
     from sktime.forecasting.base import ForecastingHorizon
-    #time_predict = pd.period_range('2022-11-11', periods=51, freq='D')
 
     #%%
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
     logMessage("Create Exogenous Features for Future Dates ...")
-    query_exog = os.path.join('./sql','lng_prod_badak_exog_query.sql')
+    query_exog = str(sql_folder/'lng_prod_badak_exog_query.sql')
+    #query_exog = os.path.join('./sql','lng_prod_badak_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
     if USE_DEFAULT_DATE == True:
@@ -236,8 +213,6 @@ def main():
             sql2 = query_2.format(exog_forecast_start_date, end_date_april)
     else :
         sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
-        
-    #print(sql2)
     
     data_exog = get_sql_data(sql2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')

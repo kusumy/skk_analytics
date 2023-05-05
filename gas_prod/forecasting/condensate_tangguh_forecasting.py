@@ -4,26 +4,21 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import pmdarima as pm
 import psycopg2
-import seaborn as sns
-import time
 from configparser import ConfigParser
 import ast
+from pathlib import Path
 
 from tokenize import Ignore
 from datetime import datetime
 from tracemalloc import start
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 plt.style.use('fivethirtyeight')
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-from pmdarima import model_selection 
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from adtk.data import validate_series
@@ -53,14 +48,25 @@ def main():
     import datetime
 
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'condensate_tangguh_forecasting.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'condensate_tangguh_forecasting.log')
+    #logs_file_path = os.path.join('./logs', 'condensate_tangguh_forecasting.log')
 
     # Configure logging
     configLogging(logs_file_path)
     
-    config = ConfigParser()
-    config.read('config_lng.ini')
-    section = config['config_tangguh']
+    # Connect to configuration file
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_tangguh_str = str(config_folder/'config_forecast_tangguh.ini')
+    
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_tangguh_str)
+
+    # Accessing sections
+    section = config_forecast['config_tangguh']
 
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
 
@@ -92,7 +98,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(filename='database_tangguh.ini', section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
 
@@ -106,8 +112,10 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query = os.path.join('./sql','condensate_tangguh_data_query.sql')
-    query_1 = open(query, mode="rt").read()
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'condensate_tangguh_data_query.sql')
+    #query = os.path.join('./sql','condensate_tangguh_data_query.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         if current_date < date_nov:
@@ -116,8 +124,6 @@ def main():
             sql = query_1.format('2016-01-01', end_date_april)
     else :
         sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
-
-    #print(sql)
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
@@ -132,16 +138,6 @@ def main():
     data_null_cleaning = data_null_cleaning.set_index(ds_null_cleaning)
     s = validate_series(data_null_cleaning)    
     
-    # Calculate standar deviation
-    fg_std = data_null_cleaning['condensate'].std()
-    fg_mean = data_null_cleaning['condensate'].mean()
-
-    # Create anomaly detection model
-    high_limit1 = fg_mean+3*fg_std
-    low_limit1 = fg_mean-3*fg_std
-    high_limit2 = fg_mean+fg_std
-    low_limit2 = fg_mean-fg_std
-    
     threshold_ad = ThresholdAD(data_null_cleaning['condensate_copy'].isnull())
     anomalies =  threshold_ad.detect(s)
 
@@ -149,10 +145,6 @@ def main():
     anomalies = anomalies.drop('wpnb_oil', axis=1)
     anomalies = anomalies.drop('planned_shutdown', axis=1)
     anomalies = anomalies.drop('unplanned_shutdown', axis=1)
-
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
 
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
@@ -164,19 +156,12 @@ def main():
     # Get only anomalies data
     anomalies_data = new_s[new_s['anomaly'].isnull()]
 
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
-
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
     copy_anomalies.rename(columns={'condensate_copy':'anomaly'}, inplace=True)
     # Merge original dataframe with anomalies
     new_s = pd.concat([s, copy_anomalies], axis=1)
-
-    # Get only anomalies data
-    #anomalies_data = new_s[new_s['anomaly'].isnull()]
     
     #%%
     for index, row in anomalies_data.iterrows():
@@ -199,18 +184,10 @@ def main():
         
         # update value at specific location
         new_s.at[index,'condensate'] = mean_month
-        
-        #print(index), print(sql), print(mean_month)
-    
-    # Check if updated
-    #new_s[new_s['anomaly'].isnull()]
     
     #%%
     logMessage("Unplanned Shutdown Cleaning ...")
     data_unplanned_cleaning = new_s[['condensate', 'wpnb_oil', 'unplanned_shutdown', 'planned_shutdown']].copy()
-    #ds_cleaning2 = 'date'
-    #data_unplanned_cleaning = data_unplanned_cleaning.set_index(ds_cleaning2)
-    #data_unplanned_cleaning['unplanned_shutdown'] = data_unplanned_cleaning['unplanned_shutdown'].astype('int')
     s2 = validate_series(data_unplanned_cleaning)
 
     #%%
@@ -221,10 +198,6 @@ def main():
     anomalies2 = anomalies2.drop('condensate', axis=1)
     anomalies2 = anomalies2.drop('wpnb_oil', axis=1)
     anomalies2 = anomalies2.drop('planned_shutdown', axis=1)
-
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
 
     # Copy data frame of anomalies
     copy_anomalies2 =  anomalies2.copy()
@@ -252,16 +225,6 @@ def main():
         yr = index.year
         mt = index.month
         
-        # Get start month and end month
-        #start_month = str(get_first_date_of_current_month(yr, mt))
-        #end_month = str(get_last_date_of_month(yr, mt))
-        
-        # Get last year start date month
-        #start_month = get_first_date_of_prev_month(yr,mt,step=-12)
-        
-        # Get last month last date
-        #end_month = get_last_date_of_prev_month(yr,mt,step=-1)
-        
         # Get mean fead gas data for the month
         #sql = "date>='"+start_month+ "' & "+ "date<='" +end_month+"'"
         yesterday_date = index - datetime.timedelta(days=1)
@@ -279,7 +242,6 @@ def main():
 
     # Check if updated
     new_s2[new_s2['anomaly'] == False]
-    anomaly_upd2 = new_s2[new_s2['anomaly'] == False]
 
     #%%
     logMessage("Condensate Tangguh Prepare Data ...")
@@ -295,27 +257,6 @@ def main():
 
     #Select column target
     train_df = df_cleaned['condensate']
-    #train_df
-
-    #%%
-    #stationarity_check(train_df)
-
-    #%%
-    #decomposition_plot(train_df)
-
-    #%%
-    #plot_acf_pacf(train_df)
-
-    #%%
-    # from chart_studio.plotly import plot_mpl
-    # from statsmodels.tsa.seasonal import seasonal_decompose
-    # result = seasonal_decompose(train_df.values, model="additive", period=365)
-    # fig = result.plot()
-    # plt.close()
-
-    #%%
-    #Ad Fuller Test
-    #ad_test(train_df)
 
     #%%
     logMessage("Create Exogenous Features for Training")
@@ -326,17 +267,16 @@ def main():
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
     df_cleaned['wpnb_oil'].fillna(method='ffill', inplace=True)
     train_exog = df_cleaned.iloc[:,1:]
-    #train_exog
 
     from sktime.forecasting.base import ForecastingHorizon
-    #time_predict = pd.period_range('2022-09-14', periods=109, freq='D')
 
     #%%
     logMessage("Load Exogenous Data")
     #Load Data from Database
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
-    query_exog = os.path.join('./sql','condensate_tangguh_exog_query.sql')
+    query_exog = str(sql_folder/'condensate_tangguh_exog_query.sql')
+    #query_exog = os.path.join('./sql','condensate_tangguh_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
     if USE_DEFAULT_DATE == True:
@@ -346,14 +286,11 @@ def main():
             sql2 = query_2.format(exog_forecast_start_date, end_date_april)
     else :
         sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
-        
-    #print(sql2)
     
     data_exog = get_sql_data(sql2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')
     data_exog.sort_index(inplace=True)
     data_exog = data_exog.reset_index()
-    #data_exog
 
     #%%
     ds_exog = 'date'
@@ -375,15 +312,6 @@ def main():
 
     #Set forecasting horizon
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
-
-    #Plotting for illustration
-    fig1, ax = plt.subplots(figsize=(20,8))
-    ax.plot(train_df, label='train')
-    ax.set_ylabel("Condensate")
-    ax.set_xlabel("Datestamp")
-    ax.legend(loc='best')
-    plt.close()
-
 
     #%%
     try:

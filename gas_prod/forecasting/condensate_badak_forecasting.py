@@ -5,30 +5,22 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import psycopg2
-import seaborn as sns
-import time
 from configparser import ConfigParser
 import ast
+from pathlib import Path
 
 from humanfriendly import format_timespan
 from tokenize import Ignore
 from datetime import datetime
 from tracemalloc import start
-import plotly.express as px
 from pmdarima.arima.auto import auto_arima
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-import pmdarima as pm
-from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
-#import mlflow
 from adtk.detector import ThresholdAD
 from adtk.visualization import plot
 from adtk.data import validate_series
@@ -36,7 +28,6 @@ pd.options.plotting.backend = "plotly"
 from dateutil.relativedelta import *
 
 from pmdarima.arima.utils import ndiffs, nsdiffs
-import statsmodels.api as sm
 from sktime.forecasting.arima import AutoARIMA, ARIMA
 from sktime.forecasting.fbprophet import Prophet
 from sktime.forecasting.compose import make_reduction
@@ -57,14 +48,25 @@ def main():
     import datetime
 
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'condensate_badak_forecasting.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'condensate_badak_forecasting.log')
+    #logs_file_path = os.path.join('./logs', 'condensate_badak_forecasting.log')
 
     # Configure logging
     configLogging(logs_file_path)
     
-    config = ConfigParser()
-    config.read('config_lng.ini')
-    section = config['config_badak']
+    # Connect to configuration file
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_badak_str = str(config_folder/'config_forecast_badak.ini')
+    
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_badak_str)
+
+    # Accessing sections
+    section = config_forecast['config_badak']
 
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
 
@@ -93,7 +95,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_lng_skk')
+    conn = create_db_connection(filename='database_badak.ini', section='postgresql_ml_lng_skk')
     if conn == None:
         exit()
     
@@ -105,8 +107,10 @@ def main():
     current_date = datetime.now()
     date_nov = datetime.strptime(first_date_nov, "%Y-%m-%d")
     
-    query_data = os.path.join('./sql','condensate_badak_data_query.sql')
-    query_1 = open(query_data, mode="rt").read()
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'condensate_badak_data_query.sql')
+    #query_data = os.path.join('./sql','condensate_badak_data_query.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         if current_date < date_nov:
@@ -114,9 +118,7 @@ def main():
         else :
             sql = query_1.format('2013-01-01', end_date_april)
     else :
-        sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
-
-    #print(sql)    
+        sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)   
     
     data = get_sql_data(sql, conn)
     data['date'] = pd.DatetimeIndex(data['date'], freq='D')
@@ -134,10 +136,6 @@ def main():
     anomalies =  threshold_ad.detect(s)
     anomalies = anomalies.drop('condensate', axis=1)
 
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
-
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
@@ -148,28 +146,17 @@ def main():
     # Get only anomalies data
     anomalies_data = new_s[new_s['anomaly'].isnull()]
 
-    # Create anomaly detection model
-    #threshold_ad = ThresholdAD(high=high_limit2, low=low_limit1)
-    #anomalies =  threshold_ad.detect(s)
-
     # Copy data frame of anomalies
     copy_anomalies =  anomalies.copy()
     # Rename columns
     copy_anomalies.rename(columns={'condensate_copy':'anomaly'}, inplace=True)
     # Merge original dataframe with anomalies
     new_s = pd.concat([s, copy_anomalies], axis=1)
-
-    # Get only anomalies data
-    #anomalies_data = new_s[new_s['anomaly'].isnull()]
     
     #%%
     for index, row in anomalies_data.iterrows():
         yr = index.year
         mt = index.month
-        
-        # Get start month and end month
-        #start_month = str(get_first_date_of_current_month(yr, mt))
-        #end_month = str(get_last_date_of_month(yr, mt))
         
         # Get last year start date month
         start_month = get_first_date_of_prev_month(yr,mt,step=-12)
@@ -183,8 +170,6 @@ def main():
         
         # update value at specific location
         new_s.at[index,'condensate'] = mean_month
-        
-        #print(index), print(sql), print(mean_month)
     
     #%%
     logMessage("Condensate PT Badak Prepare Data ...")
@@ -217,19 +202,6 @@ def main():
     df_smoothed[y_cleaned] = smoother.smooth_data[0]
 
     #%%
-    #stationarity_check(df_smoothed)
-
-    #%%
-    #decomposition_plot(df_smoothed)
-
-    #%%
-    #plot_acf_pacf(df_smoothed)
-
-    #%%
-    #Ad Fuller Test
-    #ad_test(df_smoothed['condensate'])
-
-    #%%
     #Select target column after smoothing data
     train_df = df_smoothed['condensate']
 
@@ -242,7 +214,8 @@ def main():
 
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
-    query_exog = os.path.join('./sql','condensate_badak_exog_query.sql')
+    query_exog = str(sql_folder/'condensate_badak_exog_query.sql')
+    #query_exog = os.path.join('./sql','condensate_badak_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
     if USE_DEFAULT_DATE == True:
@@ -252,8 +225,6 @@ def main():
             sql2 = query_2.format(exog_forecast_start_date, end_date_april)
     else :
         sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
-        
-    #print(sql2)
     
     data_exog = get_sql_data(sql2, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')
@@ -270,7 +241,6 @@ def main():
     future_exog.drop(['condensate'], axis=1, inplace=True)
 
     from sktime.forecasting.base import ForecastingHorizon
-    time_predict = pd.period_range('2022-11-11', periods=51, freq='D')
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
 
     #%%
