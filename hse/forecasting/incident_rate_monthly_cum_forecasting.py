@@ -7,16 +7,13 @@ import numpy as np
 import os
 import sys
 import pandas as pd
-import plotly.express as px
-import pmdarima as pm
 import psycopg2
-import seaborn as sns
 import ast
 from datetime import datetime
 from humanfriendly import format_timespan
 from tokenize import Ignore
+from pathlib import Path
 
-from pmdarima import model_selection
 from pmdarima.arima import auto_arima
 from pmdarima.arima.auto import auto_arima
 from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
@@ -29,7 +26,6 @@ from statsmodels.tsa.stattools import adfuller
 import pmdarima as pm
 from sktime.forecasting.arima import AutoARIMA, ARIMA
 from pmdarima.arima.utils import ndiffs, nsdiffs
-import statsmodels.api as sm
 from xgboost import XGBRegressor
 from sktime.forecasting.compose import make_reduction
 from sklearn.ensemble import RandomForestRegressor
@@ -46,14 +42,25 @@ def main():
     import datetime
     
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'incident_rate_monthly_cumulative_forecasting.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'incident_rate_monthly_cumulative_forecasting.log')
+    #logs_file_path = os.path.join('./logs', 'incident_rate_monthly_cumulative_forecasting.log')
 
     # Configure logging
     configLogging(logs_file_path)
 
-    config = ConfigParser()
-    config.read('config_hse.ini')
-    section = config['config']
+    # Connect to configuration file
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_monthly_str = str(config_folder/'config_forecast_hse_monthly_cum.ini')
+
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_monthly_str)
+    
+    # Accessing sections
+    section = config_forecast['config']
     
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
 
@@ -82,7 +89,7 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_hse_skk')
+    conn = create_db_connection(filename='database_hse.ini', section='postgresql_ml_hse_skk')
     if conn == None:
         exit()
         
@@ -90,15 +97,16 @@ def main():
     from datetime import datetime
     current_year_month = datetime.now().strftime("%Y-%m-01")
     current_year = datetime.now().year
-    query_data = os.path.join('./sql', 'query_month_cum.sql')
-    query_1 = open(query_data, mode="rt").read()
+
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'query_month_cum.sql')
+    #query_data = os.path.join('./sql', 'query_month_cum.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         sql = query_1.format('2013-01-01', current_year_month)
     else :
-        sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)
-
-    #print(sql)    
+        sql = query_1.format(TRAIN_START_DATE, TRAIN_END_DATE)  
     
     data = get_sql_data(sql, conn)
     data['year_num'] = data['year_num'].astype(int)
@@ -112,7 +120,6 @@ def main():
     data = data.rename(columns=str.lower)
     data['date'] = pd.PeriodIndex(data['date'], freq='M')
     data = data.reset_index()
-    #data.head()
 
     #%%
     ds = 'date'
@@ -128,12 +135,6 @@ def main():
     #%%
     #AD-Fuller Testing
     ad_test(df['trir_cum'])
-
-    #%%
-    # Create forecasting Horizon
-    #time_predict = pd.period_range('2022-11', periods=14, freq='M')
-    # Create forecasting Horizon
-    #fh = ForecastingHorizon(time_predict, is_relative=False)
 
     #%%
     ## Create Exogenous Variable
@@ -167,16 +168,15 @@ def main():
     #Create End Date Forecasting
     exog_forecast_end_date = (last_index_datetime + relativedelta(months=24)).strftime('%Y-%m-01')
     
-    query_exog = os.path.join('./sql','query_month_cum3.sql')
+    query_exog = str(sql_folder/'query_month_cum3.sql')
+    #query_exog = os.path.join('./sql','query_month_cum3.sql')
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
     if USE_DEFAULT_DATE == True:
         sql2 = query_2.format(exog_forecast_start_date, exog_forecast_end_date)
     else :
         sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
-        
-    #print(sql2)
-    
+           
     data2 = get_sql_data(sql2, conn)
     data2['year_num'] = data2['year_num'].astype(int)
     data2['month_num'] = data2['month_num'].astype(int)

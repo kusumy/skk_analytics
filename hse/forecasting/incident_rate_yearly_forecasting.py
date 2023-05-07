@@ -1,18 +1,14 @@
 # %%
-import logging
-import configparser
 import os
 import sys
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import pmdarima as pm
 import psycopg2
 import seaborn as sns
 from configparser import ConfigParser
 import ast
+from pathlib import Path
 
 plt.style.use('fivethirtyeight')
 from datetime import datetime
@@ -20,13 +16,6 @@ from tokenize import Ignore
 from tracemalloc import start
 from pmdarima.arima import auto_arima
 from pmdarima.arima.auto import auto_arima
-from pmdarima import model_selection
-#from connection import config, retrieve_data, create_db_connection, get_sql_data
-#from utils import configLogging, logMessage, ad_test
-
-from statsmodels.tsa.seasonal import seasonal_decompose
-from statsmodels.tsa.stattools import adfuller
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 from sktime.forecasting.arima import AutoARIMA, ARIMA
 from pmdarima.arima.utils import ndiffs, nsdiffs
@@ -47,42 +36,51 @@ def main():
     import datetime
     
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'incident_rate_yearly_forecasting.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'incident_rate_yearly_forecasting.log')
+    #logs_file_path = os.path.join('./logs', 'incident_rate_yearly_forecasting.log')
 
     # Configure logging
     configLogging(logs_file_path)
 
-    config = ConfigParser()
-    config.read('config_hse.ini')
-    section = config['config']
+    # Connect to configuration file
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_yearly = str(config_folder/'config_forecast_hse_yearly.ini')
+
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_yearly)
+    
+    # Accessing sections
+    section = config_forecast['config']
 
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
     TRAIN_START_YEAR= section.getint('train_start_year')
     TRAIN_END_YEAR= section.getint('train_end_year')
     FORECAST_START_YEAR= section.getint('forecast_start_year')
     FORECAST_END_YEAR= section.getint('forecast_end_year')
-    
-    #Configure logging
-    #configLogging("yearly_incident_rate.log")
-    
+        
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_hse_skk')
+    conn = create_db_connection(filename='database_hse.ini', section='postgresql_ml_hse_skk')
     if conn == None:
         exit()
     
     from datetime import datetime
     current_year = datetime.now().year
-    query_data = os.path.join('./sql', 'query_yearly.sql')
-    query_1 = open(query_data, mode="rt").read()
+
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'query_yearly.sql')
+    #query_data = os.path.join('./sql', 'query_yearly.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         sql = query_1.format('2013', current_year)
     else :
         sql = query_1.format(TRAIN_START_YEAR, TRAIN_END_YEAR)
-
-    #print(sql)
     
     data = get_sql_data(sql, conn)
     data['year_num'] = data['year_num'].astype(int)
@@ -123,7 +121,9 @@ def main():
     from dateutil.relativedelta import relativedelta
     exog_forecast_start_date = (last_index_datetime + relativedelta(years=1)).year
     exog_forecast_end_date = exog_forecast_start_date + 1
-    query_exog = os.path.join('./sql',"query_yearly_future.sql")
+
+    query_exog = str(sql_folder/'query_yearly_future.sql')
+    #query_exog = os.path.join('./sql',"query_yearly_future.sql")
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
     if USE_DEFAULT_DATE == True:
@@ -131,9 +131,7 @@ def main():
     else :
         sql2 = query_2.format(FORECAST_START_YEAR, FORECAST_END_YEAR)
         
-    #print(sql2)
     future_exog = get_sql_data(sql2, conn)
-    #future_exog = retrieve_data(query_2)
     future_exog['year_num'] = future_exog['year_num'].astype(int)
 
     # Prepare data (future exogenous)

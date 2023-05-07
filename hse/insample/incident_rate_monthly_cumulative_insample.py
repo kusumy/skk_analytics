@@ -16,6 +16,7 @@ from tokenize import Ignore
 from tracemalloc import start
 from configparser import ConfigParser
 import ast
+from pathlib import Path
 
 from pmdarima.arima.auto import auto_arima
 
@@ -48,14 +49,25 @@ def main():
     import datetime
 
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'incident_rate_monthly_cumulative_insample.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'incident_rate_monthly_cumulative_insample.log')
+    #logs_file_path = os.path.join('./logs', 'incident_rate_monthly_cumulative_insample.log')
 
     # Configure logging
     configLogging(logs_file_path)
     
-    config = ConfigParser()
-    config.read('config_hse.ini')
-    section = config['config']
+    # Connect to configuration file
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_monthly_str = str(config_folder/'config_forecast_hse_monthly_cum.ini')
+
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_monthly_str)
+    
+    # Accessing sections
+    section = config_forecast['config']
     
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
 
@@ -70,21 +82,21 @@ def main():
     TRAIN_START_DATE = (datetime.date(TRAIN_START_YEAR, TRAIN_START_MONTH, TRAIN_START_DAY)).strftime("%Y-%m-%d")
     TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
     
-    # Configure logging
-    #configLogging("ir_monthly_cum_insample.log")
-    
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_hse_skk')
+    conn = create_db_connection(filename='database_hse.ini', section='postgresql_ml_hse_skk')
     if conn == None:
         exit()
     
     from datetime import datetime
     current_year_month = datetime.now().strftime("%Y-%m-01")
     current_year = datetime.now().year
-    query_data = os.path.join('./sql', 'query_month_cum.sql')
-    query_1 = open(query_data, mode="rt").read()
+
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'query_month_cum.sql')
+    #query_data = os.path.join('./sql', 'query_month_cum.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         sql = query_1.format('2013-01-01', current_year_month)
@@ -111,15 +123,6 @@ def main():
     df.index = pd.PeriodIndex(df.index, freq='M')
 
     #%%
-    #stationarity_check(df.to_timestamp())
-
-    #%%
-    #decomposition_plot(df.to_timestamp())
-
-    #%%
-    #plot_acf_pacf(df.to_timestamp())
-
-    #%%
     ad_test(df['trir_cum'])
 
     #%%
@@ -133,11 +136,9 @@ def main():
 
     # Split data
     y_train, y_test = temporal_train_test_split(df, test_size=test_size)
-    #y_test.head(10)
 
     # Create forecasting Horizon
     fh = ForecastingHorizon(y_test.index, is_relative=False)
-    #fh
 
     ## Create Exogenous Variable
     df['drilling_explor_cum'] = data['bor_eksplorasi_cum'].values

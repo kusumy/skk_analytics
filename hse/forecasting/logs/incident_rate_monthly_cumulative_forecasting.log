@@ -1,58 +1,9 @@
-2023-04-18 14:00:09,194 Connecting to database ...
-2023-04-18 14:00:09,365 1. ADF : -1.8447408956054685
-2023-04-18 14:00:09,365 2. P-Value : 0.3584860243471938
-2023-04-18 14:00:09,365 3. Num Of Lags : 0
-2023-04-18 14:00:09,365 4. Num Of Observations Used For ADF Regression: 120
-2023-04-18 14:00:09,365 5. Critical Values : 
-2023-04-18 14:00:09,365 	 1%: -3.486055829282407
-2023-04-18 14:00:09,365 	 5%: -2.8859430324074076
-2023-04-18 14:00:09,365 	 10%: -2.5797850694444446
-2023-04-18 14:00:09,391 ARIMAX Model IR Monthly Cumulative Forecasting ...
-2023-04-18 14:00:09,398 Creating ARIMAX Model ...
-2023-04-18 14:00:09,479 ARIMAX Model Summary
-2023-04-18 14:00:09,480                                SARIMAX Results                                
-==============================================================================
-Dep. Variable:                      y   No. Observations:                  121
-Model:               SARIMAX(0, 1, 0)   Log Likelihood                 150.838
-Date:                Tue, 18 Apr 2023   AIC                           -285.677
-Time:                        14:00:09   BIC                           -263.377
-Sample:                    01-31-2013   HQIC                          -276.621
-                         - 01-31-2023                                         
-Covariance Type:                  opg                                         
-=======================================================================================
-                          coef    std err          z      P>|z|      [0.025      0.975]
----------------------------------------------------------------------------------------
-intercept              -0.0035      0.011     -0.326      0.744      -0.025       0.018
-drilling_explor_cum     0.0017      0.001      2.922      0.003       0.001       0.003
-drilling_explot_cum  5.851e-05    9.5e-05      0.616      0.538      -0.000       0.000
-workover_cum           -0.0001      0.000     -1.203      0.229      -0.000    8.07e-05
-wellservice_cum      3.226e-06   2.15e-06      1.500      0.134   -9.89e-07    7.44e-06
-survei_seismic_cum     -0.0039      0.002     -1.923      0.055      -0.008    7.55e-05
-bulan                  -0.0055      0.011     -0.498      0.618      -0.027       0.016
-sigma2                  0.0047      0.000     16.617      0.000       0.004       0.005
-===================================================================================
-Ljung-Box (L1) (Q):                   0.07   Jarque-Bera (JB):               877.49
-Prob(Q):                              0.80   Prob(JB):                         0.00
-Heteroskedasticity (H):               3.58   Skew:                             0.38
-Prob(H) (two-sided):                  0.00   Kurtosis:                        16.23
-===================================================================================
-
-Warnings:
-[1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2023-04-18 14:00:09,484 ARIMAX Model Prediction ..
-2023-04-18 14:00:09,492 XGBoost Model IR Monthly Cumulative Forecasting ...
-2023-04-18 14:00:09,494 Creating XGBoost Model ....
-2023-04-18 14:00:09,557 XGBoost Model Prediction ...
-2023-04-18 14:00:09,571 Random Forest Model IR Monthly Cumulative Forecasting ...
-2023-04-18 14:00:09,573 Creating Random Forest Model ...
-2023-04-18 14:00:09,813 Random Forest Model Prediction
-2023-04-18 14:00:09,871 Creating Linear Regression Model ...
-2023-04-18 14:00:09,874 Linear Regression Model Prediction ...
-2023-04-18 14:00:09,880 Creating Polynomial Regression Orde 2 Model ...
-2023-04-18 14:00:09,889 Polynomial Regression Orde 2 Model Prediction ...
-2023-04-18 14:00:09,896 Creating Polynomial Regression Orde 3 Model ...
-2023-04-18 14:00:09,904 Polynomial Regression Orde 3 Model Prediction ...
-2023-04-18 14:00:09,908 Creating all model prediction result data frame ...
-2023-04-18 14:00:10,007 Updating forecast result to database ...
-2023-04-18 14:00:10,045 Updated rows: 11
-2023-04-18 14:00:10,046 Done
+2023-05-08 00:53:18,961 Connecting to database ...
+2023-05-08 00:53:19,128 1. ADF : -1.8447408956054685
+2023-05-08 00:53:19,128 2. P-Value : 0.3584860243471938
+2023-05-08 00:53:19,128 3. Num Of Lags : 0
+2023-05-08 00:53:19,128 4. Num Of Observations Used For ADF Regression: 120
+2023-05-08 00:53:19,128 5. Critical Values : 
+2023-05-08 00:53:19,128 	 1%: -3.486055829282407
+2023-05-08 00:53:19,128 	 5%: -2.8859430324074076
+2023-05-08 00:53:19,128 	 10%: -2.5797850694444446

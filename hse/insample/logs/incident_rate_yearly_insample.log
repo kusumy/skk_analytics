@@ -1,68 +1,9 @@
-2023-04-18 14:00:00,681 Connecting to database ...
-2023-04-18 14:00:01,065 1. ADF : -0.37339984519550595
-2023-04-18 14:00:01,065 2. P-Value : 0.9144462141783269
-2023-04-18 14:00:01,065 3. Num Of Lags : 2
-2023-04-18 14:00:01,065 4. Num Of Observations Used For ADF Regression: 7
-2023-04-18 14:00:01,065 5. Critical Values : 
-2023-04-18 14:00:01,065 	 1%: -4.9386902332361515
-2023-04-18 14:00:01,066 	 5%: -3.477582857142857
-2023-04-18 14:00:01,066 	 10%: -2.8438679591836733
-2023-04-18 14:00:01,407 Creating ARIMAX Model ...
-2023-04-18 14:00:01,471 ARIMAX Model Summary
-2023-04-18 14:00:01,472                                SARIMAX Results                                
-==============================================================================
-Dep. Variable:                      y   No. Observations:                    9
-Model:               SARIMAX(0, 1, 0)   Log Likelihood                   4.319
-Date:                Sel, 18 Apr 2023   AIC                              5.362
-Time:                        14:00:01   BIC                              5.918
-Sample:                    12-31-2013   HQIC                             1.612
-                         - 12-31-2021                                         
-Covariance Type:                  opg                                         
-===================================================================================
-                      coef    std err          z      P>|z|      [0.025      0.975]
------------------------------------------------------------------------------------
-intercept          -0.0436      0.132     -0.330      0.742      -0.303       0.216
-survey_seismic     -0.0084      0.011     -0.753      0.452      -0.030       0.014
-bor_eksplorasi      0.0016      0.014      0.115      0.908      -0.026       0.029
-bor_eksploitasi     0.0003      0.002      0.117      0.907      -0.004       0.005
-workover            0.0001      0.002      0.043      0.966      -0.005       0.005
-wellservice      9.008e-06   6.74e-05      0.134      0.894      -0.000       0.000
-sigma2              0.0199      0.015      1.284      0.199      -0.010       0.050
-===================================================================================
-Ljung-Box (L1) (Q):                   3.23   Jarque-Bera (JB):                 0.20
-Prob(Q):                              0.07   Prob(JB):                         0.90
-Heteroskedasticity (H):               5.94   Skew:                            -0.39
-Prob(H) (two-sided):                  0.18   Kurtosis:                         2.97
-===================================================================================
-
-Warnings:
-[1] Covariance matrix calculated using the outer product of gradients (complex-step).
-2023-04-18 14:00:01,476 ARIMAX Model Prediction ..
-2023-04-18 14:00:01,481 ARIMAX Model MAPE: 0.0058
-2023-04-18 14:00:01,482 Arimax Model Parameters (0, 1, 0)
-2023-04-18 14:00:01,482 Creating XGBoost Model ....
-2023-04-18 14:00:01,530 XGBoost Model Prediction ...
-2023-04-18 14:00:01,537 XGBoost Model MAPE: 0.2132
-2023-04-18 14:00:01,538 XGBoost Model Parameters {'window_length': 6}
-2023-04-18 14:00:01,538 Creating Random Forest Model ...
-2023-04-18 14:00:01,604 Random Forest Model Prediction ...
-2023-04-18 14:00:01,615 Random Forest Model MAPE: 0.2174
-2023-04-18 14:00:01,615 Random Forest Model Parameters {'estimator__n_estimators': 100, 'window_length': 8}
-2023-04-18 14:00:01,615 Creating Linear Regression Model ...
-2023-04-18 14:00:01,619 Linear Regression Model Prediction ...
-2023-04-18 14:00:01,624 Linear Regression Model MAPE: 0.4474
-2023-04-18 14:00:01,624 Linear Regression Model Parameters {'window_length': 4}
-2023-04-18 14:00:01,624 Creating Polynomial Regression Orde 2 Model ...
-2023-04-18 14:00:01,632 Polynomial Regression Orde 2 Model Prediction ...
-2023-04-18 14:00:01,637 Polynomial Regression Orde 2 Model MAPE: 0.4907
-2023-04-18 14:00:01,638 Polynomial Regression Orde 2 Model Parameters {'window_length': 3}
-2023-04-18 14:00:01,638 Creating Polynomial Regression Orde 3 Model ...
-2023-04-18 14:00:01,645 Polynomial Regression Orde 3 Model Prediction ...
-2023-04-18 14:00:01,651 Polynomial Regression Orde 3 Model MAPE: 0.3608
-2023-04-18 14:00:01,651 Polynomial Regression Orde 3 Model Parameters {'window_length': 3}
-2023-04-18 14:00:01,651 Creating all model params result data frame ...
-2023-04-18 14:00:01,652 Updating MAPE result to database ...
-2023-04-18 14:00:01,655 Updated rows: 1
-2023-04-18 14:00:01,655 Updating Model Parameter result to database ...
-2023-04-18 14:00:01,660 Updated rows: 1
-2023-04-18 14:00:01,660 Done
+2023-05-08 00:45:13,457 Connecting to database ...
+2023-05-08 00:45:13,642 1. ADF : -0.37339984519550595
+2023-05-08 00:45:13,642 2. P-Value : 0.9144462141783269
+2023-05-08 00:45:13,642 3. Num Of Lags : 2
+2023-05-08 00:45:13,642 4. Num Of Observations Used For ADF Regression: 7
+2023-05-08 00:45:13,643 5. Critical Values : 
+2023-05-08 00:45:13,643 	 1%: -4.9386902332361515
+2023-05-08 00:45:13,643 	 5%: -3.477582857142857
+2023-05-08 00:45:13,643 	 10%: -2.8438679591836733

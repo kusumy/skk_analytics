@@ -55,7 +55,6 @@ from pathlib import Path
 
 from tokenize import Ignore
 from datetime import datetime
-import matplotlib.pyplot as plt
 
 from adtk.data import validate_series
 from adtk.detector import ThresholdAD

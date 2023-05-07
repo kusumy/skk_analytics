@@ -15,16 +15,13 @@ from tracemalloc import start
 import logging
 from configparser import ConfigParser
 import ast
+from pathlib import Path
 
 from pmdarima.arima.auto import auto_arima
 import matplotlib.pyplot as plt
 
-from statsmodels.tsa.seasonal import seasonal_decompose
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-
 import pmdarima as pm
 from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
-from pmdarima import model_selection 
 from pmdarima.arima import auto_arima
 from pmdarima.arima.utils import ndiffs, nsdiffs
 import statsmodels.api as sm
@@ -44,14 +41,25 @@ def main():
     import datetime
 
     # Logs Directory
-    logs_file_path = os.path.join('./logs', 'incident_rate_yearly_insample.log')
+    current_dir = Path(__file__).resolve()
+    current_dir_parent_logs = current_dir.parent
+    logs_folder = current_dir_parent_logs / "logs"
+    logs_file_path = str(logs_folder/'incident_rate_yearly_insample.log')
+    #logs_file_path = os.path.join('./logs', 'incident_rate_yearly_insample.log')
 
     # Configure logging
     configLogging(logs_file_path)
     
-    config = ConfigParser()
-    config.read('config_hse.ini')
-    section = config['config']
+    # Connect to configuration file
+    root_parent = current_dir.parent.parent.parent
+    config_folder = root_parent / "config"
+    config_forecast_yearly = str(config_folder/'config_forecast_hse_yearly.ini')
+
+    config_forecast = ConfigParser()
+    config_forecast.read(config_forecast_yearly)
+    
+    # Accessing sections
+    section = config_forecast['config']
 
     USE_DEFAULT_DATE = section.getboolean('use_default_date')
     TRAIN_START_YEAR= section.getint('train_start_year')
@@ -63,22 +71,23 @@ def main():
     # Connect to database
     # Exit program if not connected to database
     logMessage("Connecting to database ...")
-    conn = create_db_connection(section='postgresql_ml_hse_skk')
+    conn = create_db_connection(filename='database_hse.ini', section='postgresql_ml_hse_skk')
     if conn == None:
         exit()
     
     from datetime import datetime
     current_year = datetime.now().year
-    query_data = os.path.join('./sql', 'query_yearly.sql')
-    query_1 = open(query_data, mode="rt").read()
+
+    sql_folder = current_dir_parent_logs / "sql"
+    sql_file_path = str(sql_folder/'query_yearly.sql')
+    #query_data = os.path.join('./sql', 'query_yearly.sql')
+    query_1 = open(sql_file_path, mode="rt").read()
     sql = ''
     if USE_DEFAULT_DATE == True:
         sql = query_1.format('2013', current_year)
     else :
         sql = query_1.format(TRAIN_START_YEAR, TRAIN_END_YEAR)
-
-    #print(sql)
-    
+   
     data = get_sql_data(sql, conn)
     data['year_num'] = data['year_num'].astype(int)
     data['year_num'] = pd.to_datetime(data['year_num'], format='%Y')
@@ -93,23 +102,6 @@ def main():
     df.index = pd.PeriodIndex(df.index, freq='Y')
 
     #%%
-    #stationarity_check(df['trir'])
-
-    #%%
-    #decomposition_plot(df['trir'])
-
-    #%%
-    #plot_acf_pacf(df['trir'])
-
-    #%%
-    #from chart_studio.plotly import plot_mpl
-    
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    result = seasonal_decompose(df.trir.values, model="additive", period=5)
-    fig = result.plot()
-    plt.close()
-
-    #%%
     ad_test(df['trir'])
 
     from sktime.forecasting.model_selection import temporal_train_test_split
@@ -118,12 +110,10 @@ def main():
 
     # Split data
     y_train, y_test = temporal_train_test_split(df[['trir']], test_size=test_size)
-    #y_train.tail()
 
     #%%
     from sktime.forecasting.base import ForecastingHorizon
     fh = ForecastingHorizon(y_test.index, is_relative=False)
-    #fh
 
     #%%
     ## Create Exogenous Variable
@@ -142,7 +132,6 @@ def main():
     #%%
     exogenous_features = ["survei_seismic", "bor_eksplorasi", "bor_eksploitasi",
                         "workover", "wellservice"]
-    #exogenous_features
 
     # %%
     try:
