@@ -219,7 +219,7 @@ def main():
         ranfor_forecaster = make_reduction(ranfor_regressor, window_length=ranfor_lags, strategy=ranfor_strategy)
         
         logMessage("Creating Random Forest Model ...")
-        ranfor_forecaster.fit(y_train, X_train)
+        ranfor_forecaster.fit(y_train, X=X_train)
 
         logMessage("Random Forest Model Prediction ...")
         ranfor_forecast = ranfor_forecaster.predict(fh, X=X_test)

@@ -61,7 +61,6 @@ from tracemalloc import start
 import matplotlib.pyplot as plt
 plt.style.use('fivethirtyeight')
 
-import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import psycopg2
