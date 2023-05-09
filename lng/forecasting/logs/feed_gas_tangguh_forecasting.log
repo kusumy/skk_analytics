@@ -1,0 +1,46 @@
+2023-05-09 12:09:29,267 Forecasting Feed Gas BP Tangguh ...
+2023-05-09 12:09:29,267 Connecting to database ...
+2023-05-09 12:09:29,301 Cleaning data ...
+2023-05-09 12:09:30,617 Feed Gas BP Tangguh Null Value Cleaning ...
+2023-05-09 12:09:30,823 Feed Gas Tangguh Unplanned Shutdown Cleaning ...
+2023-05-09 12:09:31,068 Feed Gas BP Tangguh Prepare Data ...
+2023-05-09 12:09:31,069 Create Exogenous Features for Training ...
+2023-05-09 12:09:31,084 Create Exogenous Features for Future Dates ...
+2023-05-09 12:09:31,086 Create Arimax Forecasting Feed Gas BP Tangguh ...
+2023-05-09 12:09:31,091 Creating ARIMAX Model ...
+2023-05-09 12:09:35,778 ARIMAX Model Summary
+2023-05-09 12:09:35,781                                SARIMAX Results                                
+==============================================================================
+Dep. Variable:                      y   No. Observations:                 2530
+Model:               SARIMAX(3, 0, 2)   Log Likelihood              -13738.408
+Date:                Tue, 09 May 2023   AIC                          27498.816
+Time:                        12:09:35   BIC                          27563.012
+Sample:                    01-01-2016   HQIC                         27522.108
+                         - 12-04-2022                                         
+Covariance Type:                  opg                                         
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+intercept            5.6616      5.234      1.082      0.279      -4.597      15.920
+planned_shutdown  -209.9339      6.095    -34.442      0.000    -221.881    -197.987
+wpnb_gas             0.0513      0.037      1.371      0.170      -0.022       0.125
+month                1.1422      2.535      0.451      0.652      -3.826       6.110
+day                 -0.2709      0.228     -1.189      0.234      -0.718       0.176
+ar.L1                0.6437      0.036     17.950      0.000       0.573       0.714
+ar.L2                0.7535      0.029     26.252      0.000       0.697       0.810
+ar.L3               -0.4030      0.019    -21.115      0.000      -0.440      -0.366
+ma.L1               -0.0422      0.034     -1.250      0.211      -0.108       0.024
+ma.L2               -0.5914      0.019    -30.352      0.000      -0.630      -0.553
+sigma2            3115.5902     34.366     90.660      0.000    3048.235    3182.945
+===================================================================================
+Ljung-Box (L1) (Q):                   0.37   Jarque-Bera (JB):             88091.22
+Prob(Q):                              0.54   Prob(JB):                         0.00
+Heteroskedasticity (H):               0.47   Skew:                            -1.16
+Prob(H) (two-sided):                  0.00   Kurtosis:                        31.81
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2023-05-09 12:09:35,790 ARIMAX Model Prediction ..
+2023-05-09 12:09:35,816 Create Sarimax Forecasting Feed Gas BP Tangguh ...
+2023-05-09 12:09:35,822 Creating SARIMAX Model ...

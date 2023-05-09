@@ -3,7 +3,7 @@ cd /home/spcuser/miniconda3/envs/py38_ts/bin
 . activate py38_ts
 
 # Run every lng insample script
-cd /home/spcuser/Documents/code/python/skk/analytics/develop/skk_analytics/gas_prod/forecasting
+cd /home/spcuser/Documents/code/python/skk/analytics/develop/skk_analytics/lng/forecasting
 python feed_gas_tangguh_forecasting.py
 python lng_production_tangguh_forecasting.py
 python condensate_tangguh_forecasting.py
