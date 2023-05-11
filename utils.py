@@ -15,7 +15,7 @@ from statsmodels.tsa.stattools import adfuller, kpss
 def configLogging(filename="log.log"):
     # Configure logging
     logging.basicConfig(
-        level=logging.DEBUG, 
+        level=logging.INFO, 
         format="%(asctime)s %(message)s", 
         filename=filename,
         filemode="w" #, 

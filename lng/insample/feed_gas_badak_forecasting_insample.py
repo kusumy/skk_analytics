@@ -639,7 +639,7 @@ def main():
     # Create Linear Regression Parameter Grid
     linreg_strategy = "recursive"
 
-    linreg_forecaster_param_grid = {"window_length": [8, 2, 3]}
+    linreg_forecaster_param_grid = {"window_length": [1, 2, 3]}
 
     linreg_regressor = LinearRegression()
     linreg_forecaster = make_reduction(linreg_regressor, strategy=linreg_strategy)
