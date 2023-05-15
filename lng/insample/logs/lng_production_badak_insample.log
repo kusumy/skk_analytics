@@ -1,6 +1,40 @@
-2023-05-15 10:58:23,122 Forecasting LNG Production PT Badak ...
-2023-05-15 10:58:23,123 Connecting to database ...
-2023-05-15 10:58:23,149 Connected to Database
-2023-05-15 10:58:40,570 Finished Query
-2023-05-15 10:58:40,570 Null Value Cleaning ...
-2023-05-15 10:58:41,766 AD Fuller Test ...
+2023-05-15 16:25:17,785 Forecasting LNG Production PT Badak ...
+2023-05-15 16:25:17,785 Connecting to database ...
+2023-05-15 16:25:17,811 Connected to Database
+2023-05-15 16:25:18,642 Finished Query
+2023-05-15 16:25:18,642 Null Value Cleaning ...
+2023-05-15 16:25:18,662 AD Fuller Test ...
+2023-05-15 16:26:00,389 Creating Sarimax Model Forecasting Insample LNG Production PT Badak ...
+2023-05-15 16:26:00,392 Creating SARIMAX Model ...
+2023-05-15 16:26:50,051 SARIMAX Model Summary
+2023-05-15 16:26:50,058                                      SARIMAX Results                                     
+=========================================================================================
+Dep. Variable:                                 y   No. Observations:                 3042
+Model:             SARIMAX(1, 1, 1)x(0, 0, 1, 4)   Log Likelihood              -25107.548
+Date:                           Mon, 15 May 2023   AIC                          50229.096
+Time:                                   16:26:50   BIC                          50271.235
+Sample:                               01-01-2013   HQIC                         50244.243
+                                    - 04-30-2021                                         
+Covariance Type:                             opg                                         
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+month        -19.7631     11.940     -1.655      0.098     -43.166       3.640
+fg_exog       40.6258      0.138    293.945      0.000      40.355      40.897
+day            0.3716      2.056      0.181      0.857      -3.658       4.401
+ar.L1          0.1224      0.014      9.012      0.000       0.096       0.149
+ma.L1         -0.9518      0.005   -176.390      0.000      -0.962      -0.941
+ma.S.L4        0.0330      0.017      1.913      0.056      -0.001       0.067
+sigma2      8.675e+05   1.32e+04     65.788      0.000    8.42e+05    8.93e+05
+===================================================================================
+Ljung-Box (L1) (Q):                   0.23   Jarque-Bera (JB):              2939.84
+Prob(Q):                              0.63   Prob(JB):                         0.00
+Heteroskedasticity (H):               0.38   Skew:                            -0.38
+Prob(H) (two-sided):                  0.00   Kurtosis:                         7.76
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).
+2023-05-15 16:26:50,073 SARIMAX Model Prediction ..
+2023-05-15 16:26:50,129 SARIMAX Model MAPE: 0.0338
+2023-05-15 16:26:50,130 Sarimax Model Parameters {'sarimax_order': (1, 1, 1), 'sarimax_seasonal_order': (0, 0, 1, 4)}

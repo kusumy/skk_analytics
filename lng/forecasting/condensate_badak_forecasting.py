@@ -203,7 +203,7 @@ def main():
 
     #%%
     #Select target column after smoothing data
-    train_df = df_smoothed['condensate']
+    train_df = df_cleaned['condensate']
 
     #%%
     sql_exog_path = str(sql_folder/'lng_prod_badak_data_query.sql')

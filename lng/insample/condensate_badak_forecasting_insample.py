@@ -294,11 +294,11 @@ def main():
     test_size = 365
     # Split data
     y_train, y_test = temporal_train_test_split(df_cleaned, test_size=test_size)
-    y_train_smoothed, y_test_smoothed = temporal_train_test_split(df_smoothed, test_size=test_size)
+    #y_train_smoothed, y_test_smoothed = temporal_train_test_split(df_smoothed, test_size=test_size)
 
     #%%
     # Create forecasting Horizon
-    fh = ForecastingHorizon(y_test_smoothed.index, is_relative=False)
+    fh = ForecastingHorizon(y_test.index, is_relative=False)
     fh_int = np.arange(1, len(fh))
 
     #%%
@@ -664,7 +664,7 @@ def main():
     gscv_poly3 = ForecastingGridSearchCV(poly3_forecaster, cv=cv_poly3, param_grid=poly3_forecaster_param_grid, scoring=mape, error_score='raise')
 
     logMessage("Creating Polynomial Regression Orde 3 Model ...")
-    poly3_fit = gscv_poly3.fit(y_train_smoothed, X=X_train) #, X=X_train
+    poly3_fit = gscv_poly3.fit(y_train, X=X_train) #, X=X_train
 
     # Show best model parameters
     logMessage("Show Best Polynomial Regression Degree=3 Models ...")
