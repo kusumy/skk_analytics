@@ -206,15 +206,40 @@ def main():
     train_df = df_smoothed['condensate']
 
     #%%
+    sql_exog_path = str(sql_folder/'lng_prod_badak_data_query.sql')
+    query_2 = open(sql_exog_path, mode="rt").read()
+    sql2 = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql2 = query_2.format('2013-01-01', end_date)
+        else :
+            sql2 = query_2.format('2013-01-01', end_date_april)
+    else :
+        sql2 = query_2.format(TRAIN_START_DATE, TRAIN_END_DATE)
+   
+    data2 = get_sql_data(sql2, conn)
+    data2['date'] = pd.DatetimeIndex(data2['date'], freq='D')
+    data2 = data2.reset_index()
+
+    ##### EXOGENOUS DATA #####
+    data_fg_exog = data2[['date', 'fg_exog']].copy()
+    ds_fg_exog = 'date'
+    data_fg_exog = data_fg_exog.set_index(ds_fg_exog)
+
+    #%%
     logMessage("Create Exogenous Features for Training ...")
     # create features from date
+    df_cleaned['fg_exog'] = data_fg_exog['fg_exog'].copy()
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    df_cleaned['fg_exog'].fillna(method='ffill', inplace=True)
     train_exog = df_cleaned.iloc[:,1:]
 
+    #%%
+    logMessage("Create Exogenous Features for Future Dates ...")
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
-    query_exog = str(sql_folder/'condensate_badak_exog_query.sql')
+    query_exog = str(sql_folder/'lng_prod_badak_exog_query.sql')
     #query_exog = os.path.join('./sql','condensate_badak_exog_query.sql')
     query_2 = open(query_exog, mode="rt").read()
     sql2 = ''
@@ -231,14 +256,18 @@ def main():
     data_exog.sort_index(inplace=True)
     data_exog = data_exog.reset_index()
 
-    logMessage("Create Exogenous Features for Future Dates ...")
     ds_exog = 'date'
-    x_exog = 'condensate'
+    x_exog = 'fg_exog'
+
     future_exog = data_exog[[ds_exog, x_exog]]
     future_exog = future_exog.set_index(ds_exog)
+    future_exog.index = pd.DatetimeIndex(future_exog.index, freq='D')
+
+    #Create exogenous date index
     future_exog['month'] = [i.month for i in future_exog.index]
     future_exog['day'] = [i.day for i in future_exog.index]
-    future_exog.drop(['condensate'], axis=1, inplace=True)
+    future_exog['fg_exog'] = future_exog['fg_exog']
+    future_exog['fg_exog'].fillna(method='ffill', inplace=True)
 
     from sktime.forecasting.base import ForecastingHorizon
     fh = ForecastingHorizon(future_exog.index, is_relative=False)
@@ -284,10 +313,6 @@ def main():
         #Rename colum 0
         y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
 
-        # Convert the 'forecast_a' column to float data type
-        #y_pred_arimax['forecast_a'] = y_pred_arimax['forecast_a'].astype(float)
-
-
         ##### SARIMAX MODEL #####
         logMessage("Create Sarimax Forecasting Condensate PT Badak ...")
         # Get best parameter from database
@@ -327,9 +352,6 @@ def main():
         #Rename colum 0
         y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
 
-        # Convert the 'forecast_b' column to float data type
-        #y_pred_sarimax['forecast_b'] = y_pred_sarimax['forecast_b'].astype(float)
-
         ##### PROPHET MODEL #####
         logMessage("Create Prophet Forecasting Condensate PT Badak ...")
         # Get best parameter from database
@@ -351,7 +373,6 @@ def main():
         prophet_n_changepoints = prophet_model_param['n_changepoints']
         prophet_seasonality_prior_scale = prophet_model_param['seasonality_prior_scale']
         prophet_changepoint_prior_scale = prophet_model_param['changepoint_prior_scale']
-        #prophet_holidays_prior_scale = prophet_model_param['seasonality_mode']
         prophet_daily_seasonality = prophet_model_param['daily_seasonality']
         prophet_weekly_seasonality = prophet_model_param['weekly_seasonality']
         prophet_yearly_seasonality = prophet_model_param['yearly_seasonality']
@@ -363,8 +384,6 @@ def main():
                 n_changepoints=prophet_n_changepoints,
                 seasonality_prior_scale=prophet_seasonality_prior_scale, #Flexibility of the seasonality (0.01,10)
                 changepoint_prior_scale=prophet_changepoint_prior_scale, #Flexibility of the trend (0.001,0.5)
-                #holidays_prior_scale=prophet_holidays_prior_scale, #Flexibility of the holiday effects (0.01,10)
-                #changepoint_range=0.8, #proportion of the history in which the trend is allowed to change
                 daily_seasonality=prophet_daily_seasonality,
                 weekly_seasonality=prophet_weekly_seasonality,
                 yearly_seasonality=prophet_yearly_seasonality)
@@ -380,10 +399,6 @@ def main():
         y_pred_prophet['date'] = pd.DatetimeIndex(y_pred_prophet['date'], freq='D')
         #Rename colum 0
         y_pred_prophet.rename(columns={0:'forecast_c'}, inplace=True)
-
-        # Convert the 'forecast_c' column to float data type
-        #y_pred_prophet['forecast_c'] = y_pred_prophet['forecast_c'].astype(float)
-
 
         ##### RANDOM FOREST MODEL #####
         logMessage("Create Random Forest Forecasting Condensate PT Badak ...")
@@ -425,10 +440,6 @@ def main():
         #Rename colum 0
         y_pred_ranfor.rename(columns={0:'forecast_d'}, inplace=True)
 
-        # Convert the 'forecast_d' column to float data type
-        #y_pred_ranfor['forecast_d'] = y_pred_ranfor['forecast_d'].astype(float)
-
-
         ##### XGBOOST MODEL #####
         logMessage("Create XGBoost Forecasting Condensate PT Badak ...")
         # Get best parameter from database
@@ -467,9 +478,6 @@ def main():
         #Rename colum 0
         y_pred_xgb.rename(columns={0:'forecast_e'}, inplace=True)
 
-        # Convert the 'forecast_e' column to float data type
-        #y_pred_xgb['forecast_e'] = y_pred_xgb['forecast_e'].astype(float)
-
         ##### LINEAR REGRESSION MODEL #####
         logMessage("Create Linear Regression Forecasting Condensate PT Badak ...")
         # Get best parameter from database
@@ -507,10 +515,6 @@ def main():
         y_pred_linreg['date'] = pd.DatetimeIndex(y_pred_linreg['date'], freq='D')
         #Rename colum 0
         y_pred_linreg.rename(columns={0:'forecast_f'}, inplace=True)
-
-        # Convert the 'forecast_f' column to float data type
-        #y_pred_linreg['forecast_f'] = y_pred_linreg['forecast_f'].astype(float)
-
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 #####
         logMessage("Create Polynomial Regression Degree=2 Forecasting Condensate PT Badak ...")
@@ -552,10 +556,6 @@ def main():
         #Rename colum 0
         y_pred_poly2.rename(columns={0:'forecast_g'}, inplace=True)
 
-        # Convert the 'forecast_g' column to float data type
-        #y_pred_poly2['forecast_g'] = y_pred_poly2['forecast_g'].astype(float)
-
-
         ##### POLYNOMIAL REGRESSION DEGREE=3 #####
         logMessage("Create Polynomial Regression Degree=3 Forecasting Condensate PT Badak ...")
         # Get best parameter from database
@@ -595,9 +595,6 @@ def main():
         y_pred_poly3['date'] = pd.DatetimeIndex(y_pred_poly3['date'], freq='D')
         #Rename colum 0
         y_pred_poly3.rename(columns={0:'forecast_h'}, inplace=True)
-
-        # Convert the 'forecast_h' column to float data type
-        #y_pred_poly3['forecast_h'] = y_pred_poly3['forecast_h'].astype(float)
 
         ##### JOIN PREDICTION RESULT TO DATAFRAME #####
         logMessage("Creating all model prediction result data frame ...")

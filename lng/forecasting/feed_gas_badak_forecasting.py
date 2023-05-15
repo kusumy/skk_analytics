@@ -206,40 +206,66 @@ def main():
     train_df = df_smoothed['feed_gas']
 
     #%%
+    sql_exog_path = str(sql_folder/'lng_prod_badak_data_query.sql')
+    query_2 = open(sql_exog_path, mode="rt").read()
+    sql2 = ''
+    if USE_DEFAULT_DATE == True:
+        if current_date < date_nov:
+            sql2 = query_2.format('2013-01-01', end_date)
+        else :
+            sql2 = query_2.format('2013-01-01', end_date_april)
+    else :
+        sql2 = query_2.format(TRAIN_START_DATE, TRAIN_END_DATE)
+   
+    data2 = get_sql_data(sql2, conn)
+    data2['date'] = pd.DatetimeIndex(data2['date'], freq='D')
+    data2 = data2.reset_index()
+
+    ##### EXOGENOUS DATA #####
+    data_fg_exog = data2[['date', 'fg_exog']].copy()
+    ds_fg_exog = 'date'
+    data_fg_exog = data_fg_exog.set_index(ds_fg_exog)
+
     logMessage("Create Exogenous Features for Training ...")
     # create features from date
+    df_cleaned['fg_exog'] = data_fg_exog['fg_exog'].copy()
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
+    df_cleaned['fg_exog'].fillna(method='ffill', inplace=True)
     train_exog = df_cleaned.iloc[:,1:]
 
     #%%
     logMessage("Create Exogenous Features for Future Dates ...")
     from datetime import timedelta
     exog_forecast_start_date = ((pd.to_datetime(train_df.index[-1]).to_pydatetime()) + timedelta(days=1)).strftime("%Y-%m-%d")
-    query_exog = str(sql_folder/'feed_gas_badak_exog_query.sql')
-    #query_exog = os.path.join('./sql','feed_gas_badak_exog_query.sql')
-    query_2 = open(query_exog, mode="rt").read()
-    sql2 = ''
+    query_exog = str(sql_folder/'lng_prod_badak_exog_query.sql')
+    query_3 = open(query_exog, mode="rt").read()
+    sql3 = ''
     if USE_DEFAULT_DATE == True:
         if current_date < date_nov:
-            sql2 = query_2.format(exog_forecast_start_date, end_date)
+            sql3 = query_3.format(exog_forecast_start_date, end_date)
         else :
-            sql2 = query_2.format(exog_forecast_start_date, end_date_april)
+            sql3 = query_3.format(exog_forecast_start_date, end_date_april)
     else :
-        sql2 = query_2.format(FORECAST_START_DATE, FORECAST_END_DATE)
+        sql3 = query_3.format(FORECAST_START_DATE, FORECAST_END_DATE)
     
-    data_exog = get_sql_data(sql2, conn)
+    data_exog = get_sql_data(sql3, conn)
     data_exog['date'] = pd.DatetimeIndex(data_exog['date'], freq='D')
     data_exog.sort_index(inplace=True)
     data_exog = data_exog.reset_index()
             
     ds_exog = 'date'
-    x_exog = 'feed_gas'
+    x_exog = 'fg_exog'
+
     future_exog = data_exog[[ds_exog, x_exog]]
     future_exog = future_exog.set_index(ds_exog)
+    future_exog.index = pd.DatetimeIndex(future_exog.index, freq='D')
+
+    #Create exogenous date index
+    future_exog['fg_exog'] = future_exog['fg_exog']
     future_exog['month'] = [i.month for i in future_exog.index]
     future_exog['day'] = [i.day for i in future_exog.index]
-    future_exog.drop(['feed_gas'], axis=1, inplace=True)
+    future_exog['fg_exog'].fillna(method='ffill', inplace=True)
 
     #%%
     from sktime.forecasting.base import ForecastingHorizon
@@ -264,17 +290,6 @@ def main():
         # Convert string to tuple
         arimax_model_param = ast.literal_eval(arimax_model_param)
 
-        # Get Adjustment Value Arimax
-        sql_arimax_adj = """SELECT adj_forecast_a
-                        FROM lng_analytics_adjustment
-                        WHERE lng_plant = 'PT Badak' 
-                        AND product = 'Feed Gas'
-                        ORDER BY running_date DESC 
-                        LIMIT 1 OFFSET 0"""
-        
-        arimax_adj_value = get_sql_data(sql_arimax_adj, conn)
-        arimax_adj_value = arimax_adj_value['adj_forecast_a'][0]
-
         #Set parameters
         arimax_suppress_warnings = True
 
@@ -297,10 +312,7 @@ def main():
         y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
 
         # Convert the 'forecast_a' column to float data type
-        y_pred_arimax['forecast_a'] = y_pred_arimax['forecast_a'].astype(float)
-
-        # Add adj value to all the values in the 'forecast_a' column
-        y_pred_arimax['forecast_a'] = y_pred_arimax['forecast_a'] + arimax_adj_value
+        #y_pred_arimax['forecast_a'] = y_pred_arimax['forecast_a'].astype(float)
 
 
         ##### SARIMAX MODEL #####
@@ -521,9 +533,6 @@ def main():
         y_pred_linreg['date'] = pd.DatetimeIndex(y_pred_linreg['date'], freq='D')
         #Rename colum 0
         y_pred_linreg.rename(columns={0:'forecast_f'}, inplace=True)
-
-        # Convert the 'forecast_f' column to float data type
-        #y_pred_linreg['forecast_f'] = y_pred_linreg['forecast_f'].astype(float)
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
         logMessage("Create Polynomial Regression Degree=2 Forecasting Feed Gas PT Badak ...")

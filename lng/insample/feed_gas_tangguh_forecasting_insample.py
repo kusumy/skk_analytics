@@ -432,7 +432,7 @@ def main():
     logMessage("Creating Arimax Model Forecasting Insample Feed Gas BP Tangguh ...")
     # %%
     # Create ARIMAX (forecast_a) Model
-    arimax_model = AutoARIMA(d=0, suppress_warnings=True, error_action='ignore')
+    arimax_model = AutoARIMA(d=0, start_p = 0, max_p = 2, start_q=0, max_q=2, suppress_warnings=True, error_action='ignore')
     logMessage("Creating ARIMAX Model ...")
     arimax_fit = arimax_model.fit(y_train_cleaned.feed_gas, X=X_train[exogenous_features])
     logMessage("ARIMAX Model Summary")

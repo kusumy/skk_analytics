@@ -293,6 +293,7 @@ def main():
     future_exog['month'] = [i.month for i in future_exog.index]
     future_exog['day'] = [i.day for i in future_exog.index]
     future_exog[['wpnb_gas']].applymap('{:.2f}'.format)
+    future_exog['wpnb_gas'].fillna(method='ffill', inplace=True)
 
     #Create forecasting horizon
     fh = ForecastingHorizon(future_exog.index, is_relative=False)

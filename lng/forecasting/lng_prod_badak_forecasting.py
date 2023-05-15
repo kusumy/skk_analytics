@@ -276,10 +276,6 @@ def main():
         #Rename colum 0
         y_pred_arimax.rename(columns={0:'forecast_a'}, inplace=True)
 
-        # Convert the 'forecast_a' column to float data type
-        #y_pred_arimax['forecast_a'] = y_pred_arimax['forecast_a'].astype(float)
-
-        #%%
         ##### SARIMAX MODEL #####
         logMessage("Create Sarimax Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
@@ -319,10 +315,6 @@ def main():
         #Rename colum 0
         y_pred_sarimax.rename(columns={0:'forecast_b'}, inplace=True)
 
-        # Convert the 'forecast_b' column to float data type
-        #y_pred_sarimax['forecast_b'] = y_pred_sarimax['forecast_b'].astype(float)
-
-
         #%%
         ##### PROPHET MODEL #####
         logMessage("Create Prophet Forecasting LNG Production PT Badak ...")
@@ -357,8 +349,6 @@ def main():
                 n_changepoints=prophet_n_changepoints,
                 seasonality_prior_scale=prophet_seasonality_prior_scale, #Flexibility of the seasonality (0.01,10)
                 changepoint_prior_scale=prophet_changepoint_prior_scale, #Flexibility of the trend (0.001,0.5)
-                #holidays_prior_scale=prophet_holidays_prior_scale, #Flexibility of the holiday effects (0.01,10)
-                #changepoint_range=0.8, #proportion of the history in which the trend is allowed to change
                 daily_seasonality=prophet_daily_seasonality,
                 weekly_seasonality=prophet_weekly_seasonality,
                 yearly_seasonality=prophet_yearly_seasonality)
@@ -374,10 +364,6 @@ def main():
         y_pred_prophet['date'] = pd.DatetimeIndex(y_pred_prophet['date'], freq='D')
         #Rename colum 0
         y_pred_prophet.rename(columns={0:'forecast_c'}, inplace=True)
-
-        # Convert the 'forecast_c' column to float data type
-        #y_pred_prophet['forecast_c'] = y_pred_prophet['forecast_c'].astype(float)
-
 
         ##### RANDOM FOREST MODEL #####
         logMessage("Create Random Forest Forecasting LNG Production PT Badak ...")
@@ -419,9 +405,6 @@ def main():
         #Rename colum 0
         y_pred_ranfor.rename(columns={0:'forecast_d'}, inplace=True)
 
-        # Convert the 'forecast_d' column to float data type
-        #y_pred_ranfor['forecast_d'] = y_pred_ranfor['forecast_d'].astype(float)
-
         ##### XGBOOST MODEL #####
         logMessage("Create XGBoost Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
@@ -460,10 +443,6 @@ def main():
         #Rename colum 0
         y_pred_xgb.rename(columns={0:'forecast_e'}, inplace=True)
 
-        # Convert the 'forecast_e' column to float data type
-        #y_pred_xgb['forecast_e'] = y_pred_xgb['forecast_e'].astype(float)
-
-
         ##### LINEAR REGRESSION MODEL #####
         logMessage("Create Linear Regression Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
@@ -500,10 +479,6 @@ def main():
         y_pred_linreg['date'] = pd.DatetimeIndex(y_pred_linreg['date'], freq='D')
         #Rename colum 0
         y_pred_linreg.rename(columns={0:'forecast_f'}, inplace=True)
-
-        # Convert the 'forecast_f' column to float data type
-        #y_pred_linreg['forecast_f'] = y_pred_linreg['forecast_f'].astype(float)
-
 
         ##### POLYNOMIAL REGRESSION DEGREE=2 MODEL #####
         logMessage("Create Polynomial Regression Degree=2 Forecasting LNG Production PT Badak ...")
@@ -544,10 +519,6 @@ def main():
         #Rename colum 0
         y_pred_poly2.rename(columns={0:'forecast_g'}, inplace=True)
 
-        # Convert the 'forecast_g' column to float data type
-        #y_pred_poly2['forecast_g'] = y_pred_poly2['forecast_g'].astype(float)
-
-
         ##### POLYNOMIAL REGRESSION DEGREE=3 MODEL #####
         logMessage("Create Polynomial Regression Degree=3 Forecasting LNG Production PT Badak ...")
         # Get best parameter from database
@@ -586,11 +557,7 @@ def main():
         y_pred_poly3['date'] = pd.DatetimeIndex(y_pred_poly3['date'], freq='D')
         #Rename colum 0
         y_pred_poly3.rename(columns={0:'forecast_h'}, inplace=True)
-
-        # Convert the 'forecast_h' column to float data type
-        #y_pred_poly3['forecast_h'] = y_pred_poly3['forecast_h'].astype(float)
-
-        
+       
         ##### JOIN PREDICTION RESULT TO DATAFRAME #####
         logMessage("Creating all model prediction result data frame ...")
         y_all_pred = pd.concat([y_pred_arimax[['forecast_a']],
