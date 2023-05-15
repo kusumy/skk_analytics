@@ -38,6 +38,7 @@ from sklearn.linear_model import LinearRegression
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
+warnings.filterwarnings("ignore", message="pandas only supports SQLAlchemy connectable")
 
 #%%
 def main():

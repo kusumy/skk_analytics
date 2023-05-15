@@ -89,6 +89,7 @@ warnings.filterwarnings("ignore", category=UserWarning, message="Non-invertible 
 warnings.filterwarnings('ignore', 'y_pred and y_true do not have the same column index')
 warnings.filterwarnings('ignore', 'Maximum Likelihood optimization failed to converge')
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", message="pandas only supports SQLAlchemy connectable")
 
 # Model scoring for Cross Validation
 mape = MeanAbsolutePercentageError(symmetric=False)
@@ -305,9 +306,7 @@ def main():
     df_cleaned['month'] = [i.month for i in df_cleaned.index]
     df_cleaned['day'] = [i.day for i in df_cleaned.index]
     df_cleaned['fg_exog'] = data_fg_exog['fg_exog'].copy()
-
-    # find the correlation between columns
-    #corr_matrix = df_cleaned.corr()
+    df_cleaned['fg_exog'].fillna(method='ffill', inplace=True)
 
     #%%
     # Split into train and test

@@ -88,6 +88,7 @@ warnings.filterwarnings("ignore", category=UserWarning, message="Non-invertible 
 warnings.filterwarnings('ignore', 'y_pred and y_true do not have the same column index')
 warnings.filterwarnings('ignore', 'Maximum Likelihood optimization failed to converge')
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", message="pandas only supports SQLAlchemy connectable")
 
 # %%
 def main():
