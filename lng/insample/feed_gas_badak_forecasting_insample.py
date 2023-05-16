@@ -536,7 +536,6 @@ def main():
     del xgb_fit
     del xgb_best_params
     del xgb_mape_str
-    #del df_adjustment_xgb
     gc.collect()
 
 
@@ -581,7 +580,6 @@ def main():
     del linreg_fit
     del linreg_best_params
     del linreg_mape_str
-    #del df_adjustment_linreg
     gc.collect()
 
 
@@ -593,7 +591,7 @@ def main():
     poly2_interactions = False
     poly2_strategy = "recursive"
 
-    poly2_forecaster_param_grid = {"window_length": [1]}
+    poly2_forecaster_param_grid = {"window_length": [0.8]}
 
     poly2_regressor = PolynomRegressor(deg=2, regularization=poly2_regularization, interactions=poly2_interactions)
     poly2_forecaster = make_reduction(poly2_regressor, strategy=poly2_strategy)
