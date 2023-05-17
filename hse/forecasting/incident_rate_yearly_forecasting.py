@@ -279,7 +279,6 @@ def main():
         linreg_model_param = ast.literal_eval(linreg_model_param)
 
         #Set parameters
-        linreg_normalize = True
         linreg_lags = linreg_model_param['window_length']
         linreg_strategy = "recursive"
 

@@ -242,12 +242,11 @@ def main():
 
         ##### LINEAR REGRESSION MODEL #####
         #Set parameters
-        linreg_normalize = True
         linreg_lags = 4 #3, 4, 6
         linreg_strategy = "recursive"
 
         #Create regressor object
-        linreg_regressor = LinearRegression(normalize=linreg_normalize)
+        linreg_regressor = LinearRegression()
         linreg_forecaster = make_reduction(linreg_regressor, window_length=linreg_lags, strategy=linreg_strategy)
         
         logMessage("Creating Linear Regression Model ...")
