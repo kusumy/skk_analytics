@@ -4,7 +4,7 @@
 . /root/anaconda3/bin/activate py38_ts
 
 # Run every lng insample script
-cd /opt/python-da-2022V2b/skk_analytics/lng_insample/
+cd /opt/python-da-2022V2b/skk_analytics/lng/insample/
 python feed_gas_tangguh_forecasting_insample.py
 python lng_production_tangguh_forecasting_insample.py
 python condensate_tangguh_forecasting_insample.py
