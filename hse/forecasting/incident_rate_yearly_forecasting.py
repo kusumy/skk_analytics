@@ -26,7 +26,9 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 
 import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
+warnings.filterwarnings("ignore", message="pandas only supports SQLAlchemy connectable")
 
 # %%
 def main():
@@ -376,23 +378,6 @@ def main():
                                 y_pred_poly2[['forecast_e']],
                                 y_pred_poly3[['forecast_f']]], axis=1)
         #y_all_pred['year_num'] = future_exog.index.values
-
-        #%%
-        ##### PLOT PREDICTION #####
-        fig, ax = plt.subplots(figsize=(20,8))
-        ax.plot(train_df.to_timestamp(), label='train')
-        ax.plot(arimax_forecast.to_timestamp(), label='pred_arimax')
-        ax.plot(ranfor_forecast.to_timestamp(), label='pred_ranfor')
-        ax.plot(xgb_forecast.to_timestamp(), label='pred_xgb')
-        ax.plot(linreg_forecast.to_timestamp(), label='pred_linreg')
-        ax.plot(poly2_forecast.to_timestamp(), label='pred_poly2')
-        ax.plot(poly3_forecast.to_timestamp(), label='pred_poly3')
-        title = 'Feed Gas BP Tangguh Forecasting with Exogenous Variable and Cleaning Data'
-        ax.set_title(title)
-        ax.set_ylabel("Feed Gas")
-        ax.set_xlabel("Datestamp")
-        ax.legend(loc='best')
-        plt.close()
         
         #%%
         # Save forecast result to database

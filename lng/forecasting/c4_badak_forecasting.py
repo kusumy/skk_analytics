@@ -578,6 +578,7 @@ def main():
                                     y_pred_poly3[['forecast_h']]], axis=1)
         y_all_pred['date'] = future_exog.index.values
 
+
         # %%
         # Save forecast result to database
         logMessage("Updating forecast result to database ...")

@@ -38,8 +38,9 @@ from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
 
 import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
-
+warnings.filterwarnings("ignore", message="pandas only supports SQLAlchemy connectable")
 
 #%%
 def main():
@@ -162,11 +163,9 @@ def main():
         ##### ARIMAX MODEL #####
         #Set parameters
         arimax_differencing = 1
-        arimax_seasonal = False
         arimax_error_action = 'warn'
         arimax_trace = True
         arimax_supress_warnings = True
-        arimax_stepwise = True
         arimax_stationary = False
 
         # Create ARIMAX Model

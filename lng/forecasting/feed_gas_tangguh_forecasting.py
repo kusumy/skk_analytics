@@ -359,7 +359,6 @@ def main():
         # Add adj value to all the values in the 'forecast_a' column
         y_pred_arimax['forecast_a'] = y_pred_arimax['forecast_a'] + arimax_adj_value
 
-
         ##### SARIMAX MODEL #####
         logMessage("Create Sarimax Forecasting Feed Gas BP Tangguh ...")
         # Get best parameter from database
@@ -781,7 +780,7 @@ def main():
                                 y_pred_poly2[['forecast_g']],
                                 y_pred_poly3[['forecast_h']]], axis=1)
         y_all_pred['date'] = future_exog.index.values
-        
+       
         # %%
         # Save forecast result to database
         logMessage("Updating forecast result to database ...")

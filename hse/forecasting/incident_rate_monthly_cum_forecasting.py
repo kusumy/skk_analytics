@@ -33,7 +33,9 @@ from sklearn.linear_model import LinearRegression
 plt.style.use('fivethirtyeight')
 
 import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
+warnings.filterwarnings("ignore", message="pandas only supports SQLAlchemy connectable")
     
 def main():
     from connection import create_db_connection, get_sql_data
@@ -46,7 +48,6 @@ def main():
     current_dir_parent_logs = current_dir.parent
     logs_folder = current_dir_parent_logs / "logs"
     logs_file_path = str(logs_folder/'incident_rate_monthly_cumulative_forecasting.log')
-    #logs_file_path = os.path.join('./logs', 'incident_rate_monthly_cumulative_forecasting.log')
 
     # Configure logging
     configLogging(logs_file_path)
@@ -323,7 +324,6 @@ def main():
         linreg_model_param = ast.literal_eval(linreg_model_param)
         
         #Set parameter
-        linreg_normalize = True
         linreg_lags = linreg_model_param['window_length']
         linreg_strategy = "recursive"
 
