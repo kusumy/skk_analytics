@@ -7,7 +7,7 @@ start_time=$(date +"%Y-%m-%d %H:%M:%S")
 echo "Script started at: $start_time"
 
 # Run every lng insample script
-cd /opt/python-da-2022/skk_analytics/lng/forecasting/
+cd "$(pwd)/lng/forecasting/"
 python feed_gas_tangguh_forecasting.py
 python lng_production_tangguh_forecasting.py
 python condensate_tangguh_forecasting.py
@@ -30,7 +30,7 @@ duration_seconds=$((duration_seconds % 60))
 
 echo "Duration: $duration_hours hours, $duration_minutes minutes, $duration_seconds seconds"
 
-log_directory="/opt/python-da-2022/skk_analytics/lng/forecasting/logs"
+log_directory="$(pwd)/lng/forecasting/logs"
 
 # Redirect output to log file
 echo "Start Time: $start_time" >> "$log_directory/executing_main_lng_log.txt"
