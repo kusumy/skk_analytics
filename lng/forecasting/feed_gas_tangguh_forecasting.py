@@ -52,7 +52,6 @@ def main():
     current_dir_parent_logs = current_dir.parent
     logs_folder = current_dir_parent_logs / "logs"
     logs_file_path = str(logs_folder/'feed_gas_tangguh_forecasting.log')
-    #logs_file_path = os.path.join('./logs', 'feed_gas_tangguh_forecasting.log')
 
     # Configure logging
     configLogging(logs_file_path)
@@ -90,7 +89,7 @@ def main():
     TRAIN_END_DATE = (datetime.date(TRAIN_END_YEAR, TRAIN_END_MONTH, TRAIN_END_DAY)).strftime("%Y-%m-%d")
     FORECAST_START_DATE = (datetime.date(FORECAST_START_YEAR, FORECAST_START_MONTH, FORECAST_START_DAY)).strftime("%Y-%m-%d")
     FORECAST_END_DATE = (datetime.date(FORECAST_END_YEAR, FORECAST_END_MONTH, FORECAST_END_DAY)).strftime("%Y-%m-%d")
-    
+
     # Configure logging
     logMessage("Forecasting Feed Gas BP Tangguh ...")
     
