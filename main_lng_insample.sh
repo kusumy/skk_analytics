@@ -1,13 +1,18 @@
 #!/bin/bash
 
+# Access the path to the directory config
+config_file="/home/spcuser/Documents/code/python/skk/analytics/develop/skk_analytics/rootdirectory.ini"
+conda_dir_value=$(grep "conda_dir" "$config_file" | cut -d "=" -f 2 | tr -d '[:space:]')
+home_dir_value=$(grep "home_dir" "$config_file" | cut -d "=" -f 2 | tr -d '[:space:]')
+
 # Activate the Anaconda Environment
-. /root/anaconda3/bin/activate py38_ts
+. "$conda_dir_value/activate" py38_ts
 
 start_time=$(date +"%Y-%m-%d %H:%M:%S")
 echo "Script started at: $start_time"
 
 # Run every lng insample script
-cd "$(pwd)/lng/insample/"
+cd "$home_dir_value/lng/insample"
 python feed_gas_tangguh_forecasting_insample.py
 python lng_production_tangguh_forecasting_insample.py
 python condensate_tangguh_forecasting_insample.py
@@ -30,7 +35,7 @@ duration_seconds=$((duration_seconds % 60))
 
 echo "Duration: $duration_hours hours, $duration_minutes minutes, $duration_seconds seconds"
 
-log_directory="$(pwd)/lng/insample/logs"
+log_directory="$home_dir_value/lng/insample/logs"
 
 # Redirect output to log file
 echo "Start Time: $start_time" >> "$log_directory/executing_main_lng_insample_log.txt"
@@ -38,4 +43,4 @@ echo "End Time: $end_time" >> "$log_directory/executing_main_lng_insample_log.tx
 echo "Duration: $duration_hours hours, $duration_minutes minutes, $duration_seconds seconds" >> "$log_directory/executing_main_lng_insample_log.txt"
 
 # deactivate the Anaconda environtment
-. /root/anaconda3/bin/deactivate
+. "$conda_dir_value/deactivate"

@@ -1,13 +1,18 @@
 #!/bin/bash
 
+# Access the path to the directory config
+config_file="/home/spcuser/Documents/code/python/skk/analytics/develop/skk_analytics/rootdirectory.ini"
+conda_dir_value=$(grep "conda_dir" "$config_file" | cut -d "=" -f 2 | tr -d '[:space:]')
+home_dir_value=$(grep "home_dir" "$config_file" | cut -d "=" -f 2 | tr -d '[:space:]')
+
 # Activate the Anaconda Environment
-. /root/anaconda3/bin/activate py38_ts
+. "$conda_dir_value/activate" py38_ts
 
 start_time=$(date +"%Y-%m-%d %H:%M:%S")
 echo "Script started at: $start_time"
 
 # Run every lng insample script
-cd "$(pwd)/hse/insample/"
+cd "$home_dir_value/hse/insample/"
 python incident_rate_monthly_cumulative_insample.py
 python yearly_incident_rate_insample.py
 
@@ -24,12 +29,12 @@ duration_seconds=$((duration_seconds % 60))
 
 echo "Duration: $duration_hours hours, $duration_minutes minutes, $duration_seconds seconds"
 
-log_directory="$(pwd)/hse/insample/logs"
+log_directory="$home_dir_value/hse/insample/logs"
 
 # Redirect output to log file
 echo "Start Time: $start_time" >> "$log_directory/executing_main_hse_insample_log.txt"
 echo "End Time: $end_time" >> "$log_directory/executing_main_hse_insample_log.txt"
 echo "Duration: $duration_hours hours, $duration_minutes minutes, $duration_seconds seconds" >> "$log_directory/executing_main_hse_insample_log.txt"
 
-# deactivate the Anaconda environtment
-. /root/anaconda3/bin/deactivate
+# Deactivate the Anaconda Environment
+. "$conda_dir_value/deactivate"
