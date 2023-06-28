@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Access the path to the directory config
-config_file="/home/spcuser/Documents/code/python/skk/analytics/develop/skk_analytics/rootdirectory.ini"
+config_file="/home/spcuser/Documents/code/python/skk/analytics/develop/skk_analytics/config/rootdirectory.ini"
 conda_dir_value=$(grep "conda_dir" "$config_file" | cut -d "=" -f 2 | tr -d '[:space:]')
 home_dir_value=$(grep "home_dir" "$config_file" | cut -d "=" -f 2 | tr -d '[:space:]')
 
