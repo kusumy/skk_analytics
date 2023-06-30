@@ -13,13 +13,13 @@ echo "Script started at: $start_time"
 
 # Run every lng insample script
 cd "$home_dir_value/lng/insample"
-#python feed_gas_tangguh_forecasting_insample.py
-#python lng_production_tangguh_forecasting_insample.py
-#python condensate_tangguh_forecasting_insample.py
-#python feed_gas_badak_forecasting_insample.py
-#python lng_production_badak_forecasting_insample.py
-#python condensate_badak_forecasting_insample.py
-#python c3_badak_forecasting_insample.py
+python feed_gas_tangguh_forecasting_insample.py
+python lng_production_tangguh_forecasting_insample.py
+python condensate_tangguh_forecasting_insample.py
+python feed_gas_badak_forecasting_insample.py
+python lng_production_badak_forecasting_insample.py
+python condensate_badak_forecasting_insample.py
+python c3_badak_forecasting_insample.py
 python c4_badak_forecasting_insample.py
 
 end_time=$(date +"%Y-%m-%d %H:%M:%S")
